@@ -1,7 +1,10 @@
 # TASKS
 
-_Production: tasks and milestones._
+_The working task list. Kept light; the real driver is the current milestone and `../00_PROJECT/PROJECT_STATE.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## How we run tasks
+- CURRENT and NEXT live in `PRIORITIES.md`; the long list in `BACKLOG.md`; killed ideas in `REJECTED.md`.
+- One task = one clear outcome, ideally testable in a playtest.
+- We do not track tasks that do not serve the current milestone.
 
-_Status: empty (scaffold)._
+_A lightweight board (GitHub issues/projects or a simple list) is set up when the greybox starts._

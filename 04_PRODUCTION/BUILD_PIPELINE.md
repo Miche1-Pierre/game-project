@@ -1,7 +1,9 @@
-# BUILD PIPELINE
+# BUILD PIPELINE (production)
 
-_Production: tasks and milestones._
+_Technical detail: `../03_TECHNICAL/BUILD_PIPELINE.md`. This is the production cadence._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Cadence
+- A build is producible at any time via one command (Unity CLI).
+- Tag a build for each playtest and each milestone.
+- Run the pre-build smoke test first (`../11_TESTING/REGRESSION.md`).
+- Keep a changelog entry per notable build (`../changelog/`).

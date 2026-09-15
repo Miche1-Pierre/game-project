@@ -1,7 +1,13 @@
-# RELEASE CHECKLIST
+# RELEASE CHECKLIST (production readiness)
 
-_Production: tasks and milestones._
+_Overall ship-readiness. Steam-specific: `../09_STEAM/RELEASE_CHECKLIST.md`. Release process: `../13_RELEASE/`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Ready to ship when
+- [ ] Core gameplay stable, no critical blockers.
+- [ ] Multiplayer works reliably at target player count.
+- [ ] Performance acceptable on the baseline machine.
+- [ ] Basic UI, onboarding and error handling in place.
+- [ ] Audio and appropriate visuals present.
+- [ ] Build / distribution pipeline operational.
+- [ ] Playtested with players outside the team.
+- [ ] Steam page, capsules, trailer ready (`../09_STEAM/`).
