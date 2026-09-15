@@ -1,8 +1,8 @@
-# Hypothèse
+# Hypothesis
 
-## Ce qu'on teste
-(ex : un PNJ à suspicion progressive produit plus de situations qu'une détection binaire.)
+## What we test
+(e.g. an NPC with rising suspicion produces more situations than binary detection.)
 
-## Pourquoi
-## Prédiction
-## Critère de réussite (mesurable)
+## Why
+## Prediction
+## Success criterion (measurable)

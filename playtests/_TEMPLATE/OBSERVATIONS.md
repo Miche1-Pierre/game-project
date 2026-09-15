@@ -1,7 +1,7 @@
 # Observations
 
-_Faits, pas opinions. Noter les séquences spontanées._
+_Facts, not opinions. Note spontaneous sequences._
 
-## Ce que les joueurs ont fait
-## Moments de rire / de tension
-## Blocages / confusions
+## What players did
+## Moments of laughter / tension
+## Blockers / confusion

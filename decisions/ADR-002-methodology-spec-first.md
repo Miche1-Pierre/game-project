@@ -1,24 +1,24 @@
-# ADR-002 : Méthode, spec d'abord, greybox ensuite
+# ADR-002: Method, spec first, greybox next
 
-## Statut
-Accepté (2026-09-15)
+## Status
+Accepted (2026-09-15)
 
-## Contexte
-Tentation de créer tout de suite le projet Unity. L'équipe veut d'abord figer la méthode et le concept.
+## Context
+Temptation to create the Unity project immediately. The team wants to freeze the method and the concept first.
 
-## Décision
-1. Tout spécifier (repository de décision + spec du greybox) AVANT de créer Unity.
-2. Greybox en cubes gris, puis playtest, puis go/no-go, puis seulement la production visuelle.
-3. Optimiser la vitesse d'apprentissage avant la vitesse de production.
+## Decision
+1. Specify everything (decision repository + greybox spec) BEFORE creating Unity.
+2. Greybox in grey boxes, then playtest, then go/no-go, then only the visual production.
+3. Optimize for learning speed before development volume.
 
-## Pourquoi
-- Si c'est nul en greybox, l'art ne le sauvera pas.
-- Une équipe de 2 ne peut pas se permettre de contenu avant d'avoir prouvé le fun.
-- Le concept doit émerger de la recherche, pas d'une hypothèse figée d'avance.
+## Why
+- If it is bad in greybox, art will not save it.
+- A team of two cannot afford content before the fun is proven.
+- The concept must emerge from research, not from a hypothesis frozen in advance.
 
-## Conséquences
-- Pas de code Unity tant que `02_GAME_DESIGN/GREYBOX_SPEC.md` n'existe pas.
-- Chaque décision structurante devient un ADR ; chaque hypothèse testée devient une entrée `experiments/`.
+## Consequences
+- No Unity code until `02_GAME_DESIGN/GREYBOX_SPEC.md` exists.
+- Every structural decision becomes an ADR; every tested hypothesis becomes an `experiments/` entry.
 
 ## Revisit if
-La phase de spec devient un frein qui empêche d'apprendre (paralysie d'analyse) : basculer plus vite en proto.
+The spec phase becomes a brake that prevents learning (analysis paralysis): switch to prototyping faster.

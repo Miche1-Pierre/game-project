@@ -1,15 +1,14 @@
 # BUG POLICY
 
-_Deux familles de bugs, deux traitements._
+_Two families of bugs, two treatments._
 
-## Bugs destructeurs
-Crash, blocage, perte de progression, désync réseau. Priorité haute, à corriger.
+## Destructive bugs
+Crash, blocker, progress loss, network desync. High priority, fix them.
 
-## Bugs amusants
-Comportement non prévu mais drôle. NE PAS corriger par réflexe.
-Un bug amusant peut devenir une feature (rire émergent, section 30 du benchmark).
+## Funny bugs
+Unplanned but funny behavior. Do NOT fix on reflex. A funny bug can become a feature (emergent laughter, see the benchmark).
 
-## Règle
-Tout bug amusant est noté dans `experiments/` avant décision KEEP / MODIFY / REMOVE.
+## Rule
+Every funny bug is logged in `experiments/` before a KEEP / MODIFY / REMOVE decision.
 
-_Statut : politique posée._
+_Status: policy set._

@@ -1,25 +1,25 @@
-# ADR-000 : Template
+# ADR-000: Template
 
-_Copier ce fichier en `ADR-00X-titre.md` pour chaque décision structurante._
+_Copy this file to `ADR-00X-title.md` for each structural decision._
 
-## Statut
-Proposé / Accepté / Remplacé par ADR-XXX
+## Status
+Proposed / Accepted / Superseded by ADR-XXX
 
-## Contexte
-Le problème, les forces en jeu.
+## Context
+The problem, the forces at play.
 
 ## Options
 - Option A
 - Option B
 
-## Décision
-Ce qu'on choisit.
+## Decision
+What we choose.
 
-## Pourquoi
-La raison.
+## Why
+The reason.
 
-## Conséquences
-Ce que ça implique (positif et négatif).
+## Consequences
+What it implies (positive and negative).
 
 ## Revisit if
-Les conditions qui rouvriraient la décision.
+The conditions that would reopen the decision.

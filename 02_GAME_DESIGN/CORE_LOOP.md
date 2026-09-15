@@ -1,22 +1,22 @@
 # CORE LOOP
 
-_Le fichier le plus important après le concept. Si le core loop demande 3 pages, c'est mauvais signe._
+_The most important file after the concept. If the core loop needs three pages, that is a bad sign._
 
 ## Concept
-TBD (voir `02_GAME_DESIGN/GAME_CONCEPT.md`).
+TBD (see `02_GAME_DESIGN/GAME_CONCEPT.md`).
 
-## Les 6 questions (une ligne chacune)
-1. Qu'est-ce que le joueur fait ?
-2. Pourquoi ?
-3. Qu'est-ce qui peut mal tourner ?
-4. Comment le monde réagit ?
-5. Qu'est-ce que le joueur fait ensuite ?
-6. Pourquoi recommencer ?
+## The 6 questions (one line each)
+1. What does the player do?
+2. Why?
+3. What can go wrong?
+4. How does the world react?
+5. What does the player do next?
+6. Why replay?
 
-## Boucle moment à moment (les 10 secondes)
+## Moment-to-moment loop (the 10 seconds)
 TBD
 
-## Boucle macro (la manche)
+## Macro loop (the round)
 TBD
 
-_Statut : à remplir après le choix du concept._
+_Status: to fill after the concept is chosen._

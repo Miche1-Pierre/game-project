@@ -1,6 +1,6 @@
-# Décisions issues du playtest
+# Decisions from the playtest
 
 ## KEEP
 ## MODIFY
 ## REMOVE
-## Prochaine hypothèse à tester
+## Next hypothesis to test

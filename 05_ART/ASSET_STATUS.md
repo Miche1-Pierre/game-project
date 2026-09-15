@@ -1,13 +1,13 @@
 # ASSET STATUS
 
-_Chaque asset suit ce pipeline. Pas d'asset définitif avant validation du système concerné._
+_Every asset follows this pipeline. No final asset before the relevant system is validated._
 
-## Étapes
+## Stages
 Concept -> Greybox -> Placeholder -> Generated -> Cleaned -> Integrated -> Final
 
-## Registre
-| Asset | Système | Étape | Note |
+## Register
+| Asset | System | Stage | Note |
 |---|---|---|---|
-| (exemple) Personnage joueur | Core loop | Concept | capsule placeholder pour le greybox |
+| (example) Player character | Core loop | Concept | placeholder capsule for the greybox |
 
-_Statut : vide, se remplit à la production visuelle._
+_Status: empty, fills when visual production starts._

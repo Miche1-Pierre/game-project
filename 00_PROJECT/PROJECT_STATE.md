@@ -1,32 +1,32 @@
 # PROJECT STATE
 
-_Tableau de bord vivant. L'agent le lit au démarrage et le met à jour en fin de session. Dernière MAJ : 2026-09-15._
+_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-15._
 
-**PHASE :** Sélection du concept
+**PHASE:** Concept selection
 
-**CONCEPT :** TBD (5 candidats, voir `02_GAME_DESIGN/GAME_CONCEPT.md`)
-**CORE LOOP :** TBD
+**CONCEPT:** TBD (5 candidates, see `02_GAME_DESIGN/GAME_CONCEPT.md`)
+**CORE LOOP:** TBD
 
-**HYPOTHÈSES COURANTES :**
-- H1 : la friction sociale lisible en moins de 10 s est le vrai moteur, à exploiter comme intention explicite.
-- H2 : le clip comme output de la boucle est un white space (Content Warning est le seul à l'exploiter).
-- H3 : faire des joueurs le système de détection (pas une IA PNJ) est plus léger et plus émergent.
+**CURRENT HYPOTHESES:**
+- H1: social friction readable in under 10 s is the real engine, to exploit as explicit intent.
+- H2: the clip as an output of the loop is a white space (only Content Warning exploits it).
+- H3: making the players the detection system (not an NPC AI) is lighter and more emergent.
 
-**VALIDÉ :** rien encore
-**INVALIDÉ :** rien encore
-**EXPÉRIENCE EN COURS :** aucune
-**BUILD COURANT :** aucun (Unity pas encore créé, par décision)
+**VALIDATED:** nothing yet
+**INVALIDATED:** nothing yet
+**RUNNING EXPERIMENT:** none
+**CURRENT BUILD:** none (Unity not created yet, by decision)
 
-**PROCHAINE DÉCISION :** choisir le concept à prototyper (écrire un ADR)
+**NEXT DECISION:** choose the concept to prototype (write an ADR)
 
-**BLOCKERS :** aucun
+**BLOCKERS:** none
 
-**SCOPE :** recherche faite, structure de décision en place
-**TECH :** Unity 6.6.0f1 + URP + MCP prêts à brancher, projet non créé
-**BUSINESS :** accord d'équipe et coûts à définir (`08_BUSINESS/`)
-**STEAM :** stratégie posée, rien de créé (`09_STEAM/STEAM_STRATEGY.md`)
+**SCOPE:** research done, decision structure in place; guided doc pass done (objectives, vision, questions, risks, team, cost, art)
+**TECH:** Unity 6.6.0f1 + URP + MCP ready to wire, project not created
+**BUSINESS:** team agreement and costs drafted (Pierre's positions, pending Jonathan); see `08_BUSINESS/`
+**STEAM:** strategy set, nothing created (`09_STEAM/STEAM_STRATEGY.md`)
 
-**3 PROCHAINES ACTIONS :**
-1. Brainstorm concept avec Spykernv (partir des mécaniques apprises, pas de "on fait le jeu du bureau").
-2. Verrouiller 1 (ou 2) concept(s), puis remplir GAME_CONCEPT / CORE_LOOP / GAME_RULES / MECHANICS / SYSTEMS.
-3. Écrire GREYBOX_SPEC, puis seulement créer Unity.
+**NEXT 3 ACTIONS:**
+1. Concept brainstorm with Spykernv (start from the mechanics learned, not "let's make the office game").
+2. Lock 1 (or 2) concept(s), then fill GAME_CONCEPT / CORE_LOOP / GAME_RULES / MECHANICS / SYSTEMS.
+3. Write GREYBOX_SPEC, then only then create Unity.

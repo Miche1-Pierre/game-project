@@ -1,28 +1,28 @@
 # WHITE SPACES
 
-_La thèse causale et les zones libres. Un white space n'est pas automatiquement une bonne idée._
+_The causal thesis and the open zones. A white space is not automatically a good idea._
 
-## Thèse (ne pas confondre commun et causal)
-Le moteur commun des hits n'est ni le proximity chat ni l'horreur, qui ne sont que des amplificateurs. C'est la **friction sociale lisible par un spectateur en moins de 10 secondes** : le jeu fabrique en continu des moments tendus ou drôles à vivre ET compréhensibles à regarder. Le clip se génère tout seul.
+## Thesis (do not confuse common with causal)
+The common engine of the hits is neither proximity chat nor horror, which are only amplifiers. It is **social friction that a spectator can read in under 10 seconds**: the game continuously manufactures tense or funny moments that are lived AND understandable to watch. The clip generates itself.
 
-## Propriétés sous-exploitées (opportunités)
-1. La friction sociale lisible comme **intention explicite** de design.
-2. **Le clip comme output de la boucle** (seul Content Warning l'exploite vraiment).
-3. Un **rôle immédiat** ("je suis le X") hors social deduction.
-4. **Ironie dramatique** en temps réel (le spectateur en sait plus que le joueur).
-5. **Règle unique + forte combinatoire** en coop (rare, surtout vu en solo/roguelike).
-6. **Contenu produit par les systèmes**, pas fait main (décisif pour une équipe de 2).
-7. **Progression / automatisation** greffée sur une activité concrète, en multi social.
+## Under-exploited properties (opportunities)
+1. Readable social friction as an **explicit design intent**.
+2. **The clip as an output of the loop** (only Content Warning truly exploits it).
+3. An **immediate role** ("I am the X") outside social deduction.
+4. **Dramatic irony** in real time (the spectator knows more than the player).
+5. **Single rule + strong combinatorics** in co-op (rare, mostly seen solo / roguelike).
+6. **Content produced by systems**, not hand-made (decisive for a team of two).
+7. **Progression / automation** grafted onto a concrete activity, in social multiplayer.
 
-## Propriétés sur-exploitées (ne différencient plus)
-Proximity voice, coop + horreur, prix bas : ce sont des tickets d'entrée, plus des différenciateurs.
+## Over-exploited properties (no longer differentiate)
+Proximity voice, co-op + horror, low price: entry tickets, no longer differentiators.
 
-## Les 5 concepts candidats
-Détaillés dans `02_GAME_DESIGN/GAME_CONCEPT.md` :
-- **CAND** bureau / sabotage, détection par les joueurs (pas une IA PNJ).
-- **OPP-1** comédie de compétence (métier absurde + capture de contenu).
-- **OPP-2** déduction par le travail (démasquer sans vote).
-- **OPP-3** menace cachée, danger commun (imitateur parmi les survivants).
-- **OPP-4** la sim bavarde (profondeur systémique + vocal central).
+## The 5 candidate concepts
+Detailed in `02_GAME_DESIGN/GAME_CONCEPT.md`:
+- **CAND** office / sabotage, detection by players (not an NPC AI).
+- **OPP-1** competence comedy (absurd job + content capture).
+- **OPP-2** deduction through work (unmask without a vote).
+- **OPP-3** hidden threat, shared danger (an imitator among the survivors).
+- **OPP-4** the talkative sim (systemic depth + central voice).
 
-Rappel (section 19 du benchmark) : vérifier POURQUOI chaque zone est vide avant de s'y lancer. Difficulté technique, mauvais fit social, coût de contenu, ou lisibilité.
+Reminder (benchmark section 19): check WHY each zone is empty before diving in. Technical difficulty, poor social fit, content cost, or readability.

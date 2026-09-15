@@ -1,7 +1,7 @@
-# Métriques
+# Metrics
 
-- Durée de session
-- Recommencent-ils ? (oui / non)
-- Taille du groupe
-- Abandons
-- Moments forts spontanés (compte)
+- Session length
+- Do they replay? (yes / no)
+- Group size
+- Drop-offs
+- Spontaneous strong moments (count)

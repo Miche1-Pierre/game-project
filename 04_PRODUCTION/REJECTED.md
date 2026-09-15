@@ -1,9 +1,9 @@
 # REJECTED
 
-_Ce qu'on a explicitement décidé de NE PAS faire. Empêche de réinventer une idée déjà éliminée (humain comme IA)._
+_What we have explicitly decided NOT to do. Prevents reinventing an already-eliminated idea (human or AI)._
 
-| Idée rejetée | Raison | Date | Rouvrir si |
+| Rejected idea | Reason | Date | Revisit if |
 |---|---|---|---|
-| (exemple) IA de détection PNJ riche | Trop chère et illisible à 2, remplaçable par la détection entre joueurs | 2026-09-15 | Budget IA et lisibilité résolus |
+| (example) Rich NPC detection AI | Too expensive and unreadable for two, replaceable by player-driven detection | 2026-09-15 | AI budget and readability solved |
 
-_Statut : vivant. Toute idée écartée vient ici avec sa raison._
+_Status: living. Every discarded idea lands here with its reason._

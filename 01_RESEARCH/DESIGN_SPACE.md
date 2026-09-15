@@ -1,18 +1,18 @@
 # DESIGN SPACE
 
-_Les jeux placés sur des axes de design, pour voir le saturé et le vide. Un vide n'est pas automatiquement une bonne idée : chaque white space vient avec la raison probable de son vide. Cartes interactives dans le whiteboard "Atlas Coop Viral" (espace 05)._
+_Games placed on design axes, to see what is saturated and what is empty. An empty zone is not automatically a good idea: each white space comes with the probable reason it is empty. Interactive maps in the "Atlas Coop Viral" whiteboard (space 05)._
 
-## Carte A. Coopération ↔ Compétition × Contrôle ↔ Chaos
-Tout est coop pur (gauche) ou PvP pur (droite). Le milieu (trahison à l'intérieur du coop) n'existe qu'en tour par tour (Among Us).
-**White space :** compétition cachée dans le coop, en temps réel physique. Vide probable car dur à équilibrer et à rendre lisible.
+## Map A. Cooperation vs Competition x Control vs Chaos
+Everything is pure co-op (left) or pure PvP (right). The middle (betrayal inside co-op) only exists turn-based (Among Us).
+**White space:** hidden competition inside co-op, in real-time physics. Probably empty because it is hard to balance and to make readable.
 
-## Carte B. Information cachée × Danger externe ↔ entre joueurs
-Les jeux à information cachée mettent le danger entre joueurs (Among Us, en haut à droite).
-**White space :** rôle caché ET menace extérieure commune (survivre ensemble en se méfiant). Territoire MIMESIS / Mimic, très peu peuplé. Vide car l'imitation crédible d'un joueur est délicate.
+## Map B. Hidden information x External danger vs danger between players
+Hidden-information games put the danger between players (Among Us, top-right).
+**White space:** a hidden role AND a shared external threat (surviving together while distrusting each other). MIMESIS / Mimic territory, very sparsely populated. Empty because credibly imitating a player is delicate.
 
-## Carte C. Simulation ↔ Arcade × Vocal secondaire ↔ central
-Les jeux vocal-central sont surtout arcade ; les sims profondes (Schedule I) sont muettes ou solo.
-**White space :** une simulation dense qui rend la parole indispensable (Schedule I × Big Walk). Vide car densité systémique = coût de contenu, l'ennemi d'une équipe de 2.
+## Map C. Simulation vs Arcade x Voice secondary vs central
+Voice-central games are mostly arcade; deep sims (Schedule I) are silent or solo.
+**White space:** a dense simulation that makes talking indispensable (Schedule I x Big Walk). Empty because systemic density means content cost, the enemy of a two-person team.
 
-## Synthèse
-Les trois vides pointent la même région : temps réel, physique, intention cachée dans une tâche commune, danger mixte, vocal central. C'est exactement là que tombe l'hypothèse bureau/sabotage. La carte valide l'emplacement ; l'exécution est discutée dans `WHITE_SPACES.md` et `02_GAME_DESIGN/GAME_CONCEPT.md`.
+## Synthesis
+The three gaps point to the same region: real-time, physical, hidden intent inside a shared task, mixed danger, central voice. That is exactly where the office/sabotage hypothesis lands. The map validates the location; execution is discussed in `WHITE_SPACES.md` and `02_GAME_DESIGN/GAME_CONCEPT.md`.

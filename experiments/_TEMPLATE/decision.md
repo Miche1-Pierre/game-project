@@ -1,7 +1,7 @@
-# Décision
+# Decision
 
 ## Verdict
 KEEP / MODIFY / REMOVE
 
-## Pourquoi
-## Suite
+## Why
+## Next

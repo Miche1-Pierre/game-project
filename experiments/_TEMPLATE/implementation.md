@@ -1,5 +1,5 @@
-# Implémentation
+# Implementation
 
-## Ce qui a été construit (greybox)
-## Portée (1 map, N objets, N systèmes)
-## Comment tester
+## What was built (greybox)
+## Scope (1 map, N objects, N systems)
+## How to test

@@ -1,36 +1,36 @@
 # MECHANICS DATABASE
 
-_Mécaniques en lignes, jeux en colonnes. Intensité 0 à 3 (3 = signature, la retirer casse le jeu). Intensités = jugement analytique, base de discussion, pas données mesurées. "Commun" n'est pas "causal" (voir `WHITE_SPACES.md`)._
+_Mechanics in rows, games in columns. Intensity 0 to 3 (3 = signature, removing it breaks the game). Intensities are analytical judgment, a basis for discussion, not measured data. "Common" is not "causal" (see `WHITE_SPACES.md`)._
 
-Codes : LET Lethal · PEA PEAK · REP R.E.P.O. · CTW Content Warning · PHA Phasmophobia · AMU Among Us · BAL Balatro · BUC Buckshot · SCH Schedule I · CHA Chained · BIG Big Walk · OVC Overcooked · GNG Gang Beasts · GTF GTFO
+Codes: LET Lethal, PEA PEAK, REP R.E.P.O., CTW Content Warning, PHA Phasmophobia, AMU Among Us, BAL Balatro, BUC Buckshot, SCH Schedule I, CHA Chained, BIG Big Walk, OVC Overcooked, GNG Gang Beasts, GTF GTFO
 
-| Mécanique | LET | PEA | REP | CTW | PHA | AMU | BAL | BUC | SCH | CHA | BIG | OVC | GNG | GTF |
+| Mechanic | LET | PEA | REP | CTW | PHA | AMU | BAL | BUC | SCH | CHA | BIG | OVC | GNG | GTF |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| Proximité vocale | 3 | 3 | 3 | 3 | 3 | 1 | 0 | 0 | 1 | 2 | 3 | 1 | 0 | 3 |
-| Physique / ragdoll | 2 | 3 | 3 | 1 | 0 | 0 | 0 | 0 | 0 | 3 | 1 | 1 | 3 | 1 |
-| Coopération | 3 | 3 | 3 | 3 | 3 | 2 | 0 | 0 | 2 | 3 | 3 | 3 | 1 | 3 |
-| Rôle / identité cachée | 0 | 0 | 0 | 0 | 0 | 3 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
-| Déduction sociale | 0 | 0 | 0 | 0 | 1 | 3 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
-| Trahison / PvP | 1 | 1 | 1 | 1 | 0 | 3 | 0 | 1 | 1 | 0 | 0 | 0 | 3 | 0 |
+| Proximity voice | 3 | 3 | 3 | 3 | 3 | 1 | 0 | 0 | 1 | 2 | 3 | 1 | 0 | 3 |
+| Physics / ragdoll | 2 | 3 | 3 | 1 | 0 | 0 | 0 | 0 | 0 | 3 | 1 | 1 | 3 | 1 |
+| Cooperation | 3 | 3 | 3 | 3 | 3 | 2 | 0 | 0 | 2 | 3 | 3 | 3 | 1 | 3 |
+| Hidden role / identity | 0 | 0 | 0 | 0 | 0 | 3 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Social deduction | 0 | 0 | 0 | 0 | 1 | 3 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Betrayal / PvP | 1 | 1 | 1 | 1 | 0 | 3 | 0 | 1 | 1 | 0 | 0 | 0 | 3 | 0 |
 | Extraction / quota | 3 | 1 | 3 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 |
-| Économie / upgrades | 2 | 1 | 2 | 1 | 1 | 0 | 2 | 1 | 3 | 0 | 0 | 1 | 0 | 2 |
-| Temps limité | 3 | 0 | 2 | 2 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 3 | 0 | 1 |
-| Génération procédurale | 3 | 2 | 3 | 2 | 2 | 1 | 2 | 1 | 0 | 0 | 1 | 1 | 1 | 1 |
-| Permadeath / perte | 3 | 2 | 2 | 2 | 2 | 1 | 2 | 2 | 1 | 2 | 0 | 1 | 2 | 3 |
-| Détection / stealth | 1 | 0 | 1 | 0 | 2 | 1 | 0 | 0 | 2 | 0 | 0 | 0 | 0 | 3 |
-| PNJ / IA menace | 3 | 1 | 3 | 2 | 3 | 0 | 0 | 1 | 2 | 1 | 1 | 1 | 1 | 3 |
-| Rôle-métier lisible | 1 | 0 | 1 | 0 | 2 | 2 | 0 | 1 | 3 | 0 | 0 | 3 | 0 | 2 |
-| Manip. environnement | 1 | 2 | 3 | 1 | 1 | 1 | 0 | 1 | 2 | 1 | 1 | 2 | 2 | 2 |
-| Verticalité / plateforme | 1 | 3 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 3 | 1 | 0 | 2 | 0 |
-| Capture de contenu | 0 | 0 | 0 | 3 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
-| Narration émergente | 3 | 3 | 3 | 3 | 3 | 3 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
-| Hasard / RNG | 2 | 1 | 1 | 1 | 2 | 0 | 3 | 3 | 1 | 0 | 0 | 1 | 1 | 1 |
-| Règle centrale simple | 2 | 3 | 2 | 2 | 2 | 3 | 3 | 3 | 1 | 2 | 2 | 2 | 3 | 1 |
-| Combinatoire forte | 3 | 1 | 2 | 1 | 1 | 2 | 3 | 2 | 0 | 1 | 0 | 1 | 1 | 3 |
-| Incitation à se séparer | 1 | 1 | 1 | 1 | 2 | 2 | 0 | 0 | 3 | 0 | 3 | 1 | 0 | 2 |
-| Progression persistante | 0 | 0 | 1 | 1 | 2 | 0 | 2 | 0 | 3 | 0 | 1 | 1 | 0 | 1 |
-| Jouets / outils | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 2 | 2 | 1 | 3 | 2 | 1 | 2 |
+| Economy / upgrades | 2 | 1 | 2 | 1 | 1 | 0 | 2 | 1 | 3 | 0 | 0 | 1 | 0 | 2 |
+| Time pressure | 3 | 0 | 2 | 2 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 3 | 0 | 1 |
+| Procedural generation | 3 | 2 | 3 | 2 | 2 | 1 | 2 | 1 | 0 | 0 | 1 | 1 | 1 | 1 |
+| Permadeath / loss | 3 | 2 | 2 | 2 | 2 | 1 | 2 | 2 | 1 | 2 | 0 | 1 | 2 | 3 |
+| Detection / stealth | 1 | 0 | 1 | 0 | 2 | 1 | 0 | 0 | 2 | 0 | 0 | 0 | 0 | 3 |
+| NPC / AI threat | 3 | 1 | 3 | 2 | 3 | 0 | 0 | 1 | 2 | 1 | 1 | 1 | 1 | 3 |
+| Readable job role | 1 | 0 | 1 | 0 | 2 | 2 | 0 | 1 | 3 | 0 | 0 | 3 | 0 | 2 |
+| Environment manipulation | 1 | 2 | 3 | 1 | 1 | 1 | 0 | 1 | 2 | 1 | 1 | 2 | 2 | 2 |
+| Verticality / platforming | 1 | 3 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 3 | 1 | 0 | 2 | 0 |
+| Content capture | 0 | 0 | 0 | 3 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
+| Emergent narrative | 3 | 3 | 3 | 3 | 3 | 3 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
+| Randomness / RNG | 2 | 1 | 1 | 1 | 2 | 0 | 3 | 3 | 1 | 0 | 0 | 1 | 1 | 1 |
+| Simple core rule | 2 | 3 | 2 | 2 | 2 | 3 | 3 | 3 | 1 | 2 | 2 | 2 | 3 | 1 |
+| Strong combinatorics | 3 | 1 | 2 | 1 | 1 | 2 | 3 | 2 | 0 | 1 | 0 | 1 | 1 | 3 |
+| Split-up incentive | 1 | 1 | 1 | 1 | 2 | 2 | 0 | 0 | 3 | 0 | 3 | 1 | 0 | 2 |
+| Persistent progression | 0 | 0 | 1 | 1 | 2 | 0 | 2 | 0 | 3 | 0 | 1 | 1 | 0 | 1 |
+| Toys / tools | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 2 | 2 | 1 | 3 | 2 | 1 | 2 |
 
-## Lecture
-- Lignes chaudes partout (**coopération**, **narration émergente**, **règle simple**) : tickets d'entrée, pas différenciateurs.
-- Lignes quasi vides sur des méga-hits : **capture de contenu** (seul Content Warning à 3) et **rôle-métier lisible** (fort sur Overcooked/Schedule I, absent de la vague horreur). Deux briques éprouvées ailleurs, jamais mariées au chaos coop. À retenir.
+## Reading
+- Rows hot everywhere (**cooperation**, **emergent narrative**, **simple rule**): entry tickets, not differentiators.
+- Rows nearly empty on mega-hits: **content capture** (only Content Warning at 3) and **readable job role** (strong on Overcooked/Schedule I, absent from the horror wave). Two bricks proven elsewhere, never married to co-op chaos. Worth remembering.

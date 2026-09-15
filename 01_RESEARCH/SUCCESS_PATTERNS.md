@@ -1,16 +1,16 @@
 # SUCCESS PATTERNS
 
-_Régularités extraites du corpus (pas décidées d'avance). Des principes recombinables, pas des recettes à copier._
+_Regularities extracted from the corpus (not decided in advance). Recombinable principles, not recipes to copy._
 
-- **A. Règle simple → conséquences complexes.** Noyau lisible, profondeur venue des interactions autour. Preuve : Buckshot, Balatro, Vampire Survivors.
-- **B. Coopération + information incomplète.** Le trou d'info est ce qui force la parole. Preuve : Lethal, Phasmophobia, GTFO, Among Us.
-- **C. Objectif clair + exécution imprévisible.** But trivial à énoncer, chemin qui part en vrille. Preuve : "remplis le quota", "monte en haut", "sers les plats".
-- **D. Physique × environnement.** La physique couplée au décor et à d'autres corps fabrique des situations gratuites. Preuve : PEAK, R.E.P.O., Gang Beasts, Chained Together.
-- **E. Temps limité + improvisation.** La contrainte de temps transforme la coordination calme en panique comique. Preuve : Overcooked, Content Warning.
-- **F. Rôle immédiat + comportement libre.** Rôle compris en 1 s, liberté totale de l'incarner ou de le trahir. Preuve : Among Us, First Class Trouble, Barotrauma.
-- **G. Danger + communication.** Le risque rend chaque mot coûteux. Preuve : proximity chat de toute la vague, Keep Talking.
-- **H. Action banale → conséquence absurde.** L'écart entre l'intention et le résultat est la blague. Preuve : Untitled Goose Game, Goat Simulator, R.E.P.O.
-- **I. Peu de règles + forte combinatoire.** Densité systémique avant quantité de contenu. Idéal 2 personnes. Preuve : Balatro, Super Auto Pets, Luck be a Landlord.
-- **J. Le clip comme output du système.** La partie produit spontanément l'objet viral. Le plus récent et le moins exploité. Preuve : Content Warning (explicite), Among Us, PEAK.
+- **A. Simple rule, complex consequences.** A readable core, depth coming from the surrounding interactions. Proof: Buckshot, Balatro, Vampire Survivors.
+- **B. Cooperation + incomplete information.** The information gap is what forces talking. Proof: Lethal, Phasmophobia, GTFO, Among Us.
+- **C. Clear objective + unpredictable execution.** Trivial to state, the path always goes sideways. Proof: "fill the quota", "climb to the top", "serve the plates".
+- **D. Physics x environment.** Physics coupled with a set and other bodies manufactures free situations. Proof: PEAK, R.E.P.O., Gang Beasts, Chained Together.
+- **E. Time limit + improvisation.** A time constraint turns calm coordination into comedic panic. Proof: Overcooked, Content Warning.
+- **F. Immediate role + free behavior.** Role understood in 1 s, freedom to embody or betray it. Proof: Among Us, First Class Trouble, Barotrauma.
+- **G. Danger + communication.** Risk makes every word costly. Proof: proximity chat across the wave, Keep Talking.
+- **H. Mundane action, absurd consequence.** The gap between intent and result is the joke. Proof: Untitled Goose Game, Goat Simulator, R.E.P.O.
+- **I. Few rules + strong combinatorics.** Systemic density over content quantity. Ideal for two people. Proof: Balatro, Super Auto Pets, Luck be a Landlord.
+- **J. The clip as an output of the system.** The match spontaneously produces the viral object. The newest and least exploited. Proof: Content Warning (explicit), Among Us, PEAK.
 
-Thèse causale et classement des propriétés : `WHITE_SPACES.md`.
+Causal thesis and ranking of properties: `WHITE_SPACES.md`.

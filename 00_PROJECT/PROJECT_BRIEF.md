@@ -1,21 +1,21 @@
 # PROJECT BRIEF
 
-_Une page. Le jeu, l'équipe, l'objectif, le contexte._
+_One page. The game, the team, the objective, the context._
 
-## Le jeu
-GAME CONCEPT : **TBD** (volontaire). Genre visé : coop/social, chaotique, viral, PC/Steam. Petit périmètre, forte densité systémique.
+## The game
+GAME CONCEPT: **TBD** (deliberate). Target genre: coop/social, chaotic, viral, PC/Steam. Small scope, high systemic density.
 
-## L'équipe
-- **Miche1-Pierre** (Pierre) : dev, ingénieur logiciel en pivot.
-- **Spykernv** (Jonathan Naal) : partenaire de dev.
+## The team
+- **Miche1-Pierre** (Pierre): dev, software engineer in transition.
+- **Spykernv** (Jonathan Naal): dev partner.
 
-Deux personnes. Contrainte structurante : prototype rapide, peu de contenu, systèmes réutilisables, faible dépendance à un backend.
+Two people. Structural constraint: fast prototyping, little content, reusable systems, low backend dependency.
 
-## L'objectif
-Trouver, via la méthode (recherche → design → proto → playtest), une combinaison de mécaniques qui a sa propre raison d'exister, et la construire jusqu'à Steam. Pas un clone de Lethal Company, R.E.P.O. ou Among Us.
+## The objective
+Through the method (research, design, prototype, playtest), find a combination of mechanics that has its own reason to exist, and build it to Steam. Not a clone of Lethal Company, R.E.P.O. or Among Us.
 
-## Le contexte
-Recherche et benchmark terminés (`01_RESEARCH/`, whiteboard "Atlas Coop Viral"). Cinq concepts candidats identifiés. Phase actuelle : choix du concept, puis greybox.
+## The context
+Research and benchmark done (`01_RESEARCH/`, "Atlas Coop Viral" whiteboard). Five candidate concepts identified. Current phase: choosing the concept, then greybox.
 
-## Ce qui compte
-La vitesse d'apprentissage. Un moment fort jouable et partageable, obtenu en cubes gris, avant tout investissement visuel.
+## What matters
+Learning speed. One strong, shareable moment, playable in grey boxes, before any visual investment.

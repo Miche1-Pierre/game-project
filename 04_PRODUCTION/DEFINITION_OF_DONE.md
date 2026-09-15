@@ -1,18 +1,18 @@
 # DEFINITION OF DONE
 
-_Une tâche n'est done que si..._
+_A task is done only if..._
 
-## Greybox / mécanique
-- [ ] Jouable en cubes gris
-- [ ] Core loop tourne sans blocage
-- [ ] Zéro erreur dans la console Unity
-- [ ] Testée à 2 (hot-seat ou 2 PC)
-- [ ] Une observation notée dans `playtests/`
-- [ ] Décision KEEP / MODIFY / REMOVE écrite
+## Greybox / mechanic
+- [ ] Playable in grey boxes
+- [ ] Core loop runs without blocking
+- [ ] Zero errors in the Unity console
+- [ ] Tested with two (hot-seat or two PCs)
+- [ ] One observation logged in `playtests/`
+- [ ] KEEP / MODIFY / REMOVE decision written
 
 ## Code
-- [ ] Simple et systémique plutôt que spécialisé
-- [ ] Pas de dette cachée non documentée
-- [ ] Document de design concerné à jour
+- [ ] Simple and systemic rather than specialized
+- [ ] No hidden undocumented debt
+- [ ] Relevant design doc up to date
 
-_Statut : baseline._
+_Status: baseline._

@@ -1,18 +1,18 @@
 # STEAM STRATEGY
 
-_Distribution et jalons Steam. Décider à quel moment chaque étape intervient._
+_Distribution and Steam milestones. Decide when each step happens._
 
-## Entonnoir
-Prototype local → playtest privé → Steam Playtest → page Steam publique → wishlists → release.
+## Funnel
+Local prototype -> private playtest -> Steam Playtest -> public Steam page -> wishlists -> release.
 
-## Faits (Steamworks, sept. 2026)
-- Steam Direct : 100 $ par application, récupérables au-delà de 1 000 $ de revenu brut ajusté.
-- Steam Playtest : AppID séparé, associé au jeu principal, accès contrôlé, sans perturber les reviews ni la page principale. Idéal pour nos tests publics.
+## Facts (Steamworks, Sept. 2026)
+- Steam Direct: $100 per application, recoverable past $1,000 of adjusted gross revenue.
+- Steam Playtest: a separate AppID, linked to the main game, access-controlled, without disturbing reviews or the main page. Ideal for our public tests.
 
-## À décider
-- Quand créer l'AppID (après validation du core).
-- Quand ouvrir la page Steam (assez tôt pour les wishlists, mais avec un hook clair).
-- Le clip fait le marketing : la stratégie dépend de la capacité du jeu à générer des clips (voir `10_MARKETING/CLIP_STRATEGY.md`).
+## To decide
+- When to create the AppID (after the core is validated).
+- When to open the Steam page (early enough for wishlists, but with a clear hook).
+- The clip is the marketing: the strategy depends on the game's ability to generate clips (see `10_MARKETING/CLIP_STRATEGY.md`).
 
-## Règle
-Rien sur Steam avant que le core soit validé en greybox.
+## Rule
+Nothing on Steam before the core is validated in greybox.

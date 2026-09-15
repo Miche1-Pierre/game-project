@@ -1,17 +1,17 @@
 # NETWORK ARCHITECTURE
 
-_Décision différée : on ne choisit pas le netcode avant d'avoir figé le gameplay et le nombre de joueurs (section 24)._
+_Deferred decision: we do not choose the netcode before freezing the gameplay and the player count (see `00_PROJECT/ROADMAP.md`)._
 
-## Piste par défaut
-Steam Networking (P2P relayé via Steam Datagram Relay), host/client, 4 joueurs pour commencer. Évite une infra serveur au départ.
+## Default direction
+Steam Networking (P2P relayed via Steam Datagram Relay), host/client, four players to start. Avoids building server infrastructure at the outset.
 
-## À trancher après le concept (créer un ADR)
-- P2P vs serveur autoritaire
-- Nombre de joueurs cible
-- Autorité (host) et déconnexions
-- Voix (proximity) intégrée ou tierce
+## To settle after the concept (write an ADR)
+- P2P vs authoritative server
+- Target player count
+- Authority (host) and disconnects
+- Voice (proximity) built-in or third-party
 
 ## Greybox
-Testable en hot-seat ou 2 PC, sans netcode définitif.
+Testable in hot-seat or two PCs, without final netcode.
 
-_Statut : différé, piste notée._
+_Status: deferred, direction noted._

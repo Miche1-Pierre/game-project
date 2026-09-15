@@ -1,24 +1,24 @@
 # ROADMAP
 
-_Ordre de production non négociable (section 24). Ne jamais faire l'inverse._
+_Non-negotiable production order. Never do the reverse._
 
-1. Mécanique
+1. Mechanic
 2. Interaction
-3. Conséquence
-4. Boucle
-5. Multijoueur
-6. **Validation (porte)** : les 8 tests
-7. Contenu
+3. Consequence
+4. Loop
+5. Multiplayer
+6. **Validation (gate):** the 8 tests
+7. Content
 8. Art
 9. Audio
-10. **Polish (porte)** : amplifier un hook existant, jamais en fabriquer un
+10. **Polish (gate):** amplify an existing hook, never manufacture one
 11. Steam / launch
 
-## Jalons
-- **M0 (maintenant)** : recherche + repository de décision. FAIT.
-- **M1** : concept choisi + spec du greybox.
-- **M2** : greybox jouable, testé à 2, décision go / no-go.
-- **M3** : core verrouillé, la production visuelle démarre.
-- **M4** : Steam Playtest.
-- **M5** : page Steam publique + wishlists.
-- **M6** : release.
+## Timeline (aggressive target, from OBJECTIVES)
+- **M0 (now):** research + decision repository. DONE.
+- **M1:** concept chosen + greybox spec.
+- **M2 (~1 week):** playable multiplayer greybox, tested by two, go/no-go. One question: is it fun?
+- **M3 (~2 weeks):** sortable build (stable core, playable multiplayer, enough content/replayability, appropriate visuals, audio, basic UI, no critical blockers, working build pipeline).
+- **M4 (~1 month after M3):** Steam release. That month covers Steam setup, store page, trailer, capsules, marketing, creator outreach, playtesting, bug fixing, performance, polish, wishlists.
+
+The timeline is an aggressive target, not a reason to ship a broken game.

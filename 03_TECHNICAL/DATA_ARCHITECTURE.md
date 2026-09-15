@@ -1,7 +1,7 @@
 # DATA ARCHITECTURE
 
-_Technique : comment on le construit._
+_Technical: how we build it._
 
-> À remplir. Règles de travail : `/CLAUDE.md`. État courant : `/00_PROJECT/PROJECT_STATE.md`.
+> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
 
-_Statut : vide (scaffold)._
+_Status: empty (scaffold)._

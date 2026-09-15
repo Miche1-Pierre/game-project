@@ -1,5 +1,5 @@
-# Objectifs du playtest
+# Playtest objectives
 
-## Hypothèse testée
-## Question à laquelle on veut répondre
-## Critère de réussite
+## Hypothesis tested
+## Question to answer
+## Success criterion

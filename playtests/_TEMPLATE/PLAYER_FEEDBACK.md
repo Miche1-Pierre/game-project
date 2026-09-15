@@ -1,3 +1,3 @@
-# Feedback joueurs
+# Player feedback
 
-_Verbatim. Séparer ce qu'ils DISENT de ce qu'ils FONT._
+_Verbatim. Separate what they SAY from what they DO._

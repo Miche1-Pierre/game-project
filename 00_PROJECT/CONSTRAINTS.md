@@ -1,18 +1,21 @@
 # CONSTRAINTS
 
-## Équipe
-2 personnes (Miche1-Pierre, Spykernv). Temps limité.
+## Team
+2 people (Miche1-Pierre, Spykernv). Limited time.
+
+## Time budget
+Initial sprint of roughly two weeks near full-time: ~5 h/day, ~70 h per developer, ~140 combined human hours, AI-accelerated. This is a hard filter: the concept must be greyboxable within about a week. See `00_PROJECT/OBJECTIVES.md`.
 
 ## Production
-- Prototype très rapide, coût faible, production courte.
-- Peu de contenu, systèmes réutilisables.
-- Faible dépendance à un backend.
-- Génération 3D IA + Blender seulement APRÈS validation du design.
+- Very fast prototype, low cost, short production.
+- Little content, reusable systems.
+- Low backend dependency.
+- AI 3D generation + Blender only AFTER the design is validated.
 
-## Technique
+## Technical
 - Unity 6, C#, Unity MCP + Claude Code.
-- Netcode léger (Steam P2P / relay), 4 joueurs pour commencer.
-- Cible PC / Steam.
+- Light netcode (Steam P2P / relay), 4 players to start.
+- Target PC / Steam.
 
-## Conséquence
-Une idée excellente mais nécessitant 18 mois de contenu est mauvaise pour nous. Une idée qui devient amusante avec 1 map + 20 objets + 5 systèmes est potentiellement excellente.
+## Consequence
+An excellent idea that needs 18 months of content is bad for us. An idea that becomes fun with 1 map + 20 objects + 5 systems is potentially excellent.

@@ -1,16 +1,16 @@
 # SCOPE
 
-## Dans le scope (MVP / greybox)
-- 1 concept, 1 mécanique centrale validée en cubes gris.
-- 1 map, une poignée d'objets, quelques systèmes.
-- Multijoueur minimal (hot-seat ou 2 PC, puis Steam P2P).
-- Boucle jouable, testable à 2.
+## In scope (MVP / greybox)
+- 1 concept, 1 core mechanic validated in grey boxes.
+- 1 map, a handful of objects, a few systems.
+- Minimal multiplayer (hot-seat or 2 PCs, then Steam P2P).
+- A playable loop, testable by two.
 
-## Hors scope pour l'instant
-- Art définitif, animations sophistiquées, lore, menus définitifs.
-- Netcode avancé (host migration, serveur autoritaire).
-- Backend, analytics, monétisation.
-- Contenu volumineux (multi-maps, campagne).
+## Out of scope for now
+- Final art, sophisticated animation, lore, final menus.
+- Advanced netcode (host migration, authoritative server).
+- Backend, analytics, monetization.
+- Large content (multi-map, campaign).
 
 ## Anti-scope
-Tout ce qui augmente le besoin de contenu fait main avant que le fun soit prouvé. Voir `04_PRODUCTION/REJECTED.md`.
+Anything that grows the need for hand-made content before the fun is proven. See `04_PRODUCTION/REJECTED.md`.

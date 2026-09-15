@@ -1,5 +1,5 @@
-# Résultat
+# Result
 
-## Observé (faits, pas opinions)
-## Ce qui a surpris
-## Données / captures
+## Observed (facts, not opinions)
+## What surprised us
+## Data / captures

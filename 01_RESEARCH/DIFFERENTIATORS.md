@@ -1,17 +1,17 @@
 # DIFFERENTIATORS
 
-_Ce qui sépare des jeux quasi identiques (coop + horreur + proximity). Chaque gagnant tient en UN verbe fort. Aucun ne dit "et aussi"._
+_What separates near-identical games (co-op + horror + proximity). Each winner fits in ONE strong verb. None says "and also"._
 
-| Jeu | Verbe | En une phrase |
+| Game | Verb | In one sentence |
 |---|---|---|
-| Lethal Company | **EXTRAIRE** | Quota + expédition dans le noir + séparation forcée + danger sonore. |
-| PEAK | **GRIMPER** | L'escalade physique coopérative où chaque prise ratée devient une chute collective. |
-| R.E.P.O. | **PORTER** | Récupérer des objets fragiles à la physique traître, ensemble, sans les casser. |
-| Content Warning | **FILMER** | La caméra est l'arme et le but : filmer le danger pour faire des vues. |
-| Among Us | **ACCUSER** | Identité cachée + vote : le débat social EST le gameplay. |
-| Chained Together | **ENCHAÎNER** | Une chaîne physique permanente : ta liberté dépend de l'autre. |
-| Buckshot Roulette | **PARIER** | Une décision probabiliste ultra-compacte, densifiée par quelques objets. |
-| Schedule I | **ENTREPRENDRE** | Une activité illégale concrète qui devient un empire à automatiser. |
-| Big Walk | **PARLER** | La communication elle-même est le jeu ; les outils de com peuvent tomber en panne. |
+| Lethal Company | **EXTRACT** | Quota + expedition in the dark + forced separation + sound-based danger. |
+| PEAK | **CLIMB** | Cooperative physical climbing where every missed grip becomes a collective fall. |
+| R.E.P.O. | **CARRY** | Recover fragile, treacherous-physics objects together without breaking them. |
+| Content Warning | **FILM** | The camera is the weapon and the goal: film the danger to get views. |
+| Among Us | **ACCUSE** | Hidden identity + vote: the social debate IS the gameplay. |
+| Chained Together | **CHAIN** | A permanent physical chain: your freedom depends on the other. |
+| Buckshot Roulette | **BET** | An ultra-compact probabilistic decision, densified by a few items. |
+| Schedule I | **RUN A BUSINESS** | A concrete illegal activity that becomes an empire to automate. |
+| Big Walk | **TALK** | Communication itself is the game; the comms tools can fail. |
 
-**Test pour NOTRE concept :** un verbe, une image mentale. "Saboter" est un bon candidat, à condition d'être **visible** par les autres joueurs et par le spectateur.
+**Test for OUR concept:** one verb, one mental image. "Sabotage" is a good candidate, provided it is **visible** to the other players and to the spectator.

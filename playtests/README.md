@@ -1,5 +1,5 @@
 # playtests/
 
-_Observation avant opinion. « J'aime bien » ne vaut rien. Une séquence spontanée (détourner un PNJ, voler, cacher, prévenir son pote) vaut de l'or._
+_Observation over opinion. "I like it" is worthless. A spontaneous sequence (distract an NPC, steal, hide, warn your friend) is gold._
 
-Copier `_TEMPLATE/` en `PLAYTEST_00X/` pour chaque session.
+Copy `_TEMPLATE/` to `PLAYTEST_00X/` for each session.

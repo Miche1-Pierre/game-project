@@ -1,80 +1,81 @@
-# CLAUDE.md, constitution du projet
+# CLAUDE.md, project constitution
 
-> Agent : lis ce fichier en entier, puis [`00_PROJECT/PROJECT_STATE.md`](00_PROJECT/PROJECT_STATE.md), avant toute action.
+> Agent: read this file fully, then [`00_PROJECT/PROJECT_STATE.md`](00_PROJECT/PROJECT_STATE.md), before any action.
 
 ## 1. PROJECT IDENTITY
-Jeu indé coop/social, PC/Steam, équipe de 2 (Miche1-Pierre + Spykernv). Concept : TBD (voir `02_GAME_DESIGN/GAME_CONCEPT.md`). Ce dépôt est le repository de décision ; `UnityProject/` n'en est qu'une partie.
+Indie coop/social game, PC/Steam, team of 2 (Miche1-Pierre + Spykernv). Concept: TBD (see `02_GAME_DESIGN/GAME_CONCEPT.md`). This repository is the decision repository; `UnityProject/` is only one part.
 
 ## 2. CURRENT PROJECT STATUS
-Phase : sélection du concept. Rien n'est construit dans Unity, par décision. Source de vérité : `00_PROJECT/PROJECT_STATE.md`, à lire et à tenir à jour.
+Phase: concept selection. Nothing is built in Unity, by decision. Source of truth: `00_PROJECT/PROJECT_STATE.md`, read it and keep it updated.
 
 ## 3. DEVELOPMENT PHILOSOPHY
-- On optimise la vitesse d'apprentissage avant la vitesse de production.
-- Greybox avant art. Si c'est nul en cubes gris, l'art ne le sauvera pas.
-- Systèmes réutilisables avant features spécialisées.
-- Le concept émerge de la recherche, pas l'inverse.
+- Optimize for learning speed before development volume.
+- Greybox before art. If it is not fun in grey boxes, art will not save it.
+- Reusable systems before specialized features.
+- The concept emerges from research, not the other way around.
 
 ## 4. GAME DESIGN PRINCIPLES
-- Ne jamais ajouter une feature parce qu'elle semble intéressante. Vérifier son objectif et son impact sur le core loop.
-- Toute nouvelle mécanique doit expliquer sa contribution au core loop.
-- Échec amusant plutôt que punition frustrante.
-- Viser la friction sociale lisible par un spectateur en moins de 10 secondes (thèse du benchmark, `01_RESEARCH/`).
+- Never add a feature just because it seems interesting. Check its purpose and its impact on the core loop.
+- Every new mechanic must explain its contribution to the core loop.
+- Funny failure over frustrating punishment.
+- Aim for social friction that a spectator understands in under 10 seconds (benchmark thesis, `01_RESEARCH/`).
+- Streamer and clip potential is a **property** of the design, not its **goal**. The game must be fun with nobody recording. Never optimize for producing clips at the expense of a good game.
 
 ## 5. TECHNICAL PRINCIPLES
-- Simple et systémique plutôt que complexe et spécialisé.
-- Pas de backend ni d'infra sans nécessité explicitement documentée.
-- Pas d'optimisation prématurée. Mesurer avant.
+- Simple and systemic over complex and specialized.
+- No backend or infrastructure without an explicitly documented need.
+- No premature optimization. Measure first.
 
 ## 6. UNITY RULES
-- Unity 6 (6000.6.0f1), URP. Voir `03_TECHNICAL/UNITY_SETUP.md`.
-- Piloter l'éditeur via le MCP Unity (`03_TECHNICAL/MCP_WORKFLOW.md`).
-- Après tout changement de gameplay : inspecter la scène et lire la console (zéro erreur).
+- Unity 6 (6000.6.0f1), URP. See `03_TECHNICAL/UNITY_SETUP.md`.
+- Drive the editor through the Unity MCP (`03_TECHNICAL/MCP_WORKFLOW.md`).
+- After any gameplay change: inspect the scene and read the console (zero errors).
 
 ## 7. C# RULES
-- Conventions C#/Unity standard. Noms clairs, petites classes, composition avant héritage.
-- Définir les frontières d'architecture dans les docs avant de créer des classes. Ne pas générer 150 classes d'avance : le code naît quand le prototype en a besoin.
+- Standard C#/Unity conventions. Clear names, small classes, composition over inheritance.
+- Define architecture boundaries in the docs before creating classes. Do not generate 150 classes upfront: code is born when the prototype needs it.
 
 ## 8. MCP WORKFLOW
-Boucle : prompt → code → Unity → test → observation → correction. Détail : `03_TECHNICAL/MCP_WORKFLOW.md`.
+Loop: prompt, code, Unity, test, observation, correction. Detail: `03_TECHNICAL/MCP_WORKFLOW.md`.
 
 ## 9. GIT WORKFLOW
-- Branches courtes, commits atomiques, messages clairs.
-- Commit et push seulement sur demande explicite.
-- Ne jamais committer `UnityProject/Library`, `Temp`, `Logs` (voir `.gitignore`).
+- Short branches, atomic commits, clear messages.
+- Commit and push only on explicit request.
+- Never commit `UnityProject/Library`, `Temp`, `Logs` (see `.gitignore`).
 
 ## 10. TESTING RULES
-- Après un changement de gameplay : playtest greybox et vérification des erreurs Unity.
-- Bugs amusants vs destructeurs : voir `11_TESTING/BUG_POLICY.md`.
+- After a gameplay change: greybox playtest and Unity error check.
+- Funny vs destructive bugs: see `11_TESTING/BUG_POLICY.md`.
 
 ## 11. PERFORMANCE RULES
-Cible 60 fps en greybox sur nos machines. Profiler avant d'optimiser.
+Target 60 fps in greybox on our machines. Profile before optimizing.
 
 ## 12. MULTIPLAYER RULES
-Pas de netcode définitif avant d'avoir figé le gameplay et le nombre de joueurs. Greybox en hot-seat ou local. Voir `07_MULTIPLAYER/`.
+No final netcode before the gameplay and player count are frozen. Greybox in hot-seat or local. See `07_MULTIPLAYER/`.
 
 ## 13. ASSET RULES
-Pas d'asset définitif tant que le système concerné n'est pas validé. Pipeline et statuts : `05_ART/ASSET_STATUS.md`.
+No final asset until the relevant system is validated. Pipeline and statuses: `05_ART/ASSET_STATUS.md`.
 
 ## 14. AI USAGE RULES
-IA 3D (génération, Blender) pour accélérer un contenu déjà décidé, jamais pour décider du contenu.
+AI 3D (generation, Blender) to accelerate already-decided content, never to decide the content.
 
 ## 15. SCOPE RULES
-- Toute feature qui augmente significativement le scope : la signaler, ne pas l'implémenter en douce.
-- Idées écartées : les écrire dans `04_PRODUCTION/REJECTED.md` pour ne pas les réinventer.
+- Any feature that significantly grows scope: flag it, do not implement it quietly.
+- Discarded ideas: write them in `04_PRODUCTION/REJECTED.md` so they are not reinvented.
 
 ## 16. DECISION RULES
-- Avant une modification importante, lire le(s) document(s) de design concerné(s).
-- Toute décision structurante devient un ADR dans `decisions/`.
-- Si une demande implique une décision de game design non résolue, la signaler au lieu de trancher seul.
+- Before an important change, read the relevant design doc(s).
+- Every structural decision becomes an ADR in `decisions/`.
+- If a request implies an unresolved game-design decision, flag it instead of deciding alone.
 
 ## 17. CURRENT PRIORITIES
-1. Choisir le concept. 2. Écrire la spec du greybox. 3. Rien d'autre.
+1. Choose the concept. 2. Write the greybox spec. 3. Nothing else.
 
 ## 18. DO NOT DO
-- Ne pas créer le projet Unity tant que la spec n'est pas prête.
-- Ne pas produire d'assets définitifs.
-- Ne pas transformer une hypothèse en exigence.
-- Ne pas créer d'infrastructure sans besoin documenté.
+- Do not create the Unity project until the spec is ready.
+- Do not produce final assets.
+- Do not turn a hypothesis into a requirement.
+- Do not create infrastructure without a documented need.
 
-## Style d'écriture
-Français. Pas de tirets cadratins (« — » ou « – ») : utiliser une virgule, une parenthèse ou deux-points. Concision.
+## Writing style
+Docs are in English. No em dashes: use a comma, parenthesis or colon. Concision.

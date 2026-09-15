@@ -1,6 +1,6 @@
 # experiments/
 
-_Mémoire expérimentale du jeu. Une hypothèse, un test, un résultat, une décision._
+_The game''s experimental memory. One hypothesis, one test, one result, one decision._
 
-Copier `_TEMPLATE/` en `EXP-00X-nom/` pour chaque expérimentation.
-Flux : `hypothesis.md` -> `implementation.md` -> `result.md` -> `decision.md` (KEEP / MODIFY / REMOVE).
+Copy `_TEMPLATE/` to `EXP-00X-name/` for each experiment.
+Flow: `hypothesis.md` -> `implementation.md` -> `result.md` -> `decision.md` (KEEP / MODIFY / REMOVE).
