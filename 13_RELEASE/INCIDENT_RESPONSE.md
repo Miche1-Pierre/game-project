@@ -1,7 +1,12 @@
 # INCIDENT RESPONSE
 
-_Release plan._
+_When something breaks after launch._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Plan
+- Triage: is it destructive (crash, progress loss, blocker) or cosmetic?
+- Destructive: hotfix and push a patched build fast.
+- Communicate: acknowledge on Steam / Discord, give an ETA.
+- Log the incident and add a regression check (`../11_TESTING/REGRESSION.md`).
 
-_Status: empty (scaffold)._
+## Rule
+Speed and honesty in the first days protect the launch and the reviews.

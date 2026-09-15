@@ -1,7 +1,12 @@
 # CREATOR OUTREACH
 
-_Release plan._
+_Getting the game in front of the right creators. Strategy: `../10_MARKETING/CREATOR_STRATEGY.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Steps
+- Build a list of relevant co-op creators early.
+- Offer Steam Playtest access, then launch keys.
+- Make playing with viewers frictionless.
+- Track which creators drive wishlists and sales.
 
-_Status: empty (scaffold)._
+## Rule
+Earn the first wave with a genuinely fun-to-watch game before any paid deals.

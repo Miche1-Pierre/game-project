@@ -1,7 +1,11 @@
 # SUPPORT
 
-_Release plan._
+_Helping players after launch, cheaply._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Approach
+- A simple channel (Steam discussions + Discord) for bug reports and help.
+- Known-issues list; quick patches for critical bugs (`INCIDENT_RESPONSE.md`).
+- Be present and honest in the first days; it shapes reviews.
 
-_Status: empty (scaffold)._
+## Rule
+Support is two people; keep it lightweight and prioritized by impact.
