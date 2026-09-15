@@ -1,7 +1,8 @@
 # ACHIEVEMENTS
 
-_Steam distribution._
+_Nice to have, cheap, deferred._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Position
+- Simple Steam achievements can add a little pull and are cheap to add.
+- Design them from real player behavior after the concept exists (funny moments, milestones).
+- Not a priority before launch readiness.

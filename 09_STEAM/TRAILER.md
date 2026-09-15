@@ -1,7 +1,8 @@
-# TRAILER
+# TRAILER (Steam)
 
-_Steam distribution._
+_Store trailer. Strategy: `../10_MARKETING/TRAILER_STRATEGY.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Approach
+- Short, hook first: show the funny / tense co-op moment in the first few seconds (10-second test).
+- Real gameplay, not cinematics.
+- In-house capture and edit; paid production only if the in-house result limits conversion.

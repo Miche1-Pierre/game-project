@@ -1,7 +1,9 @@
 # SCREENSHOTS
 
-_Steam distribution._
+_Show the funny / tense moments, not empty scenery._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Approach
+- Capture real gameplay moments that read in a glance (chaos, a clever play, a fail).
+- Consistent look; readable UI.
+- 5+ strong shots for the store page.
+- Reuse clip frames where they land.

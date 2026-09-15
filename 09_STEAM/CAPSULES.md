@@ -1,7 +1,11 @@
 # CAPSULES
 
-_Steam distribution._
+_Steam capsule art (the thumbnails that sell the click)._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Approach
+- Clear, readable at small size; the hook legible instantly.
+- Consistent with the game's look (`../05_ART/STYLE_GUIDE.md`).
+- Produce the several required sizes (header, small, main, library) from one strong key image.
+- In-house or AI-assisted; paid key art only if it clearly lifts conversion.
 
-_Status: empty (scaffold)._
+_Sizes and final art produced near the store-page milestone._

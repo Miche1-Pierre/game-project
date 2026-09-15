@@ -1,7 +1,8 @@
-# PRICING
+# PRICING (Steam)
 
-_Steam distribution._
+_Store-side pricing. Strategy: `../08_BUSINESS/PRICING.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Notes
+- Set the base price (target ~$8 to $15) and let Steam suggest regional prices.
+- Consider a small launch discount (common for indie co-op).
+- Price is finalized with the concept, near launch.

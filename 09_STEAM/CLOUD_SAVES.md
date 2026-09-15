@@ -1,7 +1,8 @@
 # CLOUD SAVES
 
-_Steam distribution._
+_Only if we have saves worth syncing._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Position
+- Depends on whether the game has persistent state (`../03_TECHNICAL/SAVE_SYSTEM.md`), which is likely minimal.
+- Steam Cloud is near-zero effort if we do have local saves; enable it then.
+- Not needed for a purely session-based game.
