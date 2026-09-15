@@ -1,0 +1,34 @@
+# ---- Unity (UnityProject/) ----
+UnityProject/[Ll]ibrary/
+UnityProject/[Tt]emp/
+UnityProject/[Oo]bj/
+UnityProject/[Bb]uild/
+UnityProject/[Bb]uilds/
+UnityProject/[Ll]ogs/
+UnityProject/[Uu]ser[Ss]ettings/
+UnityProject/[Mm]emoryCaptures/
+UnityProject/[Rr]ecordings/
+UnityProject/.vs/
+UnityProject/ExportedObj/
+UnityProject/*.apk
+UnityProject/*.aab
+UnityProject/*.unitypackage
+UnityProject/*.app
+UnityProject/crashlytics-build.properties
+
+# ---- Builds / artefacts ----
+/build/
+/dist/
+*.exe
+*.pdb
+
+# ---- OS / editeurs ----
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+*.swp
+
+# ---- Secrets ----
+.env
+*.local
