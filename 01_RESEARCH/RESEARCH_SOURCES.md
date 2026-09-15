@@ -1,6 +1,6 @@
 # RESEARCH SOURCES
 
-_Sources for the market numbers (`MARKET_MAP.md`, `GAME_ANALYSIS/`). Consulted September 2026. Cross-checked public estimates; keep the conservative value when sources diverge._
+_Sources for the market and development-context numbers (`MARKET_MAP.md`, `DEVELOPMENT_CONTEXT.md`, `GAME_ANALYSIS/`). Consulted September 2026. Cross-checked public estimates; keep the conservative value when sources diverge._
 
 - Lethal Company ~10 M, Game Developer: https://www.gamedeveloper.com/business/lethal-company-sold-an-estimated-10-million-copies
 - Lethal Company revenue ~$113.9 M, Push to Talk: https://www.pushtotalk.gg/p/how-lethal-company-sold-10-million-copies
@@ -10,7 +10,9 @@ _Sources for the market numbers (`MARKET_MAP.md`, `GAME_ANALYSIS/`). Consulted S
 - R.E.P.O. best-selling Steam game 2025, Insider Gaming: https://insider-gaming.com/repo-is-the-best-selling-steam-game-of-2025/
 - Content Warning 2.2 M, Game Developer: https://www.gamedeveloper.com/business/content-warning-sells-2-2-million-copies-nets-8-8m-players-in-two-months
 - Content Warning 6 M free, PC Gamer: https://www.pcgamer.com/games/horror/steam-smash-hit-content-warning-has-sold-over-700000-copies-after-giving-away-6-million-free-copies/
+- Content Warning press kit (5 devs, Seoul jam), Landfall: https://landfall.se/content-warning-press-kit
 - Phasmophobia 25 M, Gamereactor: https://www.gamereactor.eu/phasmophobia-is-now-a-25-million-seller-1567363/
+- Phasmophobia solo dev Daniel Knight, Wikipedia: https://en.wikipedia.org/wiki/Phasmophobia_(video_game)
 - Among Us, hit via Twitch, CNBC: https://www.cnbc.com/2020/10/14/how-among-us-became-a-mega-hit-thanks-to-amazon-twitch.html
 - Balatro 5 M, Game Developer: https://www.gamedeveloper.com/business/balatro-sells-5-million-copies-after-end-of-year-spike
 - Balatro "maybe 10 copies", GamesRadar: https://www.gamesradar.com/games/roguelike/solo-dev-behind-roguelike-hit-balatro-expected-to-sell-maybe-10-copies-and-go-back-to-their-it-job-but-they-went-on-to-sell-one-million-copies-instead/
@@ -20,6 +22,10 @@ _Sources for the market numbers (`MARKET_MAP.md`, `GAME_ANALYSIS/`). Consulted S
 - Schedule I 8.2 M / $126 M, GamerPulse: https://medium.com/@gamerpulse./how-schedule-1-outsold-aaa-games-and-became-a-125-million-indie-hit-5a89b5b04b66
 - Chained Together 85 k peak, Game World Observer: https://gameworldobserver.com/2024/06/25/chained-together-85k-concurrent-players-launch-steam
 - Big Walk, Steam (House House): https://store.steampowered.com/app/1478500/Big_Walk/
+- Meccha Chameleon, Wikipedia: https://en.wikipedia.org/wiki/Meccha_Chameleon
+- Meccha Chameleon, Steam: https://store.steampowered.com/app/4704690/MECCHA_CHAMELEON/
+- Megabonk, Wikipedia: https://en.wikipedia.org/wiki/Megabonk
+- Megabonk 1 M in 2 weeks, GamesRadar: https://www.gamesradar.com/games/roguelike/out-of-nowhere-roguelike-hit-megabonk-has-sold-1-million-copies-in-2-weeks-solo-creator-says-ill-be-eating-spaghetti-with-extra-sauce-tonight/
 - Proximity chat design, Dot Esports: https://dotesports.com/indies/news/best-horror-scary-games-proximity-chat
 - Unity plugin for Claude Code (9 Sept. 2026): https://unity.com/blog/unity-plugin-for-claude-code
 - Steamworks networking (SDR / P2P relay): https://partner.steamgames.com/doc/features/multiplayer/networking
