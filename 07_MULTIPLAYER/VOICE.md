@@ -1,7 +1,10 @@
-# VOICE
+# VOICE (networking)
 
-_Networking and synchronization._
+_The networking side of proximity voice. Audio side: `../06_AUDIO/VOICE.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Approach
+- If voice is a mechanic: Steam voice API or a proven package, positional.
+- No custom voice servers; route peer to peer or via Steam.
+- Distance attenuation and occlusion handled with the audio system.
 
-_Status: empty (scaffold)._
+_Only built if the concept makes voice a mechanic._

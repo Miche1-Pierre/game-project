@@ -1,7 +1,9 @@
-# PERFORMANCE
+# PERFORMANCE (networking)
 
-_Networking and synchronization._
+_Keeping the netcode cheap. General perf: `../03_TECHNICAL/PERFORMANCE.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Guidelines
+- Sync the minimum state at the lowest acceptable rate; interpolate.
+- Avoid per-frame full-state sends; use deltas and events.
+- Bound synced object counts (`OBJECT_SYNC.md`).
+- Test under simulated latency and loss (`NETWORK_TESTING.md`).

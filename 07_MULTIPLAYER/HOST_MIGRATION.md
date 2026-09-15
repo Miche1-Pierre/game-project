@@ -1,7 +1,10 @@
 # HOST MIGRATION
 
-_Networking and synchronization._
+_Optional. Probably out of scope for the first release._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Position
+- Host migration is complex; most small co-op games skip it initially.
+- Default: if the host leaves, the session ends cleanly and players return to menu.
+- Revisit only if playtests show host drops are a real pain point.
 
-_Status: empty (scaffold)._
+_Status: deferred, likely out of scope for launch._

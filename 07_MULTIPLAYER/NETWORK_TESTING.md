@@ -1,7 +1,12 @@
 # NETWORK TESTING
 
-_Networking and synchronization._
+_How we test the netcode. Overlaps `../11_TESTING/NETWORK_TESTS.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Steps
+- Local two-instance, then two PCs on LAN, then Steam P2P.
+- Simulate latency and packet loss.
+- Test join, leave, rejoin, and host drop.
+- Check sync of positions, objects, score, and any hidden state.
 
-_Status: empty (scaffold)._
+## Rule
+Test multiplayer early, not at the end (risk R2).
