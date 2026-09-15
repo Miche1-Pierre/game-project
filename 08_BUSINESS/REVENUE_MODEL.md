@@ -1,7 +1,15 @@
 # REVENUE MODEL
 
-_Business model, costs, agreements._
+_Where money comes from and how it is split._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Sources
+- Steam sales (primary), worldwide.
+- Possible later: other PC stores, console ports, paid DLC (only if it succeeds).
 
-_Status: empty (scaffold)._
+## Split
+- **50/50** Pierre / Jonathan on distributable profit (`TEAM_AGREEMENT.md`), pending final agreement.
+- Distributable profit = revenue - platform fees - refunds - taxes - directly attributable project expenses.
+
+## Notes
+- Steam takes ~30%. Taxes handled per the eventual EU entity; selling worldwide.
+- No revenue promised to third parties before the team agreement is signed.
