@@ -1,10 +1,10 @@
 # PROJECT STATE
 
-_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-15._
+_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-16._
 
 **PHASE:** Concept selection
 
-**CONCEPT:** TBD (5 candidates, see `02_GAME_DESIGN/GAME_CONCEPT.md`)
+**CONCEPT:** TBD (5 candidates + open, see `../02_GAME_DESIGN/GAME_CONCEPT.md`)
 **CORE LOOP:** TBD
 
 **CURRENT HYPOTHESES:**
@@ -21,12 +21,12 @@ _Living dashboard. The agent reads it at start and updates it at end of session.
 
 **BLOCKERS:** none
 
-**SCOPE:** research done, decision structure in place; guided doc pass done (objectives, vision, questions, risks, team, cost, art)
-**TECH:** Unity 6.6.0f1 + URP + MCP ready to wire, project not created
-**BUSINESS:** team agreement and costs drafted (Pierre's positions, pending Jonathan); see `08_BUSINESS/`
-**STEAM:** strategy set, nothing created (`09_STEAM/STEAM_STRATEGY.md`)
+**SCOPE:** research + decision structure + **all concept-independent docs filled** (technical, art, audio, production, multiplayer, business, steam, marketing, testing, analytics, release). Only `02_GAME_DESIGN` detail remains, pending the concept.
+**TECH:** Unity 6.6.0f1 + URP + MCP ready to wire; architecture, conventions and systems documented; project not created.
+**BUSINESS:** premium one-time, 50/50 (pending Jonathan); cost model set.
+**STEAM:** strategy, setup and asset specs documented; nothing created.
 
 **NEXT 3 ACTIONS:**
-1. Concept brainstorm with Spykernv (start from the mechanics learned, not "let's make the office game").
-2. Lock 1 (or 2) concept(s), then fill GAME_CONCEPT / CORE_LOOP / GAME_RULES / MECHANICS / SYSTEMS.
-3. Write GREYBOX_SPEC, then only then create Unity.
+1. Concept brainstorm with Spykernv (start from the mechanics learned, not "let's make the office game"), plus the 5 `[JONATHAN]` questions in `OPEN_QUESTIONS`.
+2. Lock 1 (or 2) concept(s), then fill `02_GAME_DESIGN` (CORE_LOOP, GAME_RULES, MECHANICS, SYSTEMS...).
+3. Write GREYBOX_SPEC, then create Unity.
