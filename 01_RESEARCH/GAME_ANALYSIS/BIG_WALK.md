@@ -1,33 +1,39 @@
 # Big Walk
 
-_Fiche corpus, template standard (`01_RESEARCH/GAME_ANALYSIS`)._
+_Corpus analysis. Numbers cross-checked, Sept. 2026 (see `../RESEARCH_SOURCES.md`)._
 
-## Identité
-- Nom : Big Walk
-- Année : 2026
-- Prix : n/d
-- Dev / équipe : House House
-- Joueurs : 2-12
-- Moteur : inconnu
-- Ventes / portée : nouveau
-- Pic CCU : n/d
-- Avis Steam : n/d
+## Identity
+2026 - price n/a - House House (Untitled Goose Game devs) - 2-12 players - engine unknown - new release - n/a. Watch closely, strong pedigree.
 
-## Hook principal (une phrase)
-Ce jeu est différent parce que : La communication elle-même est le jeu ; les outils de com peuvent tomber en panne.
+## Hook
+This game is different because: communication itself is the game, and the comms tools can fail.
 
-## Verbe signature
-**PARLER**
+## Signature verb
+**TALK.**
 
-## À compléter (analyse)
-- Fantasy : que veut être le joueur ?
-- Core loop (max 5 étapes)
-- Règle centrale unique
-- Mécanique signature (celle qu'on ne peut pas retirer)
-- Social loop : que font les joueurs entre eux ?
-- Source du rire / de la tension / de la rejouabilité
-- Source de contenu : systèmes vs contenu fait main ?
-- Différenciateur vs le reste du corpus
-- Ce qu'on en retient pour NOTRE jeu
+## Fantasy
+Hang out and get lost with friends in a big world.
 
-_Statut : identité sourcée, analyse à compléter._
+## Core loop
+Explore an open bushland, solve puzzles that require communication, stay in contact (proximity + tools), improvise when comms fail.
+
+## Central rule
+Cooperate and communicate to progress; distance and broken tools make it hard.
+
+## Signature mechanic
+Communication as the core mechanic: voice plus tools that can break, forcing creative workarounds.
+
+## Social loop
+Talk, coordinate, invent new ways to communicate when the usual ones fail.
+
+## Fun / tension / replayability
+Fun: the talking and getting lost together. Tension: separation + failing comms. Replay: exploration + player interaction.
+
+## Content: systems vs handmade
+Systemic + open world (some handmade).
+
+## Differentiator
+Communication elevated to the whole product.
+
+## What we take for our game
+Confirms the "voice as the point" property is viable and wanted. A design where talking is the core can carry a game. New title from a proven studio, worth tracking.

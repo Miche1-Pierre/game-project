@@ -15,4 +15,7 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 - **BUSINESS:** filled `TEAM_AGREEMENT` (Pierre's proposed 50/50 positions, pending team discussion, plus mandatory "developer leaving" and "project accounts" discussions) with `IP_OWNERSHIP`/`PROFIT_SHARING`/`LEGAL_ENTITY`/`TAXES` as pointers; `COST_MODEL` (comfortable envelope ~350 to 500 EUR one-time, ceiling ~750; Claude Max x5 at 108 EUR/month recurring).
 - **ART:** filled `ART_DIRECTION` and `STYLE_GUIDE` (silhouette-first, few materials, minimal rigging, cheap animation; low-poly default, not locked; Jusant / Bruno Simon as quality references).
 - **DESIGN:** neutralized `GAME_CONCEPT` so the 5 candidates stay unranked until the brainstorm.
-- **DOCS:** repo language standardizing to English.
+
+### English standardization + game analyses
+- **DOCS:** whole repository standardized to English. CLAUDE.md gained the streamer guardrail (clip potential is a property, not the goal); ROADMAP gained the M0-M4 timeline; CONSTRAINTS gained the time budget.
+- **RESEARCH:** the 14 `GAME_ANALYSIS` fiches completed (hook, signature verb, fantasy, core loop, central rule, signature mechanic, social loop, fun/tension/replayability, content model, differentiator, and the takeaway for our game).

@@ -1,33 +1,39 @@
 # R.E.P.O.
 
-_Fiche corpus, template standard (`01_RESEARCH/GAME_ANALYSIS`)._
+_Corpus analysis. Numbers cross-checked, Sept. 2026 (see `../RESEARCH_SOURCES.md`)._
 
-## Identité
-- Nom : R.E.P.O.
-- Année : 2025
-- Prix : $8
-- Dev / équipe : semiwork
-- Joueurs : 1-6
-- Moteur : Unity
-- Ventes / portée : 13 M+ est.
-- Pic CCU : 271 k
-- Avis Steam : 96% Overwhelmingly Positive
+## Identity
+2025 - $8 - semiwork - 1-6 players - Unity - 13 M+ sold (est.) - 271 k peak CCU - 96% Overwhelmingly Positive.
 
-## Hook principal (une phrase)
-Ce jeu est différent parce que : Récupérer des objets fragiles à la physique traître, ensemble, sans les casser.
+## Hook
+This game is different because: recover fragile, treacherous-physics objects together without breaking them.
 
-## Verbe signature
-**PORTER**
+## Signature verb
+**CARRY.**
 
-## À compléter (analyse)
-- Fantasy : que veut être le joueur ?
-- Core loop (max 5 étapes)
-- Règle centrale unique
-- Mécanique signature (celle qu'on ne peut pas retirer)
-- Social loop : que font les joueurs entre eux ?
-- Source du rire / de la tension / de la rejouabilité
-- Source de contenu : systèmes vs contenu fait main ?
-- Différenciateur vs le reste du corpus
-- Ce qu'on en retient pour NOTRE jeu
+## Fantasy
+Robots looting haunted places for a quota, where everything is slippery and breakable.
 
-_Statut : identité sourcée, analyse à compléter._
+## Core loop
+Explore, grab fragile valuables, haul them to extraction while physics fights you, avoid monsters, sell, upgrade, repeat.
+
+## Central rule
+Extract value intact; broken loot is lost money.
+
+## Signature mechanic
+Physics-grab handling of fragile objects: the object itself is the antagonist.
+
+## Social loop
+Coordinate carrying, blame the one who dropped it, proximity voice.
+
+## Fun / tension / replayability
+Fun: fragile-object slapstick. Tension: extraction + monsters + physics + quota. Replay: procedural + physics + upgrades.
+
+## Content: systems vs handmade
+Systemic (physics + procedural + AI), little handmade.
+
+## Differentiator
+Physical extraction of fragile loot.
+
+## What we take for our game
+Turning an object's physics into the core friction is cheap and hilarious. A light upgrade meta adds pull without heavy content.

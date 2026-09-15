@@ -1,33 +1,39 @@
 # Gang Beasts
 
-_Fiche corpus, template standard (`01_RESEARCH/GAME_ANALYSIS`)._
+_Corpus analysis. Numbers cross-checked, Sept. 2026 (see `../RESEARCH_SOURCES.md`)._
 
-## Identité
-- Nom : Gang Beasts
-- Année : 2017
-- Prix : ~$20
-- Dev / équipe : Boneloaf
-- Joueurs : 1-8
-- Moteur : Unity
-- Ventes / portée : plusieurs M
-- Pic CCU : n/d
-- Avis Steam : Very Positive
+## Identity
+2017 - ~$20 - Boneloaf - 1-8 players - Unity - several M sold - Very Positive.
 
-## Hook principal (une phrase)
-Ce jeu est différent parce que : Baston ragdoll : la physique molle est toute la blague.
+## Hook
+This game is different because: floppy-ragdoll brawling where the physics is the whole joke.
 
-## Verbe signature
-**EMPOIGNER**
+## Signature verb
+**GRAPPLE.**
 
-## À compléter (analyse)
-- Fantasy : que veut être le joueur ?
-- Core loop (max 5 étapes)
-- Règle centrale unique
-- Mécanique signature (celle qu'on ne peut pas retirer)
-- Social loop : que font les joueurs entre eux ?
-- Source du rire / de la tension / de la rejouabilité
-- Source de contenu : systèmes vs contenu fait main ?
-- Différenciateur vs le reste du corpus
-- Ce qu'on en retient pour NOTRE jeu
+## Fantasy
+Gelatinous thugs shoving each other off ledges.
 
-_Statut : identité sourcée, analyse à compléter._
+## Core loop
+Grab, shove or throw, avoid the hazard, be the last one standing.
+
+## Central rule
+Knock the others out of the arena; you are barely in control of your own body.
+
+## Signature mechanic
+Deliberately clumsy ragdoll physics.
+
+## Social loop
+PvP chaos, temporary alliances and betrayals.
+
+## Fun / tension / replayability
+Fun: the clumsy struggle. Tension: physics + hazards + PvP. Replay: physics + player chaos + arenas.
+
+## Content: systems vs handmade
+Mostly systemic (physics) + arenas.
+
+## Differentiator
+Ragdoll physics as the entire identity.
+
+## What we take for our game
+Physics-as-the-joke, and that a simple rule ("push them off") needs almost no content. The PvP branch of the physics-comedy family.

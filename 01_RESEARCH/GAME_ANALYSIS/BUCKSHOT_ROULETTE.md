@@ -1,33 +1,39 @@
 # Buckshot Roulette
 
-_Fiche corpus, template standard (`01_RESEARCH/GAME_ANALYSIS`)._
+_Corpus analysis. Numbers cross-checked, Sept. 2026 (see `../RESEARCH_SOURCES.md`)._
 
-## Identité
-- Nom : Buckshot Roulette
-- Année : 2024
-- Prix : $2.99
-- Dev / équipe : Mike Klubnika (solo)
-- Joueurs : 1
-- Moteur : inconnu
-- Ventes / portée : 8 M+
-- Pic CCU : solo
-- Avis Steam : Overwhelmingly Positive
+## Identity
+2024 (itch late 2023) - $2.99 - Mike Klubnika (solo, made in ~2 months) - 1 player (MP added later) - engine unknown - 8 M+ sold - Overwhelmingly Positive.
 
-## Hook principal (une phrase)
-Ce jeu est différent parce que : Une décision probabiliste ultra-compacte, densifiée par quelques objets.
+## Hook
+This game is different because: an ultra-compact probabilistic decision, densified by a few items.
 
-## Verbe signature
-**PARIER**
+## Signature verb
+**BET.**
 
-## À compléter (analyse)
-- Fantasy : que veut être le joueur ?
-- Core loop (max 5 étapes)
-- Règle centrale unique
-- Mécanique signature (celle qu'on ne peut pas retirer)
-- Social loop : que font les joueurs entre eux ?
-- Source du rire / de la tension / de la rejouabilité
-- Source de contenu : systèmes vs contenu fait main ?
-- Différenciateur vs le reste du corpus
-- Ce qu'on en retient pour NOTRE jeu
+## Fantasy
+Face a shotgun russian-roulette duel against a sinister dealer.
 
-_Statut : identité sourcée, analyse à compléter._
+## Core loop
+Load shells (count known), choose to shoot yourself or the dealer, use items to bend odds or information, survive the round.
+
+## Central rule
+Shoot yourself (safe if blank, extra turn) or the dealer; live or die by the odds.
+
+## Signature mechanic
+Known-odds shotgun roulette + items that bend the odds and the information.
+
+## Social loop
+None in single-player (multiplayer adds tension later), but extremely clip-able.
+
+## Fun / tension / replayability
+Fun: the gamble and the reveal. Tension: mortal odds + item mind-games. Replay: RNG + item decisions.
+
+## Content: systems vs handmade
+Purely systemic, minimal assets.
+
+## Differentiator
+A compact probabilistic decision densified by items.
+
+## What we take for our game
+Patterns A and I again. Made in ~2 months, priced at $2.99, 8 M+ sold. Proof that a single legible decision plus a few items can go viral very cheaply.

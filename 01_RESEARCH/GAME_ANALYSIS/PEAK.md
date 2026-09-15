@@ -1,33 +1,39 @@
 # PEAK
 
-_Fiche corpus, template standard (`01_RESEARCH/GAME_ANALYSIS`)._
+_Corpus analysis. Numbers cross-checked, Sept. 2026 (see `../RESEARCH_SOURCES.md`)._
 
-## Identité
-- Nom : PEAK
-- Année : 2025
-- Prix : ~$8
-- Dev / équipe : Aggro Crab × Landfall
-- Joueurs : 1-4
-- Moteur : Unity
-- Ventes / portée : 10 M
-- Pic CCU : élevé
-- Avis Steam : Overwhelmingly Positive
+## Identity
+2025 - ~$8 - Aggro Crab x Landfall - 1-4 players - Unity - 10 M sold - high peak CCU - Overwhelmingly Positive. Started as a game jam.
 
-## Hook principal (une phrase)
-Ce jeu est différent parce que : L'escalade physique coopérative où chaque prise ratée devient une chute collective.
+## Hook
+This game is different because: cooperative physical climbing where every missed grip becomes a collective fall.
 
-## Verbe signature
-**GRIMPER**
+## Signature verb
+**CLIMB.**
 
-## À compléter (analyse)
-- Fantasy : que veut être le joueur ?
-- Core loop (max 5 étapes)
-- Règle centrale unique
-- Mécanique signature (celle qu'on ne peut pas retirer)
-- Social loop : que font les joueurs entre eux ?
-- Source du rire / de la tension / de la rejouabilité
-- Source de contenu : systèmes vs contenu fait main ?
-- Différenciateur vs le reste du corpus
-- Ce qu'on en retient pour NOTRE jeu
+## Fantasy
+Hapless friends scaling a mountain together, badly.
 
-_Statut : identité sourcée, analyse à compléter._
+## Core loop
+Climb, manage stamina and gear, help or accidentally hinder each other, fall, retry.
+
+## Central rule
+Reach the top together; gravity punishes every mistake.
+
+## Signature mechanic
+Physics-based climbing with shared consequences: one person's fall can drag the others.
+
+## Social loop
+Mutual aid and accidental sabotage through physics.
+
+## Fun / tension / replayability
+Fun: pratfalls and last-second rescues. Tension: verticality + stamina + one mistake cascading. Replay: procedural mountain + physics.
+
+## Content: systems vs handmade
+Systemic (physics + procedural), tiny handmade footprint.
+
+## Differentiator
+Verticality + physical interdependence.
+
+## What we take for our game
+Physics as a situation multiplier, and interdependence that makes both helping and failing funny. Game-jam origin proves the scope can be very small.

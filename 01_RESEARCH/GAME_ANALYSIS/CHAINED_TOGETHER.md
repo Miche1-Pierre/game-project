@@ -1,33 +1,39 @@
 # Chained Together
 
-_Fiche corpus, template standard (`01_RESEARCH/GAME_ANALYSIS`)._
+_Corpus analysis. Numbers cross-checked, Sept. 2026 (see `../RESEARCH_SOURCES.md`)._
 
-## Identité
-- Nom : Chained Together
-- Année : 2024
-- Prix : ~$12
-- Dev / équipe : Anegar Games
-- Joueurs : 1-4
-- Moteur : inconnu
-- Ventes / portée : 3,4 M+ est.
-- Pic CCU : 85 k
-- Avis Steam : Very Positive
+## Identity
+2024 - ~$12 - Anegar Games - 1-4 players - engine unknown - 3.4 M+ sold (est.) - 85 k peak CCU - Very Positive.
 
-## Hook principal (une phrase)
-Ce jeu est différent parce que : Une chaîne physique permanente : ta liberté dépend de l'autre.
+## Hook
+This game is different because: a permanent physical chain, your freedom depends on the other.
 
-## Verbe signature
-**ENCHAÎNER**
+## Signature verb
+**CHAIN.**
 
-## À compléter (analyse)
-- Fantasy : que veut être le joueur ?
-- Core loop (max 5 étapes)
-- Règle centrale unique
-- Mécanique signature (celle qu'on ne peut pas retirer)
-- Social loop : que font les joueurs entre eux ?
-- Source du rire / de la tension / de la rejouabilité
-- Source de contenu : systèmes vs contenu fait main ?
-- Différenciateur vs le reste du corpus
-- Ce qu'on en retient pour NOTRE jeu
+## Fantasy
+Escape hell by climbing while literally shackled to your friends.
 
-_Statut : identité sourcée, analyse à compléter._
+## Core loop
+Climb, coordinate movement through the chain, fall together, retry.
+
+## Central rule
+You are physically chained; move in sync or drag each other down.
+
+## Signature mechanic
+A permanent physical constraint between players.
+
+## Social loop
+Forced coordination, mutual dragging, blame and laughter.
+
+## Fun / tension / replayability
+Fun: the shared drag and fall. Tension: verticality + interdependence + losing progress on a fall. Replay: skill + player chaos.
+
+## Content: systems vs handmade
+Systemic (physics) + handmade levels.
+
+## Differentiator
+A single strong constraint (the chain) as the entire identity.
+
+## What we take for our game
+One bold constraint can be the whole hook. A single physical rule generates endless social friction, and it is very cheap to prototype.

@@ -1,33 +1,39 @@
 # Balatro
 
-_Fiche corpus, template standard (`01_RESEARCH/GAME_ANALYSIS`)._
+_Corpus analysis. Numbers cross-checked, Sept. 2026 (see `../RESEARCH_SOURCES.md`)._
 
-## Identité
-- Nom : Balatro
-- Année : 2024
-- Prix : ~$15
-- Dev / équipe : LocalThunk (solo)
-- Joueurs : 1
-- Moteur : LÖVE / Lua
-- Ventes / portée : 5 M+
-- Pic CCU : solo
-- Avis Steam : Overwhelmingly Positive
+## Identity
+2024 - ~$15 - LocalThunk (solo, ~2.5 years) - 1 player - LÖVE / Lua - 5 M+ sold - solo (no CCU) - Overwhelmingly Positive. Best Indie, The Game Awards 2024.
 
-## Hook principal (une phrase)
-Ce jeu est différent parce que : Une règle de poker + des objets : profondeur énorme depuis un noyau minuscule.
+## Hook
+This game is different because: one poker rule plus items produces enormous depth from a tiny core.
 
-## Verbe signature
-**COMBINER**
+## Signature verb
+**COMBINE.**
 
-## À compléter (analyse)
-- Fantasy : que veut être le joueur ?
-- Core loop (max 5 étapes)
-- Règle centrale unique
-- Mécanique signature (celle qu'on ne peut pas retirer)
-- Social loop : que font les joueurs entre eux ?
-- Source du rire / de la tension / de la rejouabilité
-- Source de contenu : systèmes vs contenu fait main ?
-- Différenciateur vs le reste du corpus
-- Ce qu'on en retient pour NOTRE jeu
+## Fantasy
+Build a broken poker engine that snowballs out of control.
 
-_Statut : identité sourcée, analyse à compléter._
+## Core loop
+Play hands, earn chips, buy jokers and cards, build synergies, beat rising blinds, repeat.
+
+## Central rule
+Score enough chips per round using poker hands.
+
+## Signature mechanic
+Jokers that rewrite scoring: combinatorial modifiers layered on one simple rule.
+
+## Social loop
+None (solo), but "broken build" moments are highly clip-able.
+
+## Fun / tension / replayability
+Fun: the runaway combo. Tension: rising blinds + RNG. Replay: RNG + build variety.
+
+## Content: systems vs handmade
+Purely systemic: few assets, huge combinatorics.
+
+## Differentiator
+Single rule + strong combinatorics.
+
+## What we take for our game
+Patterns A and I proven at the extreme. A tiny team can get enormous depth from one rule plus modular items. Depth beats content volume. (Not multiplayer, but the design lesson transfers.)

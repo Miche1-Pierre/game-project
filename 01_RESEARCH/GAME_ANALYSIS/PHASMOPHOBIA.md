@@ -1,33 +1,39 @@
 # Phasmophobia
 
-_Fiche corpus, template standard (`01_RESEARCH/GAME_ANALYSIS`)._
+_Corpus analysis. Numbers cross-checked, Sept. 2026 (see `../RESEARCH_SOURCES.md`)._
 
-## Identité
-- Nom : Phasmophobia
-- Année : 2020
-- Prix : ~$14
-- Dev / équipe : Kinetic Games
-- Joueurs : 1-4
-- Moteur : Unity
-- Ventes / portée : 25 M+
-- Pic CCU : ~110 k
-- Avis Steam : Overwhelmingly Positive
+## Identity
+2020 - ~$14 (still Early Access) - Kinetic Games - 1-4 players - Unity - 25 M+ sold - ~110 k peak CCU - Overwhelmingly Positive.
 
-## Hook principal (une phrase)
-Ce jeu est différent parce que : Chasse au fantôme à la preuve : proximity chat, et la peur coupe la voix.
+## Hook
+This game is different because: ghost-hunting by evidence, where fear literally cuts your voice.
 
-## Verbe signature
-**ENQUÊTER**
+## Signature verb
+**INVESTIGATE.**
 
-## À compléter (analyse)
-- Fantasy : que veut être le joueur ?
-- Core loop (max 5 étapes)
-- Règle centrale unique
-- Mécanique signature (celle qu'on ne peut pas retirer)
-- Social loop : que font les joueurs entre eux ?
-- Source du rire / de la tension / de la rejouabilité
-- Source de contenu : systèmes vs contenu fait main ?
-- Différenciateur vs le reste du corpus
-- Ce qu'on en retient pour NOTRE jeu
+## Fantasy
+Amateur paranormal investigators who are in well over their heads.
 
-_Statut : identité sourcée, analyse à compléter._
+## Core loop
+Enter a haunted site, gather evidence, identify the ghost type, avoid hunts, extract, get paid, repeat.
+
+## Central rule
+Correctly identify the ghost from evidence, and survive its hunts.
+
+## Signature mechanic
+Proximity voice the ghost can hear: fear becomes a communication constraint.
+
+## Social loop
+Split up to gather evidence, panic together, warn each other over voice.
+
+## Fun / tension / replayability
+Fun: jump-scare panic. Tension: detection + hunts + incomplete information. Replay: randomized ghost type and behavior + varied maps.
+
+## Content: systems vs handmade
+Systemic ghost behaviors plus a set of handmade maps.
+
+## Differentiator
+Evidence-based deduction of a threat, plus a voice-reactive antagonist.
+
+## What we take for our game
+Incomplete-information deduction of a THREAT (not a traitor), and voice as a genuine risk. A deduction game that is not social-deduction.
