@@ -1,7 +1,7 @@
 # FUNNEL
 
-_Post-launch measurement._
+_The path from awareness to advocacy. Watch where it leaks._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+Awareness (clip / creator) -> Steam page visit -> wishlist -> purchase -> first session -> completed match -> replay -> recommend / share a clip.
 
-_Status: empty (scaffold)._
+Each stage is a place to measure and improve. For this genre, the clip-driven top and the replay-driven bottom matter most.

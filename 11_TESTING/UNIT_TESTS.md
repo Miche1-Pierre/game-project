@@ -1,7 +1,13 @@
 # UNIT TESTS
 
-_Testing, playtests, quality._
+_Kept deliberately light. We unit-test logic, not the engine._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Test
+- Pure C# rules: scoring, win/lose conditions, quota/economy math, seeded RNG determinism, state machines.
+- Tooling: Unity Test Framework (EditMode) for pure logic; PlayMode only when a system needs the runtime.
 
-_Status: empty (scaffold)._
+## Do not test
+- Visuals, animation, feel, MonoBehaviour glue, anything better judged by a playtest.
+
+## Rule
+Write a unit test when a rule is subtle enough that a silent regression would not be obvious in a playtest. Otherwise rely on playtests.

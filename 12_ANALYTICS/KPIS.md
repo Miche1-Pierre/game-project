@@ -1,7 +1,12 @@
 # KPIS
 
-_Post-launch measurement._
+_The few numbers that decide direction (see `../00_PROJECT/OPEN_QUESTIONS.md` Q21)._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+- **Replay rate:** share of sessions that start a second match.
+- **Retention:** D1 / D7 return.
+- **Median session length.**
+- **Typical group size.**
+- **Wishlist growth** (pre-launch).
+- **Store conversion:** page visits to purchases.
 
-_Status: empty (scaffold)._
+Thresholds that would trigger a strategy change are defined together with the concept.

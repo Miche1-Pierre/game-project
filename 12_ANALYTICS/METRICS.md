@@ -1,7 +1,14 @@
 # METRICS
 
-_Post-launch measurement._
+_What we would want to know, grounded in OBJECTIVES and RISKS. Implementation deferred: no analytics before the game is validated._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Core questions
+- Do players launch a second match? (replay, risk R10)
+- How long is a session?
+- What group size do people actually play at?
+- Where do players drop off?
+- Do they finish a match?
+- Wishlist growth and store conversion (commercial, risk R9).
 
-_Status: empty (scaffold)._
+## Rule
+No sophisticated analytics before validation. Start with the few numbers that answer "is it fun and does it sell".

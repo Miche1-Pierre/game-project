@@ -1,7 +1,13 @@
 # REGRESSION
 
-_Testing, playtests, quality._
+_A short manual smoke test run before every build, so old bugs do not come back._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Smoke checklist (grows over time)
+- [ ] The game launches and reaches the main scene.
+- [ ] A full match can start, play and end.
+- [ ] Multiplayer: two players can join and play a round.
+- [ ] No errors in the Unity console.
+- [ ] Known past bugs (list below) re-checked.
 
-_Status: empty (scaffold)._
+## Known bugs to re-check
+(none yet)

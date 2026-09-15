@@ -1,7 +1,12 @@
 # NETWORK TESTS
 
-_Testing, playtests, quality._
+_Deferred until we have real netcode. Approach noted so we do not improvise later._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## To test (later)
+- Simulated latency and packet loss (Unity / Steam tools).
+- Disconnect and reconnect handling.
+- Host authority and, if relevant, host migration.
+- Worst-case object / player sync load.
 
-_Status: empty (scaffold)._
+## Rule
+Only synchronize state that the gameplay actually needs. Untested sync is a liability.

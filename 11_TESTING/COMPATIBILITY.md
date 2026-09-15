@@ -1,7 +1,11 @@
 # COMPATIBILITY
 
-_Testing, playtests, quality._
+_Kept narrow on purpose._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Targets
+- Windows PC first (our platform, and Steam's largest base).
+- Mid-range hardware as the baseline; test on the lowest machine we own.
+- Controller support: nice to have, decided after the concept and input scheme.
 
-_Status: empty (scaffold)._
+## Later
+Other OSes (Mac, or Linux via Proton) only if justified by demand and effort.

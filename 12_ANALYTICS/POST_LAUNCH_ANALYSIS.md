@@ -1,7 +1,12 @@
-# POST LAUNCH ANALYSIS
+# POST-LAUNCH ANALYSIS
 
-_Post-launch measurement._
+_A structured review after launch, tied to the definition of success (`../00_PROJECT/SUCCESS_CRITERIA.md`)._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Review
+- What worked, what failed, and why (the OBJECTIVES learning goal).
+- KPIs vs expectations.
+- Which emergent situations players actually created and shared.
+- What to cut or double down on for an update.
 
-_Status: empty (scaffold)._
+## Rule
+Separate signal from noise: a few loud reviews are not the data. Look at behavior (replay, retention, refunds) first.
