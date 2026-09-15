@@ -1,7 +1,11 @@
 # CONTENT STRATEGY
 
-_Positioning and acquisition._
+_Marketing content, not game content. The game should generate most of it._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Approach
+- The game's own moments are the marketing (clips, GIFs). Capture footage continuously during dev (`../11_TESTING/PLAYTESTS.md`).
+- A steady trickle of short, legible clips beats rare big pushes.
+- Show real gameplay; the 10-second test applies to every piece.
 
-_Status: empty (scaffold)._
+## Rule
+If the game does not naturally produce shareable moments, that is a design problem, not a marketing one (risks R9, R10).

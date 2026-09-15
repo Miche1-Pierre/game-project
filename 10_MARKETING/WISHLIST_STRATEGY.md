@@ -1,7 +1,9 @@
 # WISHLIST STRATEGY
 
-_Positioning and acquisition._
+_Turn attention into wishlists before launch. Steam side: `../09_STEAM/WISHLISTS.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Approach
+- Open the Steam page as soon as it is presentable, with a clear hook.
+- Every clip and creator moment points to the wishlist.
+- Use Steam Playtest and Next Fest-style events if timing fits.
+- Track wishlist growth as a KPI and go/pivot signal (`../12_ANALYTICS/KPIS.md`).
