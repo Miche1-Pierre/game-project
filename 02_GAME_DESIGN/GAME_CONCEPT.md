@@ -1,24 +1,21 @@
 # GAME CONCEPT
 
-**CONCEPT RETENU : TBD.** Ce fichier tient les 5 candidats issus du benchmark. Le choix se fait au brainstorm (partir des mécaniques apprises, pas de "on fait le jeu du bureau"). Une fois choisi : écrire un ADR (`decisions/`), puis remplir CORE_LOOP, GAME_RULES, MECHANICS, SYSTEMS.
+**SELECTED CONCEPT: TBD.** This file holds the candidate concepts from the research. **None is decided, and none is ranked or pre-selected.** The concept is chosen at the brainstorm, starting from the mechanics we learned, not from "let's make the office game". These are candidates among others: new ideas raised at the brainstorm are equally valid.
 
-## CAND, Bureau sous surveillance (hypothèse initiale, réécrite)
-Hook : une équipe fait tourner un bureau banal ; l'un de vous a une consigne de sabotage ; les caméras, ce sont les autres joueurs.
-Move de Claude : détection par les **joueurs** (témoin, suspicion, accusation continue), pas une IA PNJ. Moins cher, plus émergent, ironie dramatique réactivée.
-Risque : moyen. Emplacement validé par les 3 cartes du design space.
+Once a concept is chosen: write an ADR in `decisions/`, then fill CORE_LOOP, GAME_RULES, MECHANICS, SYSTEMS.
 
-## OPP-1, Comédie de compétence
-Hook : un métier absurde à plusieurs où le but est d'être MAUVAIS ensemble, avec une caméra qui filme le désastre.
-Patterns : D (physique×env), E (temps), H (banal→absurde), J (clip). Risque : faible. **Le plus sûr et rapide à prototyper en premier.**
+## Candidate concepts (unordered)
+Each is a starting point for discussion, not a recommendation. Research labels in parentheses map to `01_RESEARCH/WHITE_SPACES.md` and the "Atlas Coop Viral" whiteboard.
 
-## OPP-2, Déduction par le travail
-Hook : démasquer un menteur SANS réunion ni vote, juste en observant qui bosse mal, qui ment sur ses tâches, qui était là. Risque : moyen. Le plus différenciant.
+**Office under surveillance** (CAND). A team runs a mundane office; one of you has a secret sabotage objective; the "cameras" are the other players (witness, suspicion, continuous accusation), not an AI. Detection stays player-driven to remain cheap and emergent.
 
-## OPP-3, Menace cachée, danger commun
-Hook : survivre ensemble à une menace extérieure, mais l'un de vous n'est pas humain et imite un coéquipier. Territoire MIMESIS / Mimic. Risque : moyen-élevé. Fort potentiel viral.
+**Competence comedy** (OPP-1). An absurd job done together where the hook is being bad at it as a team, with a camera filming the disaster.
 
-## OPP-4, La sim bavarde
-Hook : la profondeur d'automatisation de Schedule I, mais chaque décision passe par la négociation vocale. Risque : élevé (coût de contenu). En réserve.
+**Deduction through work** (OPP-2). Social deduction with no meeting or vote: unmask a liar purely by observing who works badly, who lies about their tasks, who was where.
 
-## Value / Cost
-Jugement de Claude, base de discussion. Détail et scores : whiteboard "Atlas Coop Viral" (espace 08). Ordre de prototypage recommandé : OPP-1, puis CAND, puis OPP-2.
+**Hidden threat, shared danger** (OPP-3). You survive an external threat together, but one of you is not human and imitates a teammate (MIMESIS / Mimic territory).
+
+**The talkative sim** (OPP-4). The automation depth of a management sim, but every decision goes through voice negotiation because nobody sees everything.
+
+## Selection criteria
+Score the candidates at the brainstorm against: immediate fun, differentiation, replayability, social interaction, emergent situations, commercial potential, technical feasibility, and production feasibility within a roughly one-week greybox (see `00_PROJECT/OBJECTIVES.md` and `OPEN_QUESTIONS.md` Q1 to Q5). Full analysis and value/cost view: the "Atlas Coop Viral" whiteboard and `01_RESEARCH/`.

@@ -1,7 +1,7 @@
 # TAXES
 
-_Modèle économique, coûts, accords._
+Single source of truth: **`TEAM_AGREEMENT.md`** (Taxes section).
 
-> À remplir. Règles de travail : `/CLAUDE.md`. État courant : `/00_PROJECT/PROJECT_STATE.md`.
+Position: do not design a tax architecture before real revenue exists. Handle taxes per the actual legal entity and countries involved, with an accountant/tax professional before revenue becomes significant.
 
-_Statut : vide (scaffold)._
+**Status: PENDING. No tax structure selected.**

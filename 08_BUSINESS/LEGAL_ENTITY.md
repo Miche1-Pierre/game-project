@@ -1,7 +1,7 @@
 # LEGAL ENTITY
 
-_Modèle économique, coûts, accords._
+Single source of truth: **`TEAM_AGREEMENT.md`** (Legal Entity section).
 
-> À remplir. Règles de travail : `/CLAUDE.md`. État courant : `/00_PROJECT/PROJECT_STATE.md`.
+Position: do not create a structure prematurely. Decide the appropriate structure with a professional before significant commercial activity, based on residence, expected revenue, ownership, tax, liability and payment requirements.
 
-_Statut : vide (scaffold)._
+**Status: PENDING. No structure selected.**

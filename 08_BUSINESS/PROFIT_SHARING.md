@@ -1,7 +1,7 @@
 # PROFIT SHARING
 
-_Modèle économique, coûts, accords._
+Single source of truth: **`TEAM_AGREEMENT.md`** (Profit Sharing section).
 
-> À remplir. Règles de travail : `/CLAUDE.md`. État courant : `/00_PROJECT/PROJECT_STATE.md`.
+Pierre's proposed default: **50/50** of distributable profit, defined as `revenue - platform fees - refunds - taxes - directly attributable project expenses`. Distribution cadence and expense reimbursement to be agreed.
 
-_Statut : vide (scaffold)._
+**Status: PENDING team discussion.**
