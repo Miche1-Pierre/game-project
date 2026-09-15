@@ -1,7 +1,12 @@
 # AUDIO DIRECTION
 
-_Audio direction and sound feedback._
+_Audio is feedback first. Cheap, generic, from free / open-source libraries._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Principles
+- Every important action has clear audio feedback (a big part of feel).
+- Source SFX from free / open-source / licensed libraries (wind, falling, glass breaking, explosions, impacts). Generic, not bespoke.
+- Music: minimal or none at first; add later only if it earns its place.
+- Keep the palette small and coherent; check commercial licenses (`../03_TECHNICAL/THIRD_PARTY.md`).
 
-_Status: empty (scaffold)._
+## Rule
+Audio amplifies a working interaction; it does not fix a weak one.
