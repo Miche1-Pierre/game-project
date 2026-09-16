@@ -1,7 +1,11 @@
 # BACKLOG
 
-_Production: tasks and milestones._
+_Everything we might do, unordered. Not commitments. Pull from here into `PRIORITIES.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Rules
+- Anything can go here; nothing here is promised.
+- Before pulling an item into CURRENT, it must justify its value to the current milestone.
+- Items we decide against move to `REJECTED.md` with a reason.
 
-_Status: empty (scaffold)._
+## Items
+(empty until the concept and greybox generate real tasks)

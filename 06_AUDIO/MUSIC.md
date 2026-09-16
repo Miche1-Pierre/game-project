@@ -1,7 +1,11 @@
 # MUSIC
 
-_Audio direction and sound feedback._
+_Deferred and minimal._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Position
+- Likely **no music** at greybox, and possibly at launch, unless it clearly adds value.
+- If used: a small amount of free / licensed / AI-generated music, checked for commercial rights.
+- Menu and tension stingers before full soundtracks.
 
-_Status: empty (scaffold)._
+## Rule
+Do not spend on music before the game is proven (`../08_BUSINESS/COST_MODEL.md`, audio budget ~0).

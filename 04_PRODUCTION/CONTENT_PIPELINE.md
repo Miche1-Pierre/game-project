@@ -1,7 +1,9 @@
 # CONTENT PIPELINE
 
-_Production: tasks and milestones._
+_How content gets made, once the game needs it. Minimal by design._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Flow
+Need identified (from a validated system) -> simplest source that works (free asset > generated > authored) -> normalize to specs (`../05_ART/ASSET_SPECS.md`) -> integrate -> validate in-game -> mark status (`../05_ART/ASSET_STATUS.md`).
 
-_Status: empty (scaffold)._
+## Rule
+No content is produced for an unvalidated system. Prefer systemic variety over volume (VISION).

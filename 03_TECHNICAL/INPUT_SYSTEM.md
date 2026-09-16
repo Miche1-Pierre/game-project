@@ -1,7 +1,11 @@
 # INPUT SYSTEM
 
-_Technical: how we build it._
+_Unity's Input System package, set up once, mapped later._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Approach
+- Use the **Input System** package (not legacy Input), with an Input Actions asset.
+- Action maps: Gameplay, UI. Rebindable later.
+- Keyboard + mouse first; controller support is a later, low-cost add (`../11_TESTING/COMPATIBILITY.md`).
+- Read input through an abstraction so systems do not poll raw devices.
 
-_Status: empty (scaffold)._
+_Concrete actions are defined with the concept and the greybox._

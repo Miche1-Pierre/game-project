@@ -34,3 +34,6 @@ Same reason. The recommendation is the buzz itself, which means the game has to 
 
 ## Open
 The creator outreach list, the language priorities beyond French and English, and the regional pricing. Not before the greybox.
+
+## Absorbed from the earlier working profile
+The pre-meeting position on `main` described friend groups of 2 to 6 playing co-op on Steam, players of the corpus and their audiences, and streamers plus their viewers. That is consistent with the definition above and adds one requirement worth restating: **the game must be legible to a spectator in 10 seconds**, which is a design constraint, not a marketing one.

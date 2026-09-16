@@ -1,7 +1,10 @@
 # CONNECTION FLOW
 
-_Networking and synchronization._
+_The path from menu to in-game._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Flow
+Main menu -> create or join (Steam lobby) -> lobby (ready-up) -> load game scene -> play -> return to lobby / menu.
 
-_Status: empty (scaffold)._
+## Notes
+- Handle join-in-progress if the concept allows it (`DISCONNECT.md`).
+- Keep the flow short; friends want to be in a match fast.

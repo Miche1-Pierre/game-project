@@ -2,7 +2,20 @@
 
 _Mis à jour le 17 septembre 2026, après la deuxième réunion de concept. Le journal complet avec toutes les réponses est dans `OPEN_QUESTIONS.md`._
 
-**Il reste 2 questions ouvertes sur 29.** Vingt-deux sont tranchées, cinq ont été écartées volontairement.
+**Il reste 3 questions ouvertes sur 29.** Vingt-deux sont tranchées, cinq ont été écartées volontairement.
+
+---
+
+## 0. Prioritaire, découverte en fusionnant avec `main`
+
+### Q30. Quel est le verbe central, porter ou voler sous surveillance ?
+`main` a verrouillé **PORTER** dans ADR-003 le 16 septembre à 22h21, avec le vol explicitement secondaire, et le greybox Unity l'implémente déjà. Votre réunion de concept, plus tardive, a enregistré **VOLER SOUS SURVEILLANCE** comme réponse à la question posée directement.
+
+Les deux produisent des jeux différents. Porter ne demande ni propriétaire ni détection. Voler sous surveillance demande un témoin présent, une grand-mère en ronde, un chat qui crie.
+
+**Arbitrage proposé:** jouez Tutorial_01, qui existe déjà. Si porter seul produit des histoires, ADR-003 tient. Sinon, le propriétaire est ce qui manque.
+
+**Réponse:**
 
 ---
 

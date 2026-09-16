@@ -1,55 +1,50 @@
 # GAME CONCEPT
 
-**SELECTED. Decided 2026-09-16, see `decisions/ADR-004-concept-steal-under-watch.md`.**
+**SELECTED CONCEPT: The Movers** (2026-09-16, ADR-003). A 1-4 player co-op physical moving game.
 
-_The five earlier candidates are archived at the bottom. They are no longer the fallback, see `00_PROJECT/OPEN_QUESTIONS.md` Q17._
+## Pitch
+You are a small moving crew. Each contract gives you a property to clear and a list of items to recover. Get the items, load the truck, deliver them without wrecking them, get paid, and upgrade. The catch: everything is physical. Furniture falls, glass breaks, a sofa gets stuck in a doorway, a fridge is too heavy for one, a statue will not fit in the lift. The absurdity and the stories come from players solving physical problems the game never explicitly asked them to solve.
 
-## One line
-A moving crew empties a house while the owner watches, and steals whatever it can get away with.
+## Core promise
+The mission stays real, the money matters, progression motivates, and the comedy emerges because players look for solutions, not because the game tells them to mess around. Opportunistic extra value (non-contract objects worth money) and a light traces / consequences layer are secondary, and must not become the core.
 
-## Signature verb
-**STEAL UNDER WATCH.**
+## The verb
+**MOVE / CARRY.** One image: four people trying to get a piano out of a house.
 
-Moving is the fiction. Stealing under observation is the game. This distinction was made explicitly at the concept meeting and it governs everything: level design, the AI budget, the loop and the pitch. We are not building a hauling game.
+## Loop
+Contract -> scout the house -> move the items out -> load the truck (real physical packing) -> transport -> deliver -> money -> upgrade the crew and unlock harder contracts. Between each step: "do we do this cleanly, or do we take a risk?"
 
-## Fantasy
-You have been let into someone's home, legitimately, with their keys. You have a job to do and a reason to be in every room. Every object you pick up is defensible right up until it goes in your pocket.
+## Why it fits our framework
+Real mission + emergent absurdity (the constraint), systemic and cheap (physics + players = stories, one map + ~15-20 objects), one strong verb, 10-second legible, clip-native, greyboxable in days, no backend. Full rationale: ADR-003. First test: `GREYBOX_SPEC.md`.
 
-## Core tension
-The contract and the theft use the same actions. Carrying a lamp to the truck and stealing a lamp look identical until the moment they do not. The owner cannot tell which one you are doing, and neither can they watch every room.
-
-## Systems (5, deliberately few)
-1. **Object physics, fragility, value.** Objects break, and broken objects lose money.
-2. **Contract versus theft.** Two ledgers on the same actions.
-3. **The owner.** A present, moving witness who has to be read and routed around.
-4. **Time pressure.** A recommended duration, after which the situation degrades.
-5. **Living objects.** Pets are objects that react, complain, and can die.
-
-## What we do not build
-- No procedural generation until the loop is proven.
-- No shop until the loop is proven.
-- No drivable vehicle until V1.
-- No detection AI until V2.
-
-See `GREYBOX_SPEC.md` for exactly what ships first.
-
-## Tone
-Deliberate derision, no self-imposed ceiling on the absurd. The team decided on 2026-09-16 that the absurd has no cut-off, and that the intent is openly ridiculous rather than mean. Practical consequence: Steam content descriptors will need to be filled honestly at store-page time (`09_STEAM/STORE_PAGE.md`), which is a form to complete, not a constraint on the design.
-
-## Reason to buy
-**Still open.** Deferred by decision until the greybox is playable, because the team wants to feel the concept before writing the sentence. The working direction from the meeting is the "why not" impulse: why not take that, why not try this, what happens if. See `00_PROJECT/OPEN_QUESTIONS.md` Q2.
-
-This is the single most important unresolved item in the project. `00_PROJECT/RISKS.md` R6 stays active until it is answered without naming another game.
+## Detailed design
+See the other files in this folder (CORE_LOOP, GAME_RULES, MECHANICS, SYSTEMS, OBJECTS, PROGRESSION, WORLD, SOCIAL_DESIGN, FAILURE_STATES, SCORING). Being filled now that the concept is chosen.
 
 ---
 
-## Archive: the five pre-selection candidates
-Kept for the record. None was selected. The retained concept came from the brainstorm, which `GAME_CONCEPT.md` explicitly allowed.
+## OPEN DIVERGENCE: which verb is the core?
+**Unresolved. Flagged, not decided, per `/CLAUDE.md` rule 16.** This is currently the most important open question in the project.
 
-- **Office under surveillance** (CAND). A mundane office, one saboteur, detection by the other players.
-- **Competence comedy** (OPP-1). An absurd job done together, filmed.
-- **Deduction through work** (OPP-2). Unmask a liar with no meeting and no vote.
-- **Hidden threat, shared danger** (OPP-3). An imitator among the survivors.
-- **The talkative sim** (OPP-4). Management depth negotiated by voice.
+Two records of the same week disagree about what the game is.
 
-Note: the retained concept is the closest to CAND, with one inversion. The witness is an NPC, not the other players. The players are on the same side.
+| Source | Date | Position |
+|---|---|---|
+| ADR-003, on `main` | 2026-09-16 22:21 | The verb is **MOVE / CARRY**. Theft is secondary and "must not become the core". |
+| Concept meeting, both developers present | 2026-09-16, transcript | The verb is **STEAL UNDER WATCH**. Asked directly "do we carry or do we steal under watch", the recorded answer was that the game is clearly stealing under watch. |
+
+The meeting transcript is the later record and had both developers in it. ADR-003 and the working Unity greybox came first and are what actually exists as code today.
+
+**What hangs on it.** Not a wording choice. The two readings produce different games:
+- MOVE / CARRY needs no owner, no detection, no vigilance. The antagonist is the object and the doorway. That is what `UnityProject/` implements today.
+- STEAL UNDER WATCH needs a present owner who has to be read and routed around. The antagonist is the person who let you in. That is what the meeting specified: a grandmother on patrol, a cat that screams, roughly 80 objects, a house of 10 rooms.
+
+It also decides the differentiation argument. MOVE / CARRY sits directly next to R.E.P.O., which triggers `../00_PROJECT/RISKS.md` R6. STEAL UNDER WATCH is the position nothing in the corpus occupies (`../01_RESEARCH/DIFFERENTIATORS.md`).
+
+**Proposed way to settle it without arguing.** The Tutorial_01 greybox already exists and answers "is carrying fun". Play it. If the carry loop alone already produces stories, MOVE / CARRY stands. If it feels like R.E.P.O. without the monsters, the owner is what the game is missing, and the verb moves. That is one evening of testing, not a debate.
+
+Whoever settles it: update ADR-003 or supersede it, then rewrite this file and `CORE_LOOP.md`.
+
+---
+
+## Earlier candidates (archived, for reference)
+Before The Movers, the benchmark surfaced these candidates (`../01_RESEARCH/WHITE_SPACES.md`): CAND office / sabotage, OPP-1 competence comedy, OPP-2 deduction through work, OPP-3 hidden threat / shared danger, OPP-4 the talkative sim, plus a Claude proposal "REWIND" (security-tape deduction). The Movers is closest in spirit to OPP-1 (competence comedy) grounded in a real job. Kept here in case we pivot.

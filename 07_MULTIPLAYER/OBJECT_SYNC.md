@@ -1,7 +1,11 @@
 # OBJECT SYNC
 
-_Networking and synchronization._
+_Syncing world objects, especially physics ones._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Approach
+- Host owns authoritative object state; clients interpolate.
+- Do not sync every rigidbody; sync gameplay-relevant objects and let cosmetic physics run locally.
+- Ownership transfer for carried / held objects (relevant if we do R.E.P.O.-style carrying).
 
-_Status: empty (scaffold)._
+## Rule
+Physics sync is a top time-sink and perf risk (R2, R12). Keep synced object counts bounded.

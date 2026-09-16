@@ -1,7 +1,11 @@
 # STEAM PLAYTEST
 
-_Steam distribution._
+_Steam's built-in playtest feature. Ideal for our staged testing._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Notes
+- A separate AppID linked to the main game; access-controlled; does not disturb reviews or the main page (Steamworks).
+- Use it for stranger playtests before committing to production and before launch.
+- Feeds observations into `../playtests/`.
 
-_Status: empty (scaffold)._
+## Rule
+Test with players outside the team before locking the product (risks R3, R9).

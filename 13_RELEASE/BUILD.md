@@ -1,7 +1,9 @@
-# BUILD
+# BUILD (release)
 
-_Release plan._
+_The shipping build. Technical: `../03_TECHNICAL/BUILD_PIPELINE.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Checklist
+- IL2CPP Windows build, runs clean from a fresh install.
+- Version tagged; changelog updated.
+- Smoke test passed (`../11_TESTING/REGRESSION.md`).
+- Uploaded to Steam depots; launch options set.

@@ -1,7 +1,15 @@
 # PRIORITIES
 
-_Production: tasks and milestones._
+_CURRENT and NEXT. The short, honest view of what we are doing._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## CURRENT
+- Choose the concept (brainstorm with Jonathan).
+- Fill the decision repository (in progress).
 
-_Status: empty (scaffold)._
+## NEXT
+- Write `../02_GAME_DESIGN/GREYBOX_SPEC.md`.
+- Create the Unity project and wire the MCP.
+- Build the greybox core loop.
+
+## Not now
+See `REJECTED.md` and `../00_PROJECT/SCOPE.md` (out of scope).

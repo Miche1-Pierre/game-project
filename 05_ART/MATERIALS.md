@@ -1,7 +1,9 @@
 # MATERIALS
 
-_Art direction and 3D pipeline._
+_Few materials, coherent, cheap. URP._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Approach
+- A small shared material library; assets reuse it rather than each bringing its own.
+- Flat or lightly shaded low-poly look; lean on lighting for depth (`LIGHTING.md`).
+- Consistent roughness / value relationships; strong contrast between interactive and background.
+- GPU-instancing-friendly for performance (`../03_TECHNICAL/PERFORMANCE.md`).

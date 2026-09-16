@@ -42,3 +42,6 @@ The conversion data says games above $10 sit at the low end of the conversion ba
 
 ## To settle
 Final price, launch discount size, and regional pricing. After the wishlist opens.
+
+## Absorbed from the earlier approach note
+The pre-meeting position on `main` targeted the corpus band of roughly $8 to $15 and added one argument worth keeping: a cheaper price makes "everyone buy it" trivial for a friend group, which is a virality mechanism and not only a margin question. That argument supports the volume strategy above.

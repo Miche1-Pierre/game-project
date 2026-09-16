@@ -1,7 +1,14 @@
 # OBJECT INTERACTION
 
-_Technical: how we build it._
+_How players interact with the world. Likely a core system; refined with the concept._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Approach (set now)
+- A single **interaction interface** (`IInteractable`) implemented by objects (pick up, use, toggle, carry).
+- The player has one interaction probe (raycast or trigger) that finds the best interactable and shows a prompt.
+- Interaction outcomes fire events (`EVENT_SYSTEM.md`) so audio, VFX and net react uniformly.
+- Physics-based carrying / handling if the concept wants R.E.P.O.-style friction (`PHYSICS.md`).
 
-_Status: empty (scaffold)._
+## Rule
+One clean interaction model reused everywhere beats bespoke code per object (systems over content).
+
+_Status: core shape set, specifics await the concept._

@@ -1,7 +1,14 @@
 # SAVE SYSTEM
 
-_Technical: how we build it._
+_First question: do we even need saves? Probably minimal._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Position
+- If the game is session-based (a match, then reset), we may need **no save at all** beyond settings.
+- Settings and key bindings: a small local file (JSON or PlayerPrefs).
+- Any progression or unlocks (only if the concept has them): a local, versioned file.
+- **No cloud saves** initially; Steam Cloud can be added later at near-zero code cost if useful.
 
-_Status: empty (scaffold)._
+## Rule
+Do not build a save system before a concept requires persistent state.
+
+_Status: likely minimal, confirm with the concept._

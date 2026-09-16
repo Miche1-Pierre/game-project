@@ -1,7 +1,10 @@
 # AUTHORITY
 
-_Networking and synchronization._
+_Who decides what is true._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Position
+- **Host-authoritative** by default (simplest for a small co-op game over Steam P2P).
+- The host resolves gameplay outcomes; clients predict and reconcile where needed.
+- No dedicated server, no authoritative backend, unless a concept forces it (ADR + cost).
 
-_Status: empty (scaffold)._
+_Authority model confirmed with the concept and player count._

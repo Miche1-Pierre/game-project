@@ -1,7 +1,10 @@
 # AUDIO ASSET LIST
 
-_Audio direction and sound feedback._
+_Registry of the sounds we use and their licenses. Fills up during production._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+| Sound | Category | Source | License | Status |
+|---|---|---|---|---|
+| (example) glass_break | impact | (free pack) | (check) | placeholder |
 
-_Status: empty (scaffold)._
+## Rule
+Every audio asset records its source and commercial license before it ships (`../03_TECHNICAL/THIRD_PARTY.md`).

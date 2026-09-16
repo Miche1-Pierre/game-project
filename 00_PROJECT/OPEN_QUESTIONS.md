@@ -4,11 +4,25 @@ _Journal des décisions par question. `[JONATHAN]` marque une question qui deman
 
 > **Note de langue.** Ce fichier et `QUESTIONS_RESTANTES.md` sont en français par demande explicite. Le reste du dépôt reste en anglais (`/CLAUDE.md`). Changer la langue de tout le dépôt serait une décision structurelle, non prise ici.
 
-> **État au 17 septembre 2026.** Deux réunions de concept les 16 et 17 septembre ont tranché 22 questions sur 29. Cinq ont été écartées volontairement. **Deux restent ouvertes.** Le détail vivant est dans `QUESTIONS_RESTANTES.md`.
+> **État au 17 septembre 2026, après fusion avec `main`.** Deux réunions de concept ont tranché 22 questions sur 29. Cinq ont été écartées volontairement. **Trois restent ouvertes**, dont une nouvelle et prioritaire, découverte en fusionnant: le verbe central est contesté entre les documents et le code. Le détail vivant est dans `QUESTIONS_RESTANTES.md`.
 
 ---
 
-## Encore ouvertes (2)
+## Encore ouvertes (3)
+
+### Q30. Quel est le verbe central, porter ou voler sous surveillance ? (NOUVELLE, prioritaire)
+**Contradiction découverte à la fusion du 17 septembre.** Deux traces de la même semaine disent l'inverse.
+
+- **ADR-003 sur `main`**, écrit le 16 septembre à 22h21: le verbe est **PORTER**, et le vol est secondaire, avec la mention qu'il ne doit pas devenir le coeur. C'est ce que le greybox Unity implémente aujourd'hui.
+- **Réunion de concept**, plus tardive, les deux développeurs présents: à la question posée directement, la réponse enregistrée est que le jeu est **clairement voler sous surveillance**.
+
+Ce n'est pas une question de formulation. Porter ne demande ni propriétaire ni détection, et place le jeu juste à côté de R.E.P.O., ce qui maintient le risque R6 actif. Voler sous surveillance demande un témoin présent et occupe une place que personne n'occupe dans le corpus.
+
+**Arbitrage proposé, sans débat:** le greybox Tutorial_01 existe déjà et répond à « est-ce que porter est amusant ». Jouez-y. Si porter seul produit déjà des histoires, ADR-003 tient. Si ça ressemble à R.E.P.O. sans les monstres, le propriétaire est ce qui manque.
+
+_Statut: ouvert. Bloque la suite du développement, car le code a déjà choisi un camp._
+
+## Les deux autres
 
 ### Q2. Quelle est la phrase unique qui justifie l'achat ?
 **Reportée par décision, pas oubliée.** L'équipe veut ressentir le concept en jeu avant d'écrire la phrase, donc la réponse vient après la greybox.
@@ -40,13 +54,13 @@ Ces sujets restent documentés dans `08_BUSINESS/TEAM_AGREEMENT.md`, qui ne cont
 
 ---
 
-## Résolues (22)
+## Résolues (21, plus Q3 rouverte)
 
 ### Direction du jeu
 
-**Q1. Quel concept ?** Une équipe de déménageurs qui vide une maison pendant que le propriétaire est là, et vole ce qu'elle peut. Voir ADR-004.
+**Q1. Quel concept ?** Une équipe de déménageurs. `main` l'a acté sous le nom **The Movers** dans ADR-003. La réunion le décrivait avec un propriétaire présent et du vol. Le cadre est commun, le coeur est contesté: voir Q30.
 
-**Q3. Quel verbe central ?** **Voler sous surveillance**, pas transporter. Le déménagement est la fiction qui donne une raison légitime de toucher à tout. Le vol sous observation est le jeu. Aucun camion conduisible en phase initiale.
+**Q3. Quel verbe central ?** Réponse de la réunion: **voler sous surveillance**, pas transporter. **Rouverte le 17 septembre** parce que ADR-003 sur `main` dit l'inverse et que le code implémente porter. Devenue Q30.
 
 **Q4. Garde-t-on H3 ?** Retirée. H3 comparait la détection par les joueurs à une IA de PNJ. Dans ce concept les joueurs sont dans le même camp, la comparaison ne s'applique pas.
 
@@ -80,7 +94,7 @@ Ces sujets restent documentés dans `08_BUSINESS/TEAM_AGREEMENT.md`, qui ne cont
 
 **Q23. Que sera le contenu généré par IA ?** Les assets. Conséquence acceptée: déclaration obligatoire sur la page Steam. Les assistants de code restent hors périmètre.
 
-**Q24. Payer pour la vitesse réseau ?** Non. Tout ce qui peut être gratuit sera gratuit. Steam ou Unity, Photon exclu. Voir ADR-003.
+**Q24. Payer pour la vitesse réseau ?** Non. Tout ce qui peut être gratuit sera gratuit. Steam ou Unity, Photon exclu. Voir ADR-004.
 
 ### Validation et commercial
 
@@ -94,13 +108,13 @@ Ces sujets restent documentés dans `08_BUSINESS/TEAM_AGREEMENT.md`, qui ne cont
 
 ---
 
-## Priorité actuelle
-1. Construire la greybox selon `02_GAME_DESIGN/GREYBOX_SPEC.md`.
-2. Passer la porte du rire spontané.
-3. Écrire la phrase de Q2, qui ne peut pas s'écrire avant.
-
-## Décisions à documenter, faites
-- ADR-004, choix de concept. Écrit.
-- ADR-003, réseau gratuit uniquement. Mis à jour et accepté.
-- `GAME_CONCEPT`, `CORE_LOOP`, `GREYBOX_SPEC`. Écrits.
+## Décisions documentées
+- ADR-003, concept The Movers. Écrit sur `main`, accepté.
+- ADR-004, réseau gratuit uniquement. Accepté, renuméroté à la fusion.
+- `GAME_CONCEPT`, `CORE_LOOP`, `GREYBOX_SPEC`. Écrits, avec la divergence de verbe signalée dedans.
 - H3 retirée du tableau de bord. Fait.
+
+## Priorité révisée
+1. Jouer Tutorial_01, qui existe déjà dans `UnityProject/`.
+2. Trancher Q30 avec ce que la partie a produit, pas avec les documents.
+3. Écrire la phrase de Q2.

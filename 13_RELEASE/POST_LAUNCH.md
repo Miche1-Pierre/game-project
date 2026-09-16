@@ -1,7 +1,9 @@
-# POST LAUNCH
+# POST-LAUNCH
 
-_Release plan._
+_After the dust settles. Analysis: `../12_ANALYTICS/POST_LAUNCH_ANALYSIS.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Actions
+- Review KPIs vs expectations (sales, wishlists, replay, retention).
+- Decide: patch, update, double down, or move on, based on evidence.
+- Capture lessons (what worked, what failed, why) per the OBJECTIVES learning goal.
+- Separate launch scope from post-launch ideas; do not scope-creep on enthusiasm (risk R16).

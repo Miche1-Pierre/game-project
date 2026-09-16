@@ -1,7 +1,12 @@
 # BUDGET
 
-_Business model, costs, agreements._
+_The money view. Detail: `COST_MODEL.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Envelope
+- One-time project spend (excl. Claude): comfortable **~350 to 500 EUR**, ceiling **~750 EUR**.
+- Recurring: Claude Max x5 at **108 EUR/month** (Pierre's plan; shared-cost status is a `TEAM_AGREEMENT.md` item).
+- Fixed: Steam Direct ~90 EUR (one-time, recoverable past $1,000 gross).
+- Everything else is spent only after the greybox is validated.
 
-_Status: empty (scaffold)._
+## Rule
+Spend to buy speed and quality that matters, not to compensate for an unvalidated game.

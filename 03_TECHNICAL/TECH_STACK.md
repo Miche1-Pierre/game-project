@@ -11,7 +11,7 @@ _What we use and why. Verified on Pierre's machine, Sept. 2026._
 | CLI | Unity CLI 1.0.0-beta.8 | `C:\Users\pierr\AppData\Local\Unity\bin` |
 | License | Unity Personal | Enough for an MVP for two |
 | Versioning | git + GitHub (private) | Decision repo + `UnityProject` |
-| Networking | Steam Networking or Unity Netcode for GameObjects | Free only, host is a player, no backend, 4 players. Photon excluded. Steam networking comes last, not in the greybox. See ADR-003 (accepted) |
+| Networking | Steam Networking or Unity Netcode for GameObjects | Free only, host is a player, no backend, 4 players. Photon excluded. Steam networking comes last, not in the greybox. See ADR-004 (accepted) |
 | Target | PC / Steam | |
 
 Unity detail: `UNITY_SETUP.md`. MCP workflow: `MCP_WORKFLOW.md`.

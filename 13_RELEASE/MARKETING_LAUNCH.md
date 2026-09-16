@@ -1,7 +1,9 @@
 # MARKETING LAUNCH
 
-_Release plan._
+_The launch-week push. Strategy: `../10_MARKETING/LAUNCH_CAMPAIGN.md`._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Actions
+- Creator keys and coverage timed to launch (`CREATOR_OUTREACH.md`).
+- Launch discount to convert wishlists.
+- Clips and social posts across the week.
+- Community presence (Discord, reviews) and fast response to issues.

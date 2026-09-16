@@ -1,7 +1,11 @@
 # APP ID
 
-_Steam distribution._
+_The Steam application identity._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Notes
+- Created via Steamworks after paying Steam Direct.
+- A separate AppID is used for Steam Playtest, linked to the main app (`STEAM_PLAYTEST.md`).
+- Record the AppID(s) here once created (currently none).
 
-_Status: empty (scaffold)._
+## Ownership
+The Steam account and app ownership are a team-agreement item (`../08_BUSINESS/TEAM_AGREEMENT.md`, project accounts).

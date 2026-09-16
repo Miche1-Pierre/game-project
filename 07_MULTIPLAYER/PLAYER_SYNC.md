@@ -1,7 +1,11 @@
 # PLAYER SYNC
 
-_Networking and synchronization._
+_Keeping players consistent across clients. Concept / player-count dependent; approach set now._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Approach
+- Host-authoritative model over Steam P2P.
+- Sync player transform + core state; interpolate on remote clients.
+- Send input / intent, not just positions, where it reduces bandwidth and cheating.
+- Only sync what gameplay needs (`../03_TECHNICAL/PERFORMANCE.md`).
 
-_Status: empty (scaffold)._
+_Detailed once player count and the concept are fixed (`../00_PROJECT/OPEN_QUESTIONS.md` Q5)._

@@ -1,7 +1,11 @@
 # SOCIAL MEDIA
 
-_Positioning and acquisition._
+_Where the clips go._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Approach
+- Short-form first: TikTok, YouTube Shorts, X, Reddit (relevant subs), a Discord for the community.
+- Post the game's funny / tense moments; let the format be the clip.
+- Consistency over volume; ride whatever moment lands.
+- A Discord gathers early players and playtesters (ownership is a team-agreement item).
 
-_Status: empty (scaffold)._
+_Cadence and channels firmed up near the store-page milestone._

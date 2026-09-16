@@ -26,7 +26,7 @@ Semiwork chose Photon for R.E.P.O. on a recommendation from Landfall, with no pr
 Meccha Chameleon peaked at 340 k concurrent players on EOS and paid nothing. On the Photon premium grid that traffic is roughly $170 k per month. Our entire one-time budget is about 360 EUR (`08_BUSINESS/COST_MODEL.md`). A per-seat netcode is an uncapped liability we cannot absorb if the game works.
 
 ## Decision (2026-09-16)
-**Free solutions only: Steam Networking or Unity Netcode for GameObjects.** Photon is excluded. Host is a player, no backend, no dedicated server, four players maximum. See `decisions/ADR-003-netcode-free-only.md`.
+**Free solutions only: Steam Networking or Unity Netcode for GameObjects.** Photon is excluded. Host is a player, no backend, no dedicated server, four players maximum. See `decisions/ADR-004-netcode-free-only.md`.
 
 The team's rule as stated: everything that can be done for free is done for free. Epic Online Services stays documented as the alternative if a non-Steam store ever matters, but it is not the default.
 

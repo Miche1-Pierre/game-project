@@ -1,7 +1,9 @@
 # STEAM SUBMISSION
 
-_Release plan._
+_Submitting to Steam for review._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
-
-_Status: empty (scaffold)._
+## Steps
+- Complete the store page, build, and required Steamworks settings (`../09_STEAM/RELEASE_CHECKLIST.md`).
+- Submit for Valve review well before the target date (review takes time).
+- Set release date and time; confirm regional pricing.
+- Have the launch build on the default branch, tested from a clean install.

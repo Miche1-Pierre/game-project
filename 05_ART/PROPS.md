@@ -1,7 +1,11 @@
 # PROPS
 
-_Art direction and 3D pipeline._
+_Reusable, interactive-first._
 
-> To fill in. Working rules: `/CLAUDE.md`. Current state: `/00_PROJECT/PROJECT_STATE.md`.
+## Approach
+- Prop families with variations, not one-off objects.
+- Interactive props read clearly as interactive (shape, color, slight highlight).
+- Physics props kept simple and bounded (`../03_TECHNICAL/PHYSICS.md`).
+- Free or generated, normalized to the low-poly look and one material family.
 
-_Status: empty (scaffold)._
+_Concrete prop list comes from the concept and the interaction model._

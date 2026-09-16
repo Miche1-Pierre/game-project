@@ -1,7 +1,7 @@
-# ADR-003: Networking, free solutions only
+# ADR-004: Networking, free solutions only
 
 ## Status
-**Accepted (2026-09-16).** Supersedes the proposed Epic Online Services draft of 2026-09-15, which was written before the team decided.
+**Accepted (2026-09-16).** Renumbered from 003 to 004 on merge, because `main` had already taken ADR-003 for the concept decision. Supersedes the proposed Epic Online Services draft of 2026-09-15.
 
 ## Context
 September 2026 benchmark research produced cost evidence. Most of the corpus (R.E.P.O., Content Warning, PEAK) runs on Photon, which prices per concurrent user with no ceiling. Meccha Chameleon runs on Epic Online Services with a player-hosted listen server and pays nothing at 340 k peak concurrent players.
@@ -47,4 +47,7 @@ Per the meeting: each developer local first, then two clients on one machine usi
 - We decide to ship outside Steam, which is when option C comes back.
 
 ## Related
-`07_MULTIPLAYER/NETWORK_ARCHITECTURE.md`, `03_TECHNICAL/TECH_STACK.md`, `02_GAME_DESIGN/GREYBOX_SPEC.md`.
+`07_MULTIPLAYER/NETWORK_ARCHITECTURE.md`, `03_TECHNICAL/TECH_STACK.md`, `02_GAME_DESIGN/GREYBOX_SPEC.md`, ADR-003 (concept).
+
+## Note on the existing multiplayer doc
+`main` documented the approach as host-authoritative Steam P2P before this ADR was written. That is the same family and does not conflict: Steam P2P is one of the two free options retained here. This ADR adds the reason (no per-seat billing) and the exclusion (Photon).
