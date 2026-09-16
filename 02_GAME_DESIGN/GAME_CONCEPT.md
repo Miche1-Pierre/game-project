@@ -1,21 +1,26 @@
 # GAME CONCEPT
 
-**SELECTED CONCEPT: TBD.** This file holds the candidate concepts from the research. **None is decided, and none is ranked or pre-selected.** The concept is chosen at the brainstorm, starting from the mechanics we learned, not from "let's make the office game". These are candidates among others: new ideas raised at the brainstorm are equally valid.
+**SELECTED CONCEPT: The Movers** (2026-09-16, ADR-003). A 1-4 player co-op physical moving game.
 
-Once a concept is chosen: write an ADR in `decisions/`, then fill CORE_LOOP, GAME_RULES, MECHANICS, SYSTEMS.
+## Pitch
+You are a small moving crew. Each contract gives you a property to clear and a list of items to recover. Get the items, load the truck, deliver them without wrecking them, get paid, and upgrade. The catch: everything is physical. Furniture falls, glass breaks, a sofa gets stuck in a doorway, a fridge is too heavy for one, a statue will not fit in the lift. The absurdity and the stories come from players solving physical problems the game never explicitly asked them to solve.
 
-## Candidate concepts (unordered)
-Each is a starting point for discussion, not a recommendation. Research labels in parentheses map to `01_RESEARCH/WHITE_SPACES.md` and the "Atlas Coop Viral" whiteboard.
+## Core promise
+The mission stays real, the money matters, progression motivates, and the comedy emerges because players look for solutions, not because the game tells them to mess around. Opportunistic extra value (non-contract objects worth money) and a light traces / consequences layer are secondary, and must not become the core.
 
-**Office under surveillance** (CAND). A team runs a mundane office; one of you has a secret sabotage objective; the "cameras" are the other players (witness, suspicion, continuous accusation), not an AI. Detection stays player-driven to remain cheap and emergent.
+## The verb
+**MOVE / CARRY.** One image: four people trying to get a piano out of a house.
 
-**Competence comedy** (OPP-1). An absurd job done together where the hook is being bad at it as a team, with a camera filming the disaster.
+## Loop
+Contract -> scout the house -> move the items out -> load the truck (real physical packing) -> transport -> deliver -> money -> upgrade the crew and unlock harder contracts. Between each step: "do we do this cleanly, or do we take a risk?"
 
-**Deduction through work** (OPP-2). Social deduction with no meeting or vote: unmask a liar purely by observing who works badly, who lies about their tasks, who was where.
+## Why it fits our framework
+Real mission + emergent absurdity (the constraint), systemic and cheap (physics + players = stories, one map + ~15-20 objects), one strong verb, 10-second legible, clip-native, greyboxable in days, no backend. Full rationale: ADR-003. First test: `GREYBOX_SPEC.md`.
 
-**Hidden threat, shared danger** (OPP-3). You survive an external threat together, but one of you is not human and imitates a teammate (MIMESIS / Mimic territory).
+## Detailed design
+See the other files in this folder (CORE_LOOP, GAME_RULES, MECHANICS, SYSTEMS, OBJECTS, PROGRESSION, WORLD, SOCIAL_DESIGN, FAILURE_STATES, SCORING). Being filled now that the concept is chosen.
 
-**The talkative sim** (OPP-4). The automation depth of a management sim, but every decision goes through voice negotiation because nobody sees everything.
+---
 
-## Selection criteria
-Score the candidates at the brainstorm against: immediate fun, differentiation, replayability, social interaction, emergent situations, commercial potential, technical feasibility, and production feasibility within a roughly one-week greybox (see `00_PROJECT/OBJECTIVES.md` and `OPEN_QUESTIONS.md` Q1 to Q5). Full analysis and value/cost view: the "Atlas Coop Viral" whiteboard and `01_RESEARCH/`.
+## Earlier candidates (archived, for reference)
+Before The Movers, the benchmark surfaced these candidates (`../01_RESEARCH/WHITE_SPACES.md`): CAND office / sabotage, OPP-1 competence comedy, OPP-2 deduction through work, OPP-3 hidden threat / shared danger, OPP-4 the talkative sim, plus a Claude proposal "REWIND" (security-tape deduction). The Movers is closest in spirit to OPP-1 (competence comedy) grounded in a real job. Kept here in case we pivot.
