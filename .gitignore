@@ -16,6 +16,14 @@ UnityProject/*.unitypackage
 UnityProject/*.app
 UnityProject/crashlytics-build.properties
 
+# Unity-generated IDE / solution files (regenerated locally)
+*.csproj
+*.sln
+*.slnx
+*.user
+*.userprefs
+.vscode/
+
 # ---- Builds / artefacts ----
 /build/
 /dist/
