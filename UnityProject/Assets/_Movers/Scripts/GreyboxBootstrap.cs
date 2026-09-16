@@ -3,14 +3,23 @@ using UnityEngine;
 
 namespace Movers
 {
-    // Builds the whole Tutorial_01 greybox from primitives on Play.
-    // Deterministic and version-controlled. Delete/replace freely; nothing here is precious.
+    // Builds the whole Tutorial_01 greybox from primitives.
+    // Built in the editor by the "The Movers > Create Greybox Scene" menu (visible before Play),
+    // and also at runtime if you just drop this component into an empty scene and press Play.
     public class GreyboxBootstrap : MonoBehaviour
     {
         readonly List<MovableObject> objects = new List<MovableObject>();
         TruckCargo truck;
 
-        void Awake() { Build(); }
+        void Awake()
+        {
+            // If the scene was pre-built in the editor, do not rebuild at Play.
+            if (transform.childCount == 0) Build();
+        }
+
+#if UNITY_EDITOR
+        public void BuildEditor() { Build(); }
+#endif
 
         void Build()
         {
@@ -82,9 +91,20 @@ namespace Movers
             Shader sh = Shader.Find("Standard");
             if (sh == null) sh = Shader.Find("Universal Render Pipeline/Lit");
             if (sh == null) sh = Shader.Find("Sprites/Default");
-            var m = new Material(sh);
-            m.color = c;
+            var m = new Material(sh) { color = c };
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
+#if UNITY_EDITOR
+            // In the editor, save materials as assets so colors persist when the scene is saved.
+            if (!Application.isPlaying)
+            {
+                System.IO.Directory.CreateDirectory("Assets/_Movers/Materials");
+                string path = $"Assets/_Movers/Materials/mat_{Mathf.RoundToInt(c.r * 255)}_{Mathf.RoundToInt(c.g * 255)}_{Mathf.RoundToInt(c.b * 255)}.mat";
+                var existing = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (existing != null) return existing;
+                UnityEditor.AssetDatabase.CreateAsset(m, path);
+                return m;
+            }
+#endif
             return m;
         }
 
