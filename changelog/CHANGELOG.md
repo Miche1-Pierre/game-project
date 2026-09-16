@@ -2,6 +2,27 @@
 
 _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSINESS, MARKETING._
 
+## 2026-09-17
+
+### Concept locked, greybox specified (branch `strat-jo`)
+Two concept meetings on 16 and 17 September resolved 22 of 29 open questions, declined 5, and left 2 open. The project moved from "no concept" to "ready to build".
+
+- **DECISION:** ADR-004, concept accepted. Signature verb is **steal under watch**, not carry. A moving crew empties a house while the owner is present. The concept came from the brainstorm, not from the five researched candidates, which `GAME_CONCEPT` explicitly allowed.
+- **DECISION:** ADR-003 rewritten and **accepted**, renamed to `ADR-003-netcode-free-only`. Free solutions only, Steam or Unity Netcode, host is a player, no backend, 4 players. Photon excluded. The earlier Epic Online Services proposal is demoted to a documented alternative.
+- **DESIGN:** `GAME_CONCEPT` rewritten, the five candidates moved to an archive section. `CORE_LOOP` filled, including the two-ledger idea: the contract and the theft use the same verbs.
+- **DESIGN:** `GREYBOX_SPEC` created. This is the gate ADR-002 required, so **Unity creation is now unblocked.** Scope: grandmother's house, 10 rooms, about 80 objects, cat and fish as living objects, one NPC with a single interaction, A* patrol only, static truck, no shop, no procedural generation, no detection AI.
+- **DESIGN:** delegated decision taken, garage over barn, with reasons recorded in the spec.
+- **PRODUCTION:** `MILESTONES` filled with the team's own plan. Greybox, V1, one month of communication in parallel with map production, beta. Earlier agent-produced duration estimates were rejected as unreliable and removed rather than argued.
+- **MARKETING:** `TARGET_AUDIENCE` filled. Casual evening-with-friends audience, groups of four, discovery through French-speaking streamers first, purchase driven by trend effect, non-evergreen by design.
+- **MARKETING:** `WISHLIST_STRATEGY` sequencing replaced by the team's real plan, triggered by the tutorial working end to end in V1.
+- **BUSINESS:** `PRICING` updated. Range $4.99 to $14.99, volume over margin, settled by the final look and the wishlist curve. Caution recorded that the upper end and the volume strategy pull in opposite directions.
+- **TESTING:** `PLAYTESTS` gained the external protocol, 16 players in 4 teams of 4, with the two stranger teams as the real signal.
+- **ART:** `ASSET_STATUS` gained the pipeline decision. Free packs as the base, completed by AI 3D generation. Steam disclosure accepted as a consequence.
+- **DOCS:** `RISKS` gained R21 (the reason to buy is unwritten) and R22 (unsigned team agreement), and R18 marked largely closed by ADR-003.
+- **DOCS:** H3 retired from `PROJECT_STATE`, H6 added. `OPEN_QUESTIONS` and `QUESTIONS_RESTANTES` rewritten as a decision journal plus a 2-item open list.
+
+**Still open:** the reason to buy (Q2, deferred to just after the greybox) and the commercial change-of-direction thresholds (Q21). Five team questions declined deliberately.
+
 ## 2026-09-16
 
 ### Benchmark pass: "vibe coded" hits (branch `strat-jo`)

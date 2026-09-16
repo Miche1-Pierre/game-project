@@ -3,10 +3,10 @@
 > Agent: read this file fully, then [`00_PROJECT/PROJECT_STATE.md`](00_PROJECT/PROJECT_STATE.md), before any action.
 
 ## 1. PROJECT IDENTITY
-Indie coop/social game, PC/Steam, team of 2 (Miche1-Pierre + Spykernv). Concept: TBD (see `02_GAME_DESIGN/GAME_CONCEPT.md`). This repository is the decision repository; `UnityProject/` is only one part.
+Indie coop/social game, PC/Steam, team of 2 (Miche1-Pierre + Spykernv). Concept: **steal under watch**, a moving crew empties a house while the owner is present (ADR-004, see `02_GAME_DESIGN/GAME_CONCEPT.md`). This repository is the decision repository; `UnityProject/` is only one part.
 
 ## 2. CURRENT PROJECT STATUS
-Phase: concept selection. Nothing is built in Unity, by decision. Source of truth: `00_PROJECT/PROJECT_STATE.md`, read it and keep it updated.
+Phase: greybox. The concept is locked and `02_GAME_DESIGN/GREYBOX_SPEC.md` exists, so the ADR-002 gate is passed and Unity may be created. Source of truth: `00_PROJECT/PROJECT_STATE.md`, read it and keep it updated.
 
 ## 3. DEVELOPMENT PHILOSOPHY
 - Optimize for learning speed before development volume.
@@ -69,10 +69,10 @@ AI 3D (generation, Blender) to accelerate already-decided content, never to deci
 - If a request implies an unresolved game-design decision, flag it instead of deciding alone.
 
 ## 17. CURRENT PRIORITIES
-1. Choose the concept. 2. Write the greybox spec. 3. Nothing else.
+1. Build the greybox to `02_GAME_DESIGN/GREYBOX_SPEC.md`, nothing outside that scope. 2. Pass the go / no-go, which is spontaneous laughter. 3. Then write the reason-to-buy sentence (Q2).
 
 ## 18. DO NOT DO
-- Do not create the Unity project until the spec is ready.
+- Do not build anything outside `02_GAME_DESIGN/GREYBOX_SPEC.md`. The out-of-scope list there is binding.
 - Do not produce final assets.
 - Do not turn a hypothesis into a requirement.
 - Do not create infrastructure without a documented need.

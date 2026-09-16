@@ -25,10 +25,12 @@ Semiwork chose Photon for R.E.P.O. on a recommendation from Landfall, with no pr
 
 Meccha Chameleon peaked at 340 k concurrent players on EOS and paid nothing. On the Photon premium grid that traffic is roughly $170 k per month. Our entire one-time budget is about 360 EUR (`08_BUSINESS/COST_MODEL.md`). A per-seat netcode is an uncapped liability we cannot absorb if the game works.
 
-## Revised default direction
-**Epic Online Services, via its official Unity plugin, with a player-hosted listen server.** EOS provides lobbies, peer-to-peer, sessions, matchmaking and voice, is engine-agnostic, and stays free regardless of player count. It does not require leaving Unity.
+## Decision (2026-09-16)
+**Free solutions only: Steam Networking or Unity Netcode for GameObjects.** Photon is excluded. Host is a player, no backend, no dedicated server, four players maximum. See `decisions/ADR-003-netcode-free-only.md`.
 
-Steam Networking remains a valid fallback and is simpler if we accept being Steam-only. Photon is the fastest to integrate and is what most of the corpus used, but it is the only option with an unbounded bill.
+The team's rule as stated: everything that can be done for free is done for free. Epic Online Services stays documented as the alternative if a non-Steam store ever matters, but it is not the default.
+
+**Validation order, from the meeting:** each developer local first, then two clients on one machine using the school VMs, then Steam networking last. Steam networking is explicitly not part of the greybox.
 
 ## Consequences of a listen server
 This is what Meccha Chameleon ships, and the trade-offs are visible in its player reports.
@@ -47,4 +49,4 @@ This is what Meccha Chameleon ships, and the trade-offs are visible in its playe
 ## Greybox
 Unchanged. Testable in hot-seat or on two PCs, without final netcode. Do not integrate any networking SDK before the loop is proven.
 
-_Status: deferred. Default direction revised to EOS, pending ADR-003._
+_Status: direction decided (ADR-003, accepted). Authority model, physics sync and disconnect behaviour still open._

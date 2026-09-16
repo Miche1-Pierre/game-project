@@ -11,7 +11,7 @@ _What we use and why. Verified on Pierre's machine, Sept. 2026._
 | CLI | Unity CLI 1.0.0-beta.8 | `C:\Users\pierr\AppData\Local\Unity\bin` |
 | License | Unity Personal | Enough for an MVP for two |
 | Versioning | git + GitHub (private) | Decision repo + `UnityProject` |
-| Networking (later) | Epic Online Services (Unity plugin), listen server | Deferred, 4 players to start. Free at any scale. See ADR-003 (proposed) and `../07_MULTIPLAYER/NETWORK_ARCHITECTURE.md` |
+| Networking | Steam Networking or Unity Netcode for GameObjects | Free only, host is a player, no backend, 4 players. Photon excluded. Steam networking comes last, not in the greybox. See ADR-003 (accepted) |
 | Target | PC / Steam | |
 
 Unity detail: `UNITY_SETUP.md`. MCP workflow: `MCP_WORKFLOW.md`.
@@ -19,4 +19,4 @@ Unity detail: `UNITY_SETUP.md`. MCP workflow: `MCP_WORKFLOW.md`.
 ## Note on AI-assisted development
 Valve rewrote its disclosure rules in January 2026. AI-powered development tools, including code assistants, are explicitly outside the scope of the content survey. Only generative content that **ships and is consumed by players** must be declared, in two categories, pre-generated and live-generated.
 
-Consequence for us: using Claude Code needs no disclosure. Any AI-generated 3D asset, texture, audio or store image that ships **does**, and that declaration appears on our store page. This is a reason to decide the asset pipeline deliberately, not a reason to avoid it. See `05_ART/ASSET_STATUS.md` and `00_PROJECT/OPEN_QUESTIONS.md` Q23.
+Consequence for us: using Claude Code needs no disclosure. **We will ship AI-generated assets** (decision of 2026-09-16: free packs as the base, completed by AI 3D generation), so the declaration will appear on our store page. Decided and accepted, to be filled honestly at store-page time. See `05_ART/ASSET_STATUS.md` and `09_STEAM/STORE_PAGE.md`.
