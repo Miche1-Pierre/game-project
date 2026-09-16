@@ -96,6 +96,24 @@ _Status: Open._
 Define thresholds for wishlist growth, playtest retention, player reactions, creator interest, store-page conversion and sales. The project should have explicit signals that can trigger a strategic change.
 _Status: Open._
 
+## Added September 2026 (benchmark pass on Meccha Chameleon and Dear Passengers)
+
+### Q22. What reusable capital do we build first? `[JONATHAN]`
+The fastest hits were not fast because the concept was good. They were fast because a working system already existed: Meccha Chameleon reused the multiplayer layer of the authors' previous game, to the point that the shipped executable is still named `PenguinHotel.exe`. We have no such asset. Do we accept that our first project pays the cost of building it, or do we deliberately build a reusable co-op base (lobby, join, sync, interaction) that survives a concept change?
+_Status: Open. This may matter more than the concept choice in Q1._
+
+### Q23. What, if anything, ships as AI-generated content?
+Valve's January 2026 rules put AI code assistants out of scope, so using Claude Code needs no disclosure. Any generated 3D asset, texture, audio or store image that ships does, and the declaration is visible on our store page. Given that our art plan assumes AI 3D generation (`00_PROJECT/CONSTRAINTS.md`), do we accept a disclosure on the page, and does it affect perception in this genre? Note that both games we studied ship with no disclosure at all.
+_Status: Open. Resolve before the store page, not before the greybox._
+
+### Q24. Do we pay for netcode speed during the prototype? `[JONATHAN]`
+Free at any scale (Epic Online Services, Steam Networking) versus fastest to integrate but priced per concurrent user (Photon, which most of the corpus used). The cost only bites if we succeed, and then it bites hard. See ADR-003, proposed, and `07_MULTIPLAYER/NETWORK_ARCHITECTURE.md`.
+_Status: Open. Depends on Q5 (player count)._
+
+### Q25. When do we reveal publicly?
+The reveal is the campaign, and it is a one-shot asset. Revealing early buys wishlists we may not convert and starts a clock we may not meet. Revealing late forfeits the wishlist accumulation window. What has to be true before we publish a Steam page?
+_Status: Open. Proposed condition in `10_MARKETING/WISHLIST_STRATEGY.md`: a playable build exists and a second public artefact is possible within four weeks._
+
 ## Current Priority
 The highest-priority unresolved questions are:
 1. Which concept deserves the first prototype?
@@ -105,5 +123,6 @@ The highest-priority unresolved questions are:
 5. What does the minimum viable greybox need to prove?
 6. Is the two-week production target technically realistic?
 7. What is the fallback if the first concept fails?
+8. What reusable capital do we build first (Q22)?
 
 Everything else can wait until these are sufficiently resolved.

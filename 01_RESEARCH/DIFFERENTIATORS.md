@@ -13,5 +13,6 @@ _What separates near-identical games (co-op + horror + proximity). Each winner f
 | Buckshot Roulette | **BET** | An ultra-compact probabilistic decision, densified by a few items. |
 | Schedule I | **RUN A BUSINESS** | A concrete illegal activity that becomes an empire to automate. |
 | Big Walk | **TALK** | Communication itself is the game; the comms tools can fail. |
+| Meccha Chameleon | **BLEND** | You paint your own body by hand to match the wall, badly, while someone hunts you. |
 
 **Test for OUR concept:** one verb, one mental image. "Sabotage" is a good candidate, provided it is **visible** to the other players and to the spectator.

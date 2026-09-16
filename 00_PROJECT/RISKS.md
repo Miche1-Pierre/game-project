@@ -95,6 +95,30 @@ A good game can fail to generate awareness if marketing only begins right before
 Positive feedback can push the team to add features rapidly, damaging the core product or delaying release.
 **Mitigation:** maintain a clear MVP; separate launch scope from post-launch ideas; prioritize evidence over enthusiasm; do not expand the game merely because players request unrelated features.
 
+### R17. The concept is cloned before we can capitalize
+**Probability:** High. **Impact:** High.
+Cloning is now near-instant. Meccha Chameleon was copied within weeks: one Steam clone uses the original's exact name on the Korean storefront, and on Roblox more than a dozen copies exist, the two largest together holding more concurrent players than the original does today. A concept readable in 10 seconds is reproducible in 10 days, and AI-assisted development has removed most of the cost of copying.
+**Mitigation:** accept that the premise is not defensible and put the moat in what is slow to copy, which is feel, tuning, iteration speed and the relationship with players; ship the good version first rather than the early version; do not reveal the mechanic publicly long before we can sell it; register the name early.
+**Trigger:** if a clone appears before our launch, do not redesign. Ship faster and better, and compete on execution.
+
+### R18. Netcode becomes a recurring cost that scales with success
+**Probability:** Medium. **Impact:** High.
+Per-concurrent-user networking bills grow exactly when the game works. Photon Premium is priced at $0.50 per CCU with a $1 000 monthly minimum. At the scale Meccha Chameleon reached, 340 k peak CCU, that is roughly $170 k per month. Our whole one-time budget is about 360 EUR.
+**Mitigation:** default to a networking solution that is free at any scale (`07_MULTIPLAYER/NETWORK_ARCHITECTURE.md`, ADR-003 proposed); if we take a paid SDK for integration speed during the greybox, treat it as a prototype-only decision and re-evaluate before launch; never ship with an uncapped per-seat bill.
+**Trigger:** before any public build, confirm the worst-case monthly networking cost at 10x our expected peak. If it is not affordable, change the solution.
+
+### R19. Revenue is forecast from wishlists rather than sales
+**Probability:** Medium. **Impact:** Medium.
+Wishlists are not purchases. Median first-week conversion sits near 10 to 15%, and drops above $10. Dear Passengers holds over 2 M wishlists with no release date, no price and no demo, which is attention, not revenue.
+**Mitigation:** always apply the conversion factor in any plan or projection (`10_MARKETING/WISHLIST_STRATEGY.md`); treat a high wishlist count with a low follower count as speculative interest.
+**Trigger:** any planning document stating an expected revenue figure without the conversion factor gets corrected on the spot.
+
+### R20. Announcing before the build can follow up
+**Probability:** Medium. **Impact:** Medium.
+A reveal that outruns production converts a spike into decay. Dear Passengers went from 0 to 2 M wishlists in 17 days, then published nothing for six weeks, missed the gameplay video it promised and did not ship the demo it announced for Gamescom.
+**Mitigation:** do not publish a Steam page or trailer until a playable build exists and a follow-up cadence is possible; plan the reveal as the start of a sequence, not as an event.
+**Trigger:** if we cannot commit to a second public artefact within four weeks of the reveal, delay the reveal.
+
 ## Risk management rule
 The project should not try to eliminate every risk. The objective is to identify the risks that can kill the project early and test them as cheaply as possible.
 
@@ -105,3 +129,4 @@ Highest-priority risks:
 4. The game is fun but not commercially compelling.
 5. The timeline forces unacceptable compromises.
 6. The game requires more content than the team can produce.
+7. A recurring networking cost that scales with success (R18).

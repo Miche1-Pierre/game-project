@@ -2,6 +2,22 @@
 
 _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSINESS, MARKETING._
 
+## 2026-09-16
+
+### Benchmark pass: "vibe coded" hits (branch `strat-jo`)
+Studied two 2026 games reputed to be AI-built, Meccha Chameleon and Dear Passengers. Neither is. Both are made by experienced teams, and Steam's January 2026 rules put AI code assistants outside disclosure entirely.
+
+- **RESEARCH:** two new `GAME_ANALYSIS` fiches. Meccha Chameleon (Unreal 5 + Epic Online Services, 2 people, 2 months, 20 M+ copies, 340 k peak CCU, zero ad spend, zero server cost, shipped executable still named `PenguinHotel.exe`). Dear Passengers (Unity, FLEXUS 70+ staff, unreleased, 2 M+ wishlists, netcode and player count never stated).
+- **RESEARCH:** filled `VIRALITY_PATTERNS` (9 distribution patterns, the reveal artefact as the whole campaign, the anti-trailer, the beta as seeding, wishlist softness, instant cloning).
+- **RESEARCH:** `SUCCESS_PATTERNS` gained K (reusable capital beats a lucky concept) and L (the cheapest asset is sometimes the mechanic). `DIFFERENTIATORS` gained BLEND. `MARKET_MAP` gained two rows and lost the absolute "Unity everywhere" claim.
+- **TECH:** networking default direction moved from Steam Networking to Epic Online Services via its official Unity plugin, free at any scale. Rationale is cost: per-CCU pricing at the scale of the games we study would exceed our entire budget many times over.
+- **DECISION:** ADR-003 written as **Proposed, not accepted**. Blocked on Q5 (player count) and Q9 (minimum architecture), both Jonathan-tagged.
+- **TECH:** `TECH_STACK` gained a note on Valve's January 2026 AI disclosure rules. Code assistants are out of scope; shipped generated assets are not.
+- **BUSINESS:** filled `PRICING` with the corpus price table and the wishlist conversion data. Working band $6 to $9, not a decision.
+- **MARKETING:** filled `WISHLIST_STRATEGY` with the reveal sequencing and the forecasting rule.
+- **DOCS:** `RISKS` gained R17 to R20 (instant cloning, netcode cost scaling with success, wishlist-based revenue forecasting, revealing before the build can follow up). `OPEN_QUESTIONS` gained Q22 to Q25. `RESEARCH_SOURCES` gained 21 sources.
+- **DOCS:** `PROJECT_STATE` updated, including the unresolved tension between ADR-002 (spec first) and the build-first method used by the team we studied. Flagged, not decided.
+
 ## 2026-09-15
 
 ### Repository setup

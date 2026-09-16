@@ -3,10 +3,10 @@
 _The studied corpus, by family. Deliberately broader than just Lethal Company clones._
 
 ## A. Chaotic / emergent co-op
-PEAK, R.E.P.O., Lethal Company, Content Warning, Murky Divers, PANICORE, Escape the Backrooms, Chained Together, Big Walk, Phasmophobia, GTFO, Barotrauma, Human: Fall Flat, Gang Beasts, Party Animals, We Were Here, Devour.
+PEAK, R.E.P.O., Lethal Company, Content Warning, Murky Divers, PANICORE, Escape the Backrooms, Chained Together, Big Walk, Dear Passengers, Phasmophobia, GTFO, Barotrauma, Human: Fall Flat, Gang Beasts, Party Animals, We Were Here, Devour.
 
 ## B. Social deduction / hidden identity
-Among Us, Goose Goose Duck, Town of Salem, Project Winter, Deceit, Deceit 2, MIMESIS, Mimic, SCP: Secret Laboratory, Unfortunate Spacemen, Barotrauma, First Class Trouble, The Ship, Trouble in Terrorist Town, Prop Hunt.
+Among Us, Goose Goose Duck, Town of Salem, Project Winter, Deceit, Deceit 2, MIMESIS, Mimic, SCP: Secret Laboratory, Unfortunate Spacemen, Barotrauma, First Class Trouble, The Ship, Trouble in Terrorist Town, Prop Hunt, Meccha Chameleon.
 
 ## C. Social chaos / sandbox
 Untitled Goose Game, Goat Simulator, Human: Fall Flat, Garry's Mod, Teardown, Just Die Already, Totally Reliable Delivery Service, Moving Out, Overcooked, Job Simulator, Surgeon Simulator, Wobbly Life, Octodad, Party Animals.
