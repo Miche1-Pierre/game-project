@@ -60,6 +60,16 @@ namespace Movers
         // hands, so the same button is free to light the cigarette while they are empty.
         public bool IsCarrying => held != null;
 
+        // Written by Drunkenness, 0 when sober. It loosens the hold rather than dropping it:
+        // the object lags further behind the hold point and takes longer to come round. You
+        // keep the sofa, you just stop being good at it.
+        [HideInInspector] public float carrySlop = 0f;
+        float Grip => 1f - Mathf.Clamp01(carrySlop) * 0.55f;
+
+        // What is in your hands right now. PlayerEquip needs it to know whether the thing you
+        // are carrying is something you could put on instead.
+        public MovableObject Held => held;
+
         float savedLinearDamping;
         float savedAngularDamping;
         float savedMaxAngularVelocity;
@@ -161,7 +171,7 @@ namespace Movers
             }
         }
 
-        void Release(bool thrown)
+        public void Release(bool thrown)
         {
             if (held == null) return;
             held.rb.linearDamping = savedLinearDamping;
@@ -189,7 +199,7 @@ namespace Movers
             // offset reads as weight without the object sinking through the floor.
             target.y -= Mathf.Min(held.weight * sagPerKg, maxSag);
             Vector3 toTarget = target - held.rb.worldCenterOfMass;
-            Vector3 desired = Vector3.ClampMagnitude(toTarget * followStrength * weightFactor, maxSpeed);
+            Vector3 desired = Vector3.ClampMagnitude(toTarget * followStrength * weightFactor * Grip, maxSpeed);
             held.rb.linearVelocity = desired;
 
             if (holdOrientation) DriveRotation(weightFactor);
@@ -213,7 +223,7 @@ namespace Movers
                 return;
             }
 
-            Vector3 spin = axis.normalized * (angle * Mathf.Deg2Rad * rotateStrength * weightFactor);
+            Vector3 spin = axis.normalized * (angle * Mathf.Deg2Rad * rotateStrength * weightFactor * Grip);
             held.rb.angularVelocity = Vector3.ClampMagnitude(spin, maxAngularSpeed * weightFactor);
         }
     }

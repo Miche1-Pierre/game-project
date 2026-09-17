@@ -21,6 +21,7 @@ Can a player pick up furniture and boxes in a house and load them into a truck t
 8. Contract: required checklist, money, timer; press E when all required are loaded to DELIVER and get paid (broken items pay less).
 9. HUD (OnGUI, ugly on purpose): checklist, money, timer, controls.
 10. Cigarette. You start the job with one lit in your hand. Hold RMB with your hands empty and it smokes hard: every half second it leaves a puff behind, each puff lasts exactly **7 seconds** and takes the view of anyone standing in it, the smoker included. No conflict with RMB throw, which only fires while you are carrying something; pick up a sofa and the cigarette goes out of frame. Pulled forward from the held scope below and made to do something, which is a design change: see `../decisions/ADR-005-cigarette-smoke-screen.md`. It ships no art (both textures are generated in code) and no inventory system.
+11. Beer. The other half of the starting inventory, in your other hand. Hold F with your hands empty and you drink: four seconds empties the bottle, permanently, and leaves you as drunk as this game gets. Drunk takes your aim (the view wanders and the horizon tips), your heading (you no longer walk where you point) and your grip (what you carry lags and swings), for about **25 seconds**. It never takes your speed and never takes the controls. Same design change, same terms: `../decisions/ADR-006-beer-makes-you-drunk.md`. Drunkenness is a state on the player, not a property of the bottle, so the next thing that should wreck the crew feeds the same meter.
 
 ## The first emergent problem (no special code)
 The sofa is wider than the narrow interior door. The player must rotate it or find another route. That single geometry fact already forces thinking. A later layer: an object that only fits through a window.
@@ -37,7 +38,7 @@ After ~30-60 minutes: does moving the furniture already create little stories an
 Unity editor (6000.6.0f1): menu **The Movers > Create Greybox Scene**, then press Play. Or: create an empty scene, add an empty GameObject, add the `GreyboxBootstrap` component, press Play.
 Controls: WASD move, Shift sprint, Ctrl crouch, Space jump, mouse look, LMB grab/drop, RMB throw, E deliver (when all loaded), Esc frees the cursor.
 While carrying: scroll to push the object out or pull it in. Hold R and the mouse turns it instead of your head, scroll rolls it. Look is suspended while R is held, so the mouse belongs to the object. One wheel, two jobs, split by whether R is down.
-Hands empty: hold RMB to smoke the cigarette. One button, two jobs, split by whether you are carrying something.
+Hands empty: hold RMB to smoke the cigarette, hold F to drink the beer. RMB is one button with two jobs, split by whether you are carrying something.
 
 ---
 
@@ -53,7 +54,7 @@ Do not build this until that divergence is settled.
 - **One NPC, the grandmother.** A single scripted interaction: she hands over the keys and a tutorial box opens. She states one house rule out loud, for example asking you to be careful with her cat, to plant the idea without enforcing it in code. Movement is **A\* pathfinding on a fixed patrol**, which is a standard algorithm and not AI. She walks, she does not evaluate.
 - **Two entries.** Take the keys, or break a window. Breaking the window works and costs money. That is the first choice the game asks.
 - **Theft ledger.** Any non-contract object reaching the truck pays extra. Detection stays hard-coded conditions only.
-- **Starting inventory,** deliberately lean and absurd: a beer and a cigarette, usable at any time, useful for nothing. **The cigarette is no longer useful for nothing** as of 2026-09-17: it is built, it is in Tutorial_01 (system 10), and it blinds. ADR-005 records the decision and what would undo it. The beer is untouched and stays inert until someone decides otherwise on purpose.
+- **Starting inventory,** deliberately lean and absurd: a beer and a cigarette, usable at any time, useful for nothing. **Both of them are useful for something** as of 2026-09-17: they are built, they are in Tutorial_01 (systems 10 and 11), one blinds everyone nearby and the other wrecks whoever drinks it. ADR-005 and ADR-006 record both decisions and what would undo them. That sentence is now spent: there is no third item, and the inventory is closed until someone has a reason to open it.
 - **Truck:** a static hollow box, not drivable. The real vehicle comes in V1.
 - **Multiplayer:** 4 players maximum, host is a player, no backend.
 

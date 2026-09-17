@@ -7,6 +7,8 @@ namespace Movers
     {
         public ContractManager contract;
 
+        Drunkenness drunk;   // found once, on the first frame someone is drinking
+
         void OnGUI()
         {
             if (contract == null) return;
@@ -31,6 +33,11 @@ namespace Movers
             GUILayout.Label($"Loaded: {contract.RequiredLoaded()} / {contract.RequiredTotal()}", label);
             GUILayout.Label($"Money: ${contract.money}", label);
             GUILayout.Label($"Time: {Mathf.CeilToInt(contract.timeLeft)}s", label);
+            // An observation aid, not a player-facing gauge. A playtester watching over a
+            // shoulder needs to know whether the stagger is the beer or the controls.
+            if (drunk == null) drunk = Object.FindFirstObjectByType<Drunkenness>();
+            if (drunk != null && drunk.IsDrunk)
+                GUILayout.Label($"Drunk: {Mathf.RoundToInt(drunk.Amount * 100)}%", label);
             GUILayout.Space(6);
             if (contract.complete)
                 GUILayout.Label("<b>CONTRACT COMPLETE</b>", title);
@@ -45,7 +52,7 @@ namespace Movers
             GUILayout.BeginArea(new Rect(12, Screen.height - 74, Screen.width - 24, 70));
             GUILayout.Label("WASD move  |  Shift sprint  |  Ctrl crouch  |  Space jump  |  LMB grab/drop  |  RMB throw  |  E deliver  |  Esc cursor", label);
             GUILayout.Label("Carrying:  scroll to push out / pull in  |  hold R to turn it (mouse turns, scroll rolls)", label);
-            GUILayout.Label("Hands free:  hold RMB to smoke the cigarette  |  the cloud blinds anyone standing in it, you included, for 7s", label);
+            GUILayout.Label("Hands free:  hold RMB to smoke (the cloud blinds anyone in it, you included, 7s)  |  hold F to drink the beer (one bottle, then it is gone)", label);
             GUILayout.EndArea();
         }
     }

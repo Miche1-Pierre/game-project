@@ -38,6 +38,13 @@ namespace Movers
         [HideInInspector] public bool lookLocked = false;
         [HideInInspector] public bool crouching = false;
 
+        // Driven by Drunkenness, the same way the two multipliers above are driven by
+        // PlayerGrab. Degrees: lookSway is (pitch, yaw, roll) added to the camera, moveDrift
+        // turns the direction you actually walk away from the one you asked for. Both are
+        // zero while sober, and nothing else writes them.
+        [HideInInspector] public Vector3 lookSway = Vector3.zero;
+        [HideInInspector] public float moveDrift = 0f;
+
         CharacterController cc;
         float pitch;
         float vy;
@@ -70,8 +77,11 @@ namespace Movers
                 float my = Input.GetAxis("Mouse Y") * mouseSensitivity;
                 transform.Rotate(0f, mx, 0f);
                 pitch = Mathf.Clamp(pitch - my, -85f, 85f);
-                if (cam != null) cam.localRotation = Quaternion.Euler(pitch, 0f, 0f);
             }
+            // Applied every frame, not only when the mouse is free, so a drunk head keeps
+            // wandering while you are busy turning a sofa. Zero sway reproduces the old line
+            // exactly.
+            if (cam != null) cam.localRotation = Quaternion.Euler(pitch + lookSway.x, lookSway.y, lookSway.z);
 
             UpdateStance();
 
@@ -80,6 +90,9 @@ namespace Movers
             float v = Input.GetAxisRaw("Vertical");
             Vector3 dir = transform.right * h + transform.forward * v;
             if (dir.sqrMagnitude > 1f) dir.Normalize();
+            // You do not walk where you point any more. Rotating the direction rather than
+            // nudging the input keeps full speed: drunk is crooked, not slow.
+            if (moveDrift != 0f) dir = Quaternion.Euler(0f, moveDrift, 0f) * dir;
 
             bool sprinting = Input.GetKey(sprintKey) && !crouching;
             float stance = crouching ? crouchSpeedMultiplier : (sprinting ? sprintMultiplier : 1f);
