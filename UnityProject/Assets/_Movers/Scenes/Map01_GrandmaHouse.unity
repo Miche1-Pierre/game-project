@@ -6639,6 +6639,199 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3074762228625467961, guid: 3572161fe75ef824ab1a470c5d1b71c1, type: 3}
   m_PrefabInstance: {fileID: 1162797895}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1168079642
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1168079649}
+  - component: {fileID: 1168079648}
+  - component: {fileID: 1168079647}
+  - component: {fileID: 1168079646}
+  - component: {fileID: 1168079645}
+  - component: {fileID: 1168079644}
+  - component: {fileID: 1168079643}
+  m_Layer: 0
+  m_Name: Player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1168079643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168079642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab33c840047756a49876181d8d520622, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.PlayerBeer
+  cam: {fileID: 1580050000}
+  grab: {fileID: 1168079646}
+  drunk: {fileID: 1168079644}
+  drinkKey: 102
+  drinkSeconds: 4
+  fullBottleDrunk: 1
+  fill: 1
+  holdPosition: {x: -0.23, y: -0.17, z: 0.44}
+  drinkPosition: {x: -0.1, y: -0.06, z: 0.28}
+  drinkTilt: -70
+  raiseSpeed: 7
+--- !u!114 &1168079644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168079642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35ecbfef58437264a969dd1a5d8ec691, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.Drunkenness
+  soberSeconds: 25
+  maxLookSway: 5.5
+  maxRoll: 8
+  maxDrift: 24
+  maxCarrySlop: 1
+  swaySpeed: 0.6
+  amount: 0
+--- !u!114 &1168079645
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168079642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56fbc7a37cb8e784ebaf7c2d24f5a422, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.PlayerCigarette
+  cam: {fileID: 1580050000}
+  grab: {fileID: 1168079646}
+  smokeButton: 1
+  cloudLifetime: 7
+  puffInterval: 0.5
+  puffForward: 0.55
+  puffScatter: 0.15
+  puffStrength: 1
+  holdPosition: {x: 0.24, y: -0.16, z: 0.4}
+  holdTilt: {x: 72, y: -8, z: 0}
+  length: 0.09
+--- !u!114 &1168079646
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168079642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 256759d7e33a76944997d4f9bd71b3df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.PlayerGrab
+  cam: {fileID: 1580050000}
+  controller: {fileID: 1168079647}
+  grabRange: 3
+  holdDistance: 2.2
+  followStrength: 14
+  maxSpeed: 9
+  throwForce: 6
+  maxSoloWeight: 60
+  sagPerKg: 0.006
+  maxSag: 0.7
+  carriedLinearDamping: 6
+  carriedAngularDamping: 2.5
+  minReach: 1
+  maxReach: 3.2
+  reachSensitivity: 3.5
+  heavyReachFloor: 1.5
+  rotateKey: 114
+  rotateSensitivity: 3.5
+  rollSensitivity: 300
+  rotateStrength: 14
+  maxAngularSpeed: 6
+  holdOrientation: 1
+  carrySlop: 0
+--- !u!114 &1168079647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168079642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1545ce6d69adfb4d8781cde2f723117, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.PlayerController
+  cam: {fileID: 1580050000}
+  walkSpeed: 4.5
+  mouseSensitivity: 2
+  gravity: -18
+  jumpHeight: 1.1
+  coyoteTime: 0.12
+  sprintKey: 304
+  crouchKey: 306
+  sprintMultiplier: 1.6
+  crouchSpeedMultiplier: 0.45
+  crouchHeight: 1
+  stanceSpeed: 8
+  speedMultiplier: 1
+  jumpMultiplier: 1
+  lookLocked: 0
+  crouching: 0
+  lookSway: {x: 0, y: 0, z: 0}
+  moveDrift: 0
+--- !u!143 &1168079648
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168079642}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 1.8
+  m_Radius: 0.35
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &1168079649
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168079642}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: -7.0932965}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1580050000}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1182056581
 GameObject:
   m_ObjectHideFlags: 0
@@ -8992,11 +9185,11 @@ GameObject:
   - component: {fileID: 1570054379}
   m_Layer: 0
   m_Name: ReviewCam
-  m_TagString: MainCamera
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!20 &1570054379
 Camera:
   m_ObjectHideFlags: 0
@@ -9125,6 +9318,123 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2638005478560955220, guid: e4f1f18770f975a429455b411424b498, type: 3}
   m_PrefabInstance: {fileID: 1571983059}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1580049999
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1580050000}
+  - component: {fileID: 1580050003}
+  - component: {fileID: 1580050002}
+  - component: {fileID: 1580050001}
+  m_Layer: 0
+  m_Name: PlayerCamera
+  m_TagString: MainCamera
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1580050000
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1580049999}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.7, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1168079649}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1580050001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1580049999}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b57fab4abeaba8b4ebecc33123bb266f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.SmokeVision
+  eyes: {fileID: 0}
+  strength: 1
+  thickenSpeed: 3
+  clearSpeed: 2.2
+  cutoff: 0.004
+  haze: {r: 0.8, g: 0.8, b: 0.83, a: 1}
+  wisps: {r: 0.92, g: 0.92, b: 0.94, a: 1}
+  edge: {r: 0.42, g: 0.42, b: 0.46, a: 1}
+  tilingNear: 2.1
+  tilingFar: 3.9
+  scrollSpeed: 0.014
+  guiDepth: 5
+--- !u!81 &1580050002
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1580049999}
+  m_Enabled: 1
+--- !u!20 &1580050003
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1580049999}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
 --- !u!1001 &1605668320
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12123,3 +12433,4 @@ SceneRoots:
   - {fileID: 721698736}
   - {fileID: 1813539183}
   - {fileID: 1570054380}
+  - {fileID: 1168079649}
