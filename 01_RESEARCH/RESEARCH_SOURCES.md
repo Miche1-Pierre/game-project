@@ -31,3 +31,27 @@ _Sources for the market and development-context numbers (`MARKET_MAP.md`, `DEVEL
 - Steamworks networking (SDR / P2P relay): https://partner.steamgames.com/doc/features/multiplayer/networking
 - Steam Direct fee ($100): https://partner.steamgames.com/doc/gettingstarted/appfee
 - Steam Playtest: https://partner.steamgames.com/doc/features/playtest
+
+## Added September 2026 (Meccha Chameleon, Dear Passengers, distribution, netcode)
+- Meccha Chameleon, Wikipedia: https://en.wikipedia.org/wiki/Meccha_Chameleon
+- Meccha Chameleon, Steam: https://store.steampowered.com/app/4704690/MECCHA_CHAMELEON/
+- Developer interview (engine, EOS, 2-month cycle, asset reuse), GameWith: https://gamewith.jp/gamedb/17059/articles/59486
+- Developer interview (method, UEFN background, paint tooling, beta seeding), Game*Spark: https://www.gamespark.jp/article/2026/06/19/168187.html
+- Developer interview (10 M copies, painting sync problem), Denfaminicogamer: https://news.denfaminicogamer.jp/interview/260630w
+- Unreal Engine Japan confirming the engine: https://x.com/UnrealEngineJP/status/2066731495675609480
+- Discoverability analysis (zero ad spend, Twitch #3, prior titles), GameDiscoverCo: https://newsletter.gamediscover.co/p/look-we-have-to-talk-about-meccha
+- Clone wave on Roblox and Steam, Kotaku: https://kotaku.com/more-people-are-playing-meccha-chameleon-knock-offs-than-the-original-hit-steam-game-as-the-roblox-clone-machine-goes-into-overdrive-2000715371
+- Dear Passengers, Steam: https://store.steampowered.com/app/4534960/Dear_Passengers/
+- FLEXUS studio site (70+ staff, Unity, 300 M+ downloads): https://flexus.games/
+- Founder interview (studio, Unity as standard), DOU: https://gamedev.dou.ua/articles/flexus-games-interview/
+- FLEXUS engineering article (custom scripting language for Unity, ANTLR + bytecode VM): https://gamedev.dou.ua/blogs/own-language-for-unity/
+- Reveal and wishlist explosion (500 k/day), dev.ua: https://dev.ua/en/news/dear-passengers-1784100084
+- Friendslop framing and no AI disclosure, Kotaku: https://kotaku.com/dear-passengers-is-peak-on-an-airplane-and-it-wants-to-be-your-next-viral-friendslop-obsession-2000715910
+- Wishlist quality analysis (1:35 ratio), GameDiscoverCo: https://newsletter.gamediscover.co/p/what-1-million-immediate-wishlists
+- Steam AI content survey (official, code assistants out of scope): https://partner.steamgames.com/doc/gettingstarted/contentsurvey
+- Valve clarifying the AI rules, Jan. 2026, Game Developer: https://www.gamedeveloper.com/business/valve-tweaks-and-clarifies-ai-disclosure-rules-for-steam
+- R.E.P.O. netcode (Photon PUN, chosen on Landfall's recommendation), Photon: https://blog.photonengine.com/r-e-p-o-multiplayer-success-powered-by-photon/
+- Photon Fusion pricing (per CCU): https://www.photonengine.com/fusion/pricing
+- EOS plugin for Unity (free, lobbies, P2P, sessions): https://github.com/EOS-Contrib/eos_plugin_for_unity
+- PEAK origin (one-month game jam), Wikipedia: https://en.wikipedia.org/wiki/Peak_(video_game)
+

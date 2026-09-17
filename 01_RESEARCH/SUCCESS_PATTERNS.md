@@ -12,5 +12,7 @@ _Regularities extracted from the corpus (not decided in advance). Recombinable p
 - **H. Mundane action, absurd consequence.** The gap between intent and result is the joke. Proof: Untitled Goose Game, Goat Simulator, R.E.P.O.
 - **I. Few rules + strong combinatorics.** Systemic density over content quantity. Ideal for two people. Proof: Balatro, Super Auto Pets, Luck be a Landlord.
 - **J. The clip as an output of the system.** The match spontaneously produces the viral object. The newest and least exploited. Proof: Content Warning (explicit), Among Us, PEAK.
+- **K. Reusable capital, not a lucky concept.** The fast hits are built on a working system the team already owned. Meccha Chameleon shipped in 2 months because its multiplayer layer came from the authors' previous game, literally: the shipped executable is still named `PenguinHotel.exe`. PEAK came out of a one-month jam between two established studios. Proof: Meccha Chameleon, PEAK, R.E.P.O. (after Voidigo).
+- **L. The cheapest asset is sometimes the mechanic.** When the art requirement and the design requirement are the same object, production cost collapses. A blank white untextured body costs nothing and is the entire premise of Meccha Chameleon. Proof: Meccha Chameleon, Chained Together (one chain), Buckshot (one table).
 
-Causal thesis and ranking of properties: `WHITE_SPACES.md`.
+Causal thesis and ranking of properties: `WHITE_SPACES.md`. Distribution side of the same thesis: `VIRALITY_PATTERNS.md`.

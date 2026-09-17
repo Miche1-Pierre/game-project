@@ -30,3 +30,49 @@ After ~30-60 minutes: does moving the furniture already create little stories an
 ## How to run
 Unity editor (6000.6.0f1): menu **The Movers > Create Greybox Scene**, then press Play. Or: create an empty scene, add an empty GameObject, add the `GreyboxBootstrap` component, press Play.
 Controls: WASD move, mouse look, LMB grab/drop, RMB throw, E deliver (when all loaded), Esc frees the cursor.
+
+---
+
+## Next scope, pending the verb question
+The concept meeting of 2026-09-16 specified a **larger greybox** than Tutorial_01, built on the "steal under watch" reading of the concept. It is recorded here because the decisions are real, and held here because `GAME_CONCEPT.md` carries an unresolved divergence on the core verb.
+
+Do not build this until that divergence is settled.
+
+- **Map:** the grandmother's house, 10 rooms. Entrance, kitchen, living room, bedroom, attic, garage, cellar, garden, bathroom, hallway. Handcrafted, no procedural generation.
+- **Garage over barn.** Delegated to the agent at the meeting and decided: it is attached, so no second building shell and no long outdoor traversal; it faces the truck, so it is the natural loading path; it justifies bulky heavy objects that exercise the physics hardest; and its door is a large openable or breakable surface, which gives a second entry route with no extra art.
+- **About 80 inert manipulable objects**, varying in weight, fragility and value.
+- **2 living objects.** The cat screams when picked up and is audible through walls, which makes it a portable alarm. The fish dies about 40 seconds out of water, firing a notification and a money loss.
+- **One NPC, the grandmother.** A single scripted interaction: she hands over the keys and a tutorial box opens. She states one house rule out loud, for example asking you to be careful with her cat, to plant the idea without enforcing it in code. Movement is **A\* pathfinding on a fixed patrol**, which is a standard algorithm and not AI. She walks, she does not evaluate.
+- **Two entries.** Take the keys, or break a window. Breaking the window works and costs money. That is the first choice the game asks.
+- **Theft ledger.** Any non-contract object reaching the truck pays extra. Detection stays hard-coded conditions only.
+- **Starting inventory,** deliberately lean and absurd: a beer and a cigarette, usable at any time, useful for nothing.
+- **Truck:** a static hollow box, not drivable. The real vehicle comes in V1.
+- **Multiplayer:** 4 players maximum, host is a player, no backend.
+
+**Still out of scope in that larger version:** the shop, procedural or modular generation, a drivable truck, the vigilance meter and any behaviour AI for detection (deferred to V2), progression between maps, a second map, final art, audio design, menus.
+
+### Suggested build order for that version
+A sequencing proposal so the funny test arrives early rather than last, not a decision.
+
+1. One room, five objects, one player. Pick up, carry, drop, break, value lost. This is what Tutorial_01 already does.
+2. Add the cat. One asset, screams on pickup. The cheapest laugh in the build.
+3. Add a second player. Handing objects over, getting in each other's way.
+4. Add the grandmother walking her patrol. No detection yet, just a body in the corridor to route around.
+5. Add the theft ledger and the settlement.
+6. Add the fish, the timer and the window entry.
+7. Fill out the remaining rooms and objects.
+
+Steps 1 to 4 already answer the one question. Steps 5 to 7 make it a run.
+
+### Go / no-go criteria from the meeting
+In priority order, and compatible with the Tutorial_01 criteria above.
+
+1. **Spontaneous laughter. Mandatory.** If nobody laughs, the concept goes back to design and we do not build assets.
+2. **Wanting to try something.** A player says they would like to test a thing, or wants to see how the owner reacts.
+3. **Being pulled in by the money.** Wanting the next map, wanting a better run.
+
+### Assets
+Free packs as the base, completed by AI 3D generation on existing subscriptions. Money is spent only if the greybox validates. Generated assets that ship must be declared on the Steam page. See `../05_ART/ASSET_STATUS.md`.
+
+### Multiplayer validation order
+Each developer local first, then two clients on one machine using the school VMs, then Steam networking last and not during the greybox. No paid networking. See `../decisions/ADR-004-netcode-free-only.md`.

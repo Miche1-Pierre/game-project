@@ -5,7 +5,7 @@ _16 games from the corpus, with numbers. Interactive whiteboard: "Atlas Coop Vir
 ## Corpus constants
 - Median price at or below $10.
 - Teams of 1 to 5 people on most hits, often made in weeks to a few months.
-- Unity everywhere it is known (validates our Unity 6 stack).
+- Unity on almost every hit (validates our Unity 6 stack). The one verified 2026 exception, Meccha Chameleon, is Unreal 5 because its authors came from UEFN, not because Unity could not do it.
 - "Very" or "Overwhelmingly Positive" Steam ratings.
 - The phenomenon accelerates from 2018 to 2026, it does not fade.
 
@@ -26,7 +26,10 @@ _16 games from the corpus, with numbers. Interactive whiteboard: "Atlas Coop Vir
 | Overcooked 2 | 2018 | ~$25 | Ghost Town / Team17 | 1-4 | several M | n/a | Very Positive | Unity |
 | Gang Beasts | 2017 | ~$20 | Boneloaf | 1-8 | several M | n/a | Very Positive | Unity |
 | GTFO | 2021 | ~$35 | 10 Chambers | 1-4 | ~1 M | modest | Very Positive | Unity |
-| Meccha Chameleon | 2026 | budget | Lemorion_1224 + Haganeiro (2) | party | new, well-received | n/a | Positive (recent) | unknown |
+| Meccha Chameleon | 2026 | $5.99 | Lemorion_1224 + Haganeiro (2) | 2-10 (24 max) | 20 M+ | 340 k | 87% Very Positive | **Unreal 5** |
 | Megabonk | 2025 | $9.99 | vedinad (solo) | 1 | 1 M+ in 2 weeks | 117 k | Overwhelmingly Pos. | unknown |
+| Dear Passengers | unreleased | n/a | FLEXUS (70+) | not stated | 2 M+ wishlists | n/a | n/a | Unity |
+
+Dear Passengers is **unreleased**. It is in the table as a distribution case study only, and its wishlist number is not a sales number: median first-week conversion is 10 to 15%.
 
 Detailed per-game fiches: `GAME_ANALYSIS/`.

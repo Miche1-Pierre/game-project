@@ -1,13 +1,14 @@
 # GAME PROJECT (provisional codename)
 
-**Status: PRE-CONCEPT.** The game has no name and no locked concept yet. That is deliberate.
+**Status: GREYBOX.** The concept is locked (ADR-004). The game still has no name.
 
 This repository is the project's **decision repository**: it explains why we build, how we validate, what it costs, and how we distribute. The Unity code is only one part (`UnityProject/`).
 
 ## Where we are
-- **Phase:** concept selection (research done)
-- **Current objective:** choose the concept and write the greybox spec
-- **Next milestone:** a playable greybox, tested by two
+- **Phase:** greybox (concept locked, spec frozen)
+- **Concept:** steal under watch. A moving crew empties a house while the owner is present, and steals what it can get away with.
+- **Current objective:** build the greybox and find out whether anyone laughs
+- **Next milestone:** the go / no-go on a playable greybox
 - Living dashboard: [`00_PROJECT/PROJECT_STATE.md`](00_PROJECT/PROJECT_STATE.md)
 
 ## Method
@@ -15,7 +16,7 @@ Research, Design, Experiments, Unity, Playtests, Decisions, Production, Business
 We optimize for **learning speed** before development volume.
 
 ## Current priority
-DO NOT build content. VALIDATE the core gameplay.
+DO NOT build content. VALIDATE the core gameplay. Scope is frozen in [`02_GAME_DESIGN/GREYBOX_SPEC.md`](02_GAME_DESIGN/GREYBOX_SPEC.md).
 
 ## Stack
 Unity 6 (6000.6.0f1), C#, Unity MCP + Claude Code, Steam (PC). Team: 2 (Miche1-Pierre, Spykernv).
