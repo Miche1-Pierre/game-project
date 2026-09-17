@@ -11,15 +11,18 @@ Can a player pick up furniture and boxes in a house and load them into a truck t
 - One player (first person), single machine.
 
 ## Systems (minimal)
-1. Player movement (WASD + mouse look), CharacterController.
+1. Player movement (WASD + mouse look + Space to jump), CharacterController. The jump is sized to climb into the truck bed and step over a dropped crate, and it flattens with the weight you carry.
 2. Physics grab: look + LMB to grab, carry as an unwieldy rigidbody (the object fights you), RMB to throw, LMB again to drop.
-3. `MovableObject` data: weight (sets mass and slows you), contractValue, requiredForContract, fragile + breakThreshold (fragile marks "broken" on a hard impact, no fragmentation yet).
-4. Truck cargo trigger: objects inside the truck bed count as loaded.
-5. Contract: required checklist, money, timer; press E when all required are loaded to DELIVER and get paid (broken items pay less).
-6. HUD (OnGUI, ugly on purpose): checklist, money, timer, controls.
+3. Carried rotation: hold R and the mouse turns the object instead of your head (mouse to turn, scroll to roll). The object keeps the orientation you gave it as you walk, and heavy things turn slowly. No 90 degree snap key: the obvious pair, Q and E, is unusable because E is DELIVER.
+4. `MovableObject` data: weight (sets mass and slows you), contractValue, requiredForContract, fragile + breakThreshold (fragile marks "broken" on a hard impact, no fragmentation yet).
+5. Truck cargo trigger: objects inside the truck bed count as loaded.
+6. Contract: required checklist, money, timer; press E when all required are loaded to DELIVER and get paid (broken items pay less).
+7. HUD (OnGUI, ugly on purpose): checklist, money, timer, controls.
 
 ## The first emergent problem (no special code)
 The sofa is wider than the narrow interior door. The player must rotate it or find another route. That single geometry fact already forces thinking. A later layer: an object that only fits through a window.
+
+Rotating it is possible as of 2026-09-17 (system 3). Before that the problem had one answer, walk around, which is a wall rather than a problem. Whether the turn is satisfying or fiddly is a playtest question, not a settled one.
 
 ## Out of scope (do NOT build yet)
 Theft / extra-value scoring, NPCs / owner, cameras / alarms, fire / consequences, destruction / fragmentation, progression / upgrades, multiple maps, real assets, menus, save, and networking. All deferred until the core feel is validated (risk R2).
@@ -29,7 +32,8 @@ After ~30-60 minutes: does moving the furniture already create little stories an
 
 ## How to run
 Unity editor (6000.6.0f1): menu **The Movers > Create Greybox Scene**, then press Play. Or: create an empty scene, add an empty GameObject, add the `GreyboxBootstrap` component, press Play.
-Controls: WASD move, mouse look, LMB grab/drop, RMB throw, E deliver (when all loaded), Esc frees the cursor.
+Controls: WASD move, Space jump, mouse look, LMB grab/drop, RMB throw, E deliver (when all loaded), Esc frees the cursor.
+To turn what you carry: hold R, then move the mouse to turn it or scroll to roll it. Look is suspended while R is held, so the mouse belongs to the object.
 
 ---
 

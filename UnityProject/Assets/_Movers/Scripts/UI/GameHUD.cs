@@ -36,8 +36,9 @@ namespace Movers
                 GUILayout.Label("Load every required item into the truck.", label);
             GUILayout.EndArea();
 
-            GUILayout.BeginArea(new Rect(12, Screen.height - 34, Screen.width - 24, 30));
-            GUILayout.Label("WASD move  |  Mouse look  |  LMB grab/drop  |  RMB throw  |  E deliver  |  Esc cursor", label);
+            GUILayout.BeginArea(new Rect(12, Screen.height - 54, Screen.width - 24, 50));
+            GUILayout.Label("WASD move  |  Space jump  |  Mouse look  |  LMB grab/drop  |  RMB throw  |  E deliver  |  Esc cursor", label);
+            GUILayout.Label("Hold R to turn what you carry: mouse turns it, scroll rolls it", label);
             GUILayout.EndArea();
         }
     }
