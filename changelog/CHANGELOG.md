@@ -4,6 +4,18 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 
 ## 2026-09-17
 
+### Tutorial_01 re-skinned, placeholder crew, and the URP claim corrected
+
+- **TECH:** the working line is now `main` only. `strat-jo` had been merged and deleted on GitHub; its one surviving local commit (the batchmode build entry point) was cherry-picked and the local branch deleted.
+- **TECH:** Tutorial_01 no longer reads as a dungeon. `MoversVisualSwap` mapped greybox names onto `BrokenVector/LowPolyDungeon` (sofa to Bench, vase to Amphora, lamp to Candlestick) and scanned all of `Assets`, so even the fallback name match landed in the dungeon pack. Remapped onto the house kit under `_Project/Prefabs` and scoped to that folder. Television and fridge had no dungeon equivalent and stayed grey boxes: all 12 movable objects now carry a mesh instead of 10. Physics untouched, each object still has exactly one collider and each visual measures the same world size as it.
+- **DESIGN:** carried objects can be turned. Hold R and the mouse turns the object instead of your head, scroll rolls it, heavy things turn slowly. Space jumps, sized to climb into the truck bed, flattened by what you carry, with a coyote window. Q and E were the obvious snap keys and are unusable: E already delivers. `GREYBOX_SPEC` records it as system 3, which is what turns the sofa wider than the door from a wall into a problem.
+- **CONTENT:** four placeholder crew members, from the Floreswa Low Poly Character Pack. `male01_1` converted from Generic to Humanoid: the Rigify metarig maps every bone Unity requires. Unity's auto-mapper had bound RightEye to the skull-top bone, which would have rotated the head on any clip touching the eyes; that mapping was removed. The four prefabs share one mesh and ten of their eleven materials, only the shirt slot differs, so a fifth member costs a material and a prefab.
+- **CONTENT:** the pack ships zero animations, so `Carry_Idle` was authored in Blender, headless, and retargets onto the character through the humanoid layer. Copying the character avatar onto the clip fails (the round trip shifts leg bone lengths by up to 400 mm), so the clip carries its own avatar. The authoring script is not in `tools/blender/` yet.
+- **TECH:** Blender confirmed drivable headless (5.1.2, no GUI and no MCP addon needed), which is how every asset step above was done.
+- **DOCS:** the URP claim corrected wherever it was still stated. `ASSET_AUDIT` recorded Built-in RP on 2026-09-16 but the finding was never propagated. Fixed in `CLAUDE.md` rule 6, `PROJECT_STATE`, `TECH_STACK`, `UNITY_SETUP`, `PERFORMANCE`, `THIRD_PARTY`, `DEVELOPMENT_PLAN`, `LIGHTING` and `MATERIALS`. `ADR-001` is amended rather than rewritten: the decision stands as recorded, the pipeline line is annotated above it.
+- **DOCS:** the `ASSET_STATUS` register has its first real entries, replacing the example row.
+- **TECH:** `Assets/_Recovery/` is gitignored. It is the copy Unity writes of the open scene after a crash, and it was a byte-for-byte duplicate of Tutorial_01.
+
 ### Merge of `strat-jo` into the main line
 Branch `strat-jo` (benchmark research and the concept-meeting decisions) merged with `main` (deep doc fill, concept lock, and the first working Unity greybox). Both sides preserved.
 
