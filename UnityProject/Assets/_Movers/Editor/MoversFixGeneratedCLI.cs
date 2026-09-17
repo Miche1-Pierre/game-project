@@ -24,7 +24,10 @@ namespace Movers.EditorTools
                 if (imp == null) continue;
 
                 imp.materialImportMode = ModelImporterMaterialImportMode.ImportViaMaterialDescription;
-                imp.materialLocation = ModelImporterMaterialLocation.External;
+                // InPrefab, not External: External is deprecated in Unity 6 and logs an error
+                // on every reimport. Sharing the project's materials is done by remapping
+                // instead, see MoversMaterialFixCLI.
+                imp.materialLocation = ModelImporterMaterialLocation.InPrefab;
                 imp.materialSearch = ModelImporterMaterialSearch.Everywhere;
 
                 // Unit correction by measurement. The variants are proportional edits of the
