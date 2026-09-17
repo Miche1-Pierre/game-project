@@ -47,9 +47,30 @@ Physics is never touched. The reverse method is `RunRestore`.
 
 The same operation is available from the editor menu: **The Movers > Visual Swap**.
 
-## Check the cigarette smoke (Unity, no clicking)
+## Check the starting inventory (Unity, no clicking)
 
-Three entry points, because the feature makes three promises that fail differently.
+The cigarette and the beer, from the editor or from a command line. All of these are also in
+the editor menu under **The Movers**. None of them saves a scene, the puffs they spawn are
+removed on the way out, and the images they leave under `Generated/` are gitignored debug
+output, regenerated on every run: worth looking at, not worth arguing with in a diff.
+
+Put both items in the hands of players in scenes that were saved before the items existed.
+Idempotent, and it refuses to run while the game is playing:
+
+    Unity.exe -batchmode -quit \
+      -projectPath C:\dev\game-project\UnityProject \
+      -executeMethod Movers.EditorTools.MoversStartingInventoryCLI.RunInstall \
+      -logFile inventory.log
+
+Drink the whole bottle without a keyboard and check what it does to the player. Enters Play
+for about twelve seconds, shortens the sobering clock so the run is not half a minute, says so
+in the log, and restores every project setting it touched. Do NOT pass `-quit`:
+
+    ... -executeMethod Movers.EditorTools.MoversBeerPlaytestCLI.RunPlaytest
+
+### The smoke, in three entry points
+
+Three, because the feature makes three promises that fail differently.
 
 Numbers only, no graphics device needed. Prints the density of one puff over its whole life,
 the falloff by distance, and what stacking puffs does:
@@ -71,10 +92,6 @@ that the cigarette was built in the hand with no collider on it, then watches on
 die on the wall clock. Do NOT pass `-quit`, it exits by itself:
 
     ... -executeMethod Movers.EditorTools.MoversSmokePlaytestCLI.RunPlaytest
-
-All three are also in the editor menu under **The Movers**. None of them saves a scene, and the
-puffs they spawn are removed on the way out. The images under `Generated/smoke/` are debug
-output, regenerated on every run: they are worth looking at, not worth arguing with in a diff.
 
 ## Pack inventory
 

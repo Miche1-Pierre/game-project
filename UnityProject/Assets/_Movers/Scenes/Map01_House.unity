@@ -4129,6 +4129,8 @@ GameObject:
   - component: {fileID: 749010233}
   - component: {fileID: 749010232}
   - component: {fileID: 749010234}
+  - component: {fileID: 749010236}
+  - component: {fileID: 749010235}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -4180,6 +4182,8 @@ MonoBehaviour:
   jumpMultiplier: 1
   lookLocked: 0
   crouching: 0
+  lookSway: {x: 0, y: 0, z: 0}
+  moveDrift: 0
 --- !u!143 &749010233
 CharacterController:
   m_ObjectHideFlags: 0
@@ -4228,6 +4232,48 @@ MonoBehaviour:
   holdPosition: {x: 0.24, y: -0.16, z: 0.4}
   holdTilt: {x: 72, y: -8, z: 0}
   length: 0.09
+--- !u!114 &749010235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 749010230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab33c840047756a49876181d8d520622, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.PlayerBeer
+  cam: {fileID: 110485051}
+  grab: {fileID: 0}
+  drunk: {fileID: 749010236}
+  drinkKey: 102
+  drinkSeconds: 4
+  fullBottleDrunk: 1
+  fill: 1
+  holdPosition: {x: -0.23, y: -0.17, z: 0.44}
+  drinkPosition: {x: -0.1, y: -0.06, z: 0.28}
+  drinkTilt: -70
+  raiseSpeed: 7
+--- !u!114 &749010236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 749010230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35ecbfef58437264a969dd1a5d8ec691, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.Drunkenness
+  soberSeconds: 25
+  maxLookSway: 5.5
+  maxRoll: 8
+  maxDrift: 24
+  maxCarrySlop: 1
+  swaySpeed: 0.6
+  amount: 0
 --- !u!1001 &753933744
 PrefabInstance:
   m_ObjectHideFlags: 0

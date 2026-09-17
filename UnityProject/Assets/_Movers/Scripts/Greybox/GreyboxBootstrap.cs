@@ -185,10 +185,16 @@ namespace Movers
             var pg = p.AddComponent<PlayerGrab>();
             pg.cam = camGO.transform;
             pg.controller = pc;
-            // Starting inventory, GREYBOX_SPEC. It builds its own view at Play.
+            // Starting inventory, GREYBOX_SPEC: a cigarette and a beer. Both build their own
+            // view at Play, and both only work with your hands empty.
+            var drunk = p.AddComponent<Drunkenness>();
             var cig = p.AddComponent<PlayerCigarette>();
             cig.cam = camGO.transform;
             cig.grab = pg;
+            var beer = p.AddComponent<PlayerBeer>();
+            beer.cam = camGO.transform;
+            beer.grab = pg;
+            beer.drunk = drunk;
         }
     }
 }

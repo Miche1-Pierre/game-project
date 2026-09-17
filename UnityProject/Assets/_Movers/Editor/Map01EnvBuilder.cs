@@ -256,7 +256,9 @@ namespace Movers
             camGO.AddComponent<Camera>(); camGO.AddComponent<AudioListener>(); camGO.tag = "MainCamera";
             camGO.AddComponent<SmokeVision>();   // the blindness belongs to the eyes
             var pc = p.AddComponent<PlayerController>(); pc.cam = camGO.transform;
+            var drunk = p.AddComponent<Drunkenness>();
             var cig = p.AddComponent<PlayerCigarette>(); cig.cam = camGO.transform;
+            var beer = p.AddComponent<PlayerBeer>(); beer.cam = camGO.transform; beer.drunk = drunk;
         }
 
         // ---- helpers ----
