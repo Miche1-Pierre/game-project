@@ -8,7 +8,8 @@ Concept -> Greybox -> Placeholder -> Generated -> Cleaned -> Integrated -> Final
 ## Register
 | Asset | System | Stage | Note |
 |---|---|---|---|
-| (example) Player character | Core loop | Concept | placeholder capsule for the greybox |
+| Crew, 4 colours | Core loop | Placeholder | `UnityProject/Assets/_Movers/Generated/Characters/PF_Crew_0*.prefab`. One Floreswa body, shirt material swapped, shared mesh. |
+| Carry idle clip | Carry | Placeholder | `Anim_Carry_Idle.fbx`, authored in Blender, humanoid, looping. The pack ships no animation. |
 
 ## Pipeline decision (2026-09-16)
 **Free asset packs as the base, completed by AI 3D generation on our existing subscriptions.** Both, not one or the other.
