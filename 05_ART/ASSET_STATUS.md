@@ -8,7 +8,7 @@ Concept -> Greybox -> Placeholder -> Generated -> Cleaned -> Integrated -> Final
 ## Register
 | Asset | System | Stage | Note |
 |---|---|---|---|
-| Crew, 4 colours | Core loop | Placeholder | `UnityProject/Assets/_Movers/Generated/Characters/PF_Crew_0*.prefab`. One Floreswa body, shirt material swapped, shared mesh. |
+| Crew, 4 colours | Core loop | Placeholder | `UnityProject/Assets/_Movers/Generated/Characters/PF_Crew_0*.prefab`. One Floreswa body, shirt material swapped, shared mesh. **Height 1.80 m**, matching the player CharacterController, set by the scale factor on `male01_1.fbx` (0.6956). The pack imports at 2.59 m. Keep the prefab root scale at 1: the four are variants, so the model is the one place to change size. |
 | Carry idle clip | Carry | Placeholder | `Anim_Carry_Idle.fbx`, authored in Blender, humanoid, looping. The pack ships no animation. |
 
 ## Pipeline decision (2026-09-16)
