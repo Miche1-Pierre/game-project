@@ -11,6 +11,10 @@ namespace Movers
         {
             if (contract == null) return;
 
+            // Explicit, because SmokeVision draws a full-screen overlay and OnGUI sorts by
+            // depth with lower on top. The smoke takes the player's view, never the checklist.
+            GUI.depth = 0;
+
             var label = new GUIStyle(GUI.skin.label) { fontSize = 15 };
             var title = new GUIStyle(GUI.skin.label) { fontSize = 18, richText = true };
 
@@ -36,9 +40,12 @@ namespace Movers
                 GUILayout.Label("Load every required item into the truck.", label);
             GUILayout.EndArea();
 
-            GUILayout.BeginArea(new Rect(12, Screen.height - 54, Screen.width - 24, 50));
-            GUILayout.Label("WASD move  |  Space jump  |  Mouse look  |  LMB grab/drop  |  RMB throw  |  E deliver  |  Esc cursor", label);
-            GUILayout.Label("Hold R to turn what you carry: mouse turns it, scroll rolls it", label);
+            // Three lines now, so the strip is taller than the two-line one it grew out of.
+            // At 50 px the third line printed on top of the second.
+            GUILayout.BeginArea(new Rect(12, Screen.height - 74, Screen.width - 24, 70));
+            GUILayout.Label("WASD move  |  Shift sprint  |  Ctrl crouch  |  Space jump  |  LMB grab/drop  |  RMB throw  |  E deliver  |  Esc cursor", label);
+            GUILayout.Label("Carrying:  scroll to push out / pull in  |  hold R to turn it (mouse turns, scroll rolls)", label);
+            GUILayout.Label("Hands free:  hold RMB to smoke the cigarette  |  the cloud blinds anyone standing in it, you included, for 7s", label);
             GUILayout.EndArea();
         }
     }

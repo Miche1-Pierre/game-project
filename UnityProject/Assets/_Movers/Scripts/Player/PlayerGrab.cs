@@ -10,7 +10,7 @@ namespace Movers
         public PlayerController controller;
 
         public float grabRange = 3f;
-        public float holdDistance = 2.2f;
+        public float holdDistance = 2.2f;    // the reach you start each session with, see currentReach
         public float followStrength = 10f;   // lowered from 14: more lag reads as more weight
         public float maxSpeed = 9f;
         public float throwForce = 6f;
@@ -25,6 +25,18 @@ namespace Movers
         public float maxSag = 0.7f;            // a fridge ends up near the floor, not through it
         public float carriedLinearDamping = 6f;
         public float carriedAngularDamping = 2.5f;  // was 6, which froze all sway
+
+        [Header("Reach")]
+        // Scroll with nothing held down: push the object out or pull it in, so you can post it
+        // through a doorway from a step back, or hug it to your chest to squeeze past. Holding
+        // rotateKey gives the same wheel to the roll instead, so one wheel does two jobs and
+        // neither has to share a key.
+        public float minReach = 1.0f;
+        public float maxReach = 3.2f;
+        public float reachSensitivity = 3.5f;  // a scroll notch is about 0.1, so this is ~0.35 m per notch
+        // Heavy things cannot be held at arm's length. The far limit closes in as weight rises,
+        // on the same weight factor that already makes them lag and turn slowly.
+        public float heavyReachFloor = 1.5f;
 
         [Header("Rotate the held object")]
         // GREYBOX_SPEC names one emergent problem: the sofa is wider than the interior door.
@@ -43,6 +55,11 @@ namespace Movers
         public bool holdOrientation = true;
 
         MovableObject held;
+
+        // Read by PlayerCigarette. The right button throws only while something is in your
+        // hands, so the same button is free to light the cigarette while they are empty.
+        public bool IsCarrying => held != null;
+
         float savedLinearDamping;
         float savedAngularDamping;
         float savedMaxAngularVelocity;
@@ -54,7 +71,16 @@ namespace Movers
         Quaternion heldLocalRotation = Quaternion.identity;
         bool rotating;
 
+        // Kept across grabs on purpose: how far out you hold things is a stance, not a per
+        // object setting, and resetting it every pickup would undo the player mid-manoeuvre.
+        float currentReach;
+
         Quaternion PlayerYaw => Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+
+        void Awake()
+        {
+            currentReach = Mathf.Clamp(holdDistance, minReach, maxReach);
+        }
 
         void Update()
         {
@@ -66,6 +92,7 @@ namespace Movers
             if (Input.GetMouseButtonDown(1) && held != null) Release(true);
 
             HandleRotateInput();
+            HandleReachInput();
 
             // carrying something heavy slows you down and flattens your jump
             controller.speedMultiplier = held == null
@@ -91,6 +118,20 @@ namespace Movers
             if (Mathf.Abs(mx) > 0f) Turn(mx, Vector3.up);
             if (Mathf.Abs(my) > 0f) Turn(my, Vector3.right);
             if (Mathf.Abs(scroll) > 0f) Turn(scroll, Vector3.forward);
+        }
+
+        void HandleReachInput()
+        {
+            if (held == null || rotating) return;   // while rotating, the wheel belongs to the roll
+            float scroll = Input.GetAxis("Mouse ScrollWheel") * reachSensitivity;
+            if (Mathf.Abs(scroll) <= 0f) return;
+            currentReach = Mathf.Clamp(currentReach + scroll, minReach, maxReach);
+        }
+
+        // What the arms can actually manage right now: your chosen reach, capped by the weight.
+        float EffectiveReach(float weightFactor)
+        {
+            return Mathf.Min(currentReach, Mathf.Lerp(heavyReachFloor, maxReach, weightFactor));
         }
 
         void Turn(float degrees, Vector3 axis)
@@ -143,7 +184,7 @@ namespace Movers
             if (held == null) return;
             float weightFactor = Mathf.Clamp(maxSoloWeight / Mathf.Max(held.weight, 1f), 0.2f, 1f);
 
-            Vector3 target = cam.position + cam.forward * holdDistance;
+            Vector3 target = cam.position + cam.forward * EffectiveReach(weightFactor);
             // Heavy things hang lower. You cannot hold a fridge at eye level, and a settled
             // offset reads as weight without the object sinking through the floor.
             target.y -= Mathf.Min(held.weight * sagPerKg, maxSag);

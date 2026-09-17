@@ -47,6 +47,35 @@ Physics is never touched. The reverse method is `RunRestore`.
 
 The same operation is available from the editor menu: **The Movers > Visual Swap**.
 
+## Check the cigarette smoke (Unity, no clicking)
+
+Three entry points, because the feature makes three promises that fail differently.
+
+Numbers only, no graphics device needed. Prints the density of one puff over its whole life,
+the falloff by distance, and what stacking puffs does:
+
+    Unity.exe -batchmode -quit \
+      -projectPath C:\dev\game-project\UnityProject \
+      -executeMethod Movers.EditorTools.MoversSmokeCLI.RunProbe \
+      -logFile smoke.log
+
+Images, needs a graphics device, so do not pass `-nographics`. Renders the player camera with
+the cloud in front of it and paints the real overlay on top, into
+`Assets/_Movers/Generated/smoke/`. It calls the game's own `SmokeVision.DrawSmoke`, so the
+preview cannot drift from what ships:
+
+    ... -executeMethod Movers.EditorTools.MoversSmokeCLI.RunPreview
+
+The part that only exists while the game runs. Enters Play mode for about ten seconds, checks
+that the cigarette was built in the hand with no collider on it, then watches one puff live and
+die on the wall clock. Do NOT pass `-quit`, it exits by itself:
+
+    ... -executeMethod Movers.EditorTools.MoversSmokePlaytestCLI.RunPlaytest
+
+All three are also in the editor menu under **The Movers**. None of them saves a scene, and the
+puffs they spawn are removed on the way out. The images under `Generated/smoke/` are debug
+output, regenerated on every run: they are worth looking at, not worth arguing with in a diff.
+
 ## Pack inventory
 
 `blender/pack_inventory.txt` lists every file in the dungeon pack, for grepping without

@@ -12,17 +12,20 @@ Can a player pick up furniture and boxes in a house and load them into a truck t
 
 ## Systems (minimal)
 1. Player movement (WASD + mouse look + Space to jump), CharacterController. The jump is sized to climb into the truck bed and step over a dropped crate, and it flattens with the weight you carry.
-2. Physics grab: look + LMB to grab, carry as an unwieldy rigidbody (the object fights you), RMB to throw, LMB again to drop.
-3. Carried rotation: hold R and the mouse turns the object instead of your head (mouse to turn, scroll to roll). The object keeps the orientation you gave it as you walk, and heavy things turn slowly. No 90 degree snap key: the obvious pair, Q and E, is unusable because E is DELIVER.
-4. `MovableObject` data: weight (sets mass and slows you), contractValue, requiredForContract, fragile + breakThreshold (fragile marks "broken" on a hard impact, no fragmentation yet).
-5. Truck cargo trigger: objects inside the truck bed count as loaded.
-6. Contract: required checklist, money, timer; press E when all required are loaded to DELIVER and get paid (broken items pay less).
-7. HUD (OnGUI, ugly on purpose): checklist, money, timer, controls.
+2. Stance: Shift sprints (x1.6), Ctrl crouches (capsule 1.80 m to 1.00 m, eye 1.60 m to 0.80 m, speed x0.45). Both are hold, not toggle. Crouch beats sprint, no jumping while crouched, and you cannot stand up under something. No stamina.
+3. Physics grab: look + LMB to grab, carry as an unwieldy rigidbody (the object fights you), RMB to throw, LMB again to drop.
+4. Reach: the scroll wheel pushes the held object out or pulls it in, 1.0 m to 3.2 m, about 0.35 m per notch. Heavy objects cannot go as far out (the sofa stops at 2.8 m, the fridge at 2.4 m). The chosen reach is kept between grabs.
+5. Carried rotation: hold R and the mouse turns the object instead of your head (mouse to turn, scroll to roll). The object keeps the orientation you gave it as you walk, and heavy things turn slowly. No 90 degree snap key: the obvious pair, Q and E, is unusable because E is DELIVER.
+6. `MovableObject` data: weight (sets mass and slows you), contractValue, requiredForContract, fragile + breakThreshold (fragile marks "broken" on a hard impact, no fragmentation yet).
+7. Truck cargo trigger: objects inside the truck bed count as loaded.
+8. Contract: required checklist, money, timer; press E when all required are loaded to DELIVER and get paid (broken items pay less).
+9. HUD (OnGUI, ugly on purpose): checklist, money, timer, controls.
+10. Cigarette. You start the job with one lit in your hand. Hold RMB with your hands empty and it smokes hard: every half second it leaves a puff behind, each puff lasts exactly **7 seconds** and takes the view of anyone standing in it, the smoker included. No conflict with RMB throw, which only fires while you are carrying something; pick up a sofa and the cigarette goes out of frame. Pulled forward from the held scope below and made to do something, which is a design change: see `../decisions/ADR-005-cigarette-smoke-screen.md`. It ships no art (both textures are generated in code) and no inventory system.
 
 ## The first emergent problem (no special code)
 The sofa is wider than the narrow interior door. The player must rotate it or find another route. That single geometry fact already forces thinking. A later layer: an object that only fits through a window.
 
-Rotating it is possible as of 2026-09-17 (system 3). Before that the problem had one answer, walk around, which is a wall rather than a problem. Whether the turn is satisfying or fiddly is a playtest question, not a settled one.
+Rotating it is possible as of 2026-09-17 (system 5). Before that the problem had one answer, walk around, which is a wall rather than a problem. Whether the turn is satisfying or fiddly is a playtest question, not a settled one.
 
 ## Out of scope (do NOT build yet)
 Theft / extra-value scoring, NPCs / owner, cameras / alarms, fire / consequences, destruction / fragmentation, progression / upgrades, multiple maps, real assets, menus, save, and networking. All deferred until the core feel is validated (risk R2).
@@ -32,8 +35,9 @@ After ~30-60 minutes: does moving the furniture already create little stories an
 
 ## How to run
 Unity editor (6000.6.0f1): menu **The Movers > Create Greybox Scene**, then press Play. Or: create an empty scene, add an empty GameObject, add the `GreyboxBootstrap` component, press Play.
-Controls: WASD move, Space jump, mouse look, LMB grab/drop, RMB throw, E deliver (when all loaded), Esc frees the cursor.
-To turn what you carry: hold R, then move the mouse to turn it or scroll to roll it. Look is suspended while R is held, so the mouse belongs to the object.
+Controls: WASD move, Shift sprint, Ctrl crouch, Space jump, mouse look, LMB grab/drop, RMB throw, E deliver (when all loaded), Esc frees the cursor.
+While carrying: scroll to push the object out or pull it in. Hold R and the mouse turns it instead of your head, scroll rolls it. Look is suspended while R is held, so the mouse belongs to the object. One wheel, two jobs, split by whether R is down.
+Hands empty: hold RMB to smoke the cigarette. One button, two jobs, split by whether you are carrying something.
 
 ---
 
@@ -49,7 +53,7 @@ Do not build this until that divergence is settled.
 - **One NPC, the grandmother.** A single scripted interaction: she hands over the keys and a tutorial box opens. She states one house rule out loud, for example asking you to be careful with her cat, to plant the idea without enforcing it in code. Movement is **A\* pathfinding on a fixed patrol**, which is a standard algorithm and not AI. She walks, she does not evaluate.
 - **Two entries.** Take the keys, or break a window. Breaking the window works and costs money. That is the first choice the game asks.
 - **Theft ledger.** Any non-contract object reaching the truck pays extra. Detection stays hard-coded conditions only.
-- **Starting inventory,** deliberately lean and absurd: a beer and a cigarette, usable at any time, useful for nothing.
+- **Starting inventory,** deliberately lean and absurd: a beer and a cigarette, usable at any time, useful for nothing. **The cigarette is no longer useful for nothing** as of 2026-09-17: it is built, it is in Tutorial_01 (system 10), and it blinds. ADR-005 records the decision and what would undo it. The beer is untouched and stays inert until someone decides otherwise on purpose.
 - **Truck:** a static hollow box, not drivable. The real vehicle comes in V1.
 - **Multiplayer:** 4 players maximum, host is a player, no backend.
 

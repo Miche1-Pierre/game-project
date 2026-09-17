@@ -19,6 +19,11 @@ UnityProject/crashlytics-build.properties
 UnityProject/Assets/_Recovery/
 UnityProject/Assets/_Recovery.meta
 
+# Debug output of the smoke tools, rewritten on every run. Worth looking at, not worth
+# a diff. Regenerate with The Movers > Smoke Preview, see tools/README.md.
+UnityProject/Assets/_Movers/Generated/smoke/
+UnityProject/Assets/_Movers/Generated/smoke.meta
+
 # Unity-generated IDE / solution files (regenerated locally)
 *.csproj
 *.sln

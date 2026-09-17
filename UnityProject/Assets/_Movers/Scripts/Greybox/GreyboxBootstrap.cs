@@ -176,12 +176,19 @@ namespace Movers
             camGO.AddComponent<Camera>();
             camGO.AddComponent<AudioListener>();
             camGO.tag = "MainCamera";
+            // Smoke blinds eyes, not bodies, so this rides the camera. Every player carries one,
+            // whether or not they smoke: the cloud you have to walk through is someone else's.
+            camGO.AddComponent<SmokeVision>();
 
             var pc = p.AddComponent<PlayerController>();
             pc.cam = camGO.transform;
             var pg = p.AddComponent<PlayerGrab>();
             pg.cam = camGO.transform;
             pg.controller = pc;
+            // Starting inventory, GREYBOX_SPEC. It builds its own view at Play.
+            var cig = p.AddComponent<PlayerCigarette>();
+            cig.cam = camGO.transform;
+            cig.grab = pg;
         }
     }
 }
