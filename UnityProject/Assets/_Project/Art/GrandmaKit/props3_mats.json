@@ -1,0 +1,74 @@
+{
+ "SM_Barrel": [
+  "Wood",
+  "Metal",
+  "WoodDark"
+ ],
+ "SM_Chandelier": [
+  "Metal",
+  "White",
+  "BookGold"
+ ],
+ "SM_Crate": [
+  "Wood",
+  "WoodDark"
+ ],
+ "SM_Floor_Lamp": [
+  "Metal",
+  "FabCream"
+ ],
+ "SM_Flower_01": [
+  "HedgeG",
+  "FabRose",
+  "BookGold",
+  "BookBlue"
+ ],
+ "SM_Garden_Bench": [
+  "Wood"
+ ],
+ "SM_Mailbox": [
+  "Wood",
+  "Metal",
+  "Mush"
+ ],
+ "SM_Mushroom_01": [
+  "FabCream",
+  "Mush"
+ ],
+ "SM_Picture_Frame_01": [
+  "Wood",
+  "BookBlue"
+ ],
+ "SM_Rock_01": [
+  "Stone"
+ ],
+ "SM_Rug_01": [
+  "FabRose",
+  "FabCream"
+ ],
+ "SM_Shelving_Unit_Cave": [
+  "Metal",
+  "Wood",
+  "WoodDark",
+  "Glass"
+ ],
+ "SM_Table_Lamp": [
+  "Wood",
+  "Metal",
+  "FabCream"
+ ],
+ "SM_Vase_Plant": [
+  "Pot",
+  "HedgeG"
+ ],
+ "SM_Wall_Clock": [
+  "Wood",
+  "White",
+  "Dark"
+ ],
+ "SM_Wheelbarrow": [
+  "Metal",
+  "Dark",
+  "Wood"
+ ]
+}

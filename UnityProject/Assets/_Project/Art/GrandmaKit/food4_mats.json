@@ -1,0 +1,71 @@
+{
+ "SM_Apple": [
+  "Mush",
+  "Wood",
+  "HedgeG"
+ ],
+ "SM_Bottle_01": [
+  "Glass",
+  "Dark"
+ ],
+ "SM_Bowl": [
+  "White"
+ ],
+ "SM_Bread": [
+  "Bread"
+ ],
+ "SM_Bread_Basket": [
+  "Wood",
+  "Bread"
+ ],
+ "SM_Cake": [
+  "FabCream",
+  "FabRose",
+  "Mush"
+ ],
+ "SM_Cheese_Wedge": [
+  "Cheese"
+ ],
+ "SM_Coffee_Pot": [
+  "White"
+ ],
+ "SM_Cup": [
+  "White"
+ ],
+ "SM_Cutting_Board": [
+  "Wood"
+ ],
+ "SM_Fruit_Bowl": [
+  "Pot",
+  "Mush",
+  "BookGold",
+  "HedgeG"
+ ],
+ "SM_Jar_01": [
+  "Glass",
+  "Metal"
+ ],
+ "SM_Kettle": [
+  "Metal",
+  "Dark"
+ ],
+ "SM_Pan": [
+  "Dark",
+  "Wood"
+ ],
+ "SM_Plate": [
+  "White"
+ ],
+ "SM_Pot_Cook": [
+  "Metal",
+  "Dark"
+ ],
+ "SM_Utensils_Jar": [
+  "Pot",
+  "Metal"
+ ],
+ "SM_Wine_Bottle": [
+  "Wine",
+  "Dark"
+ ]
+}

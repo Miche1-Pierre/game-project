@@ -1,0 +1,69 @@
+{
+ "SM_Armchair_01": [
+  "FabRose",
+  "FabCream",
+  "WoodDark"
+ ],
+ "SM_Bed_Old": [
+  "Wood",
+  "FabCream",
+  "FabRose",
+  "White"
+ ],
+ "SM_Bookshelf_01": [
+  "Wood",
+  "WoodDark",
+  "FabRose",
+  "FabSage",
+  "Stone",
+  "BookBlue",
+  "BookGold"
+ ],
+ "SM_Coffee_Table": [
+  "Wood"
+ ],
+ "SM_Dining_Chair_01": [
+  "Wood"
+ ],
+ "SM_Dining_Table_01": [
+  "Wood"
+ ],
+ "SM_Dresser_01": [
+  "Wood",
+  "WoodDark",
+  "Metal"
+ ],
+ "SM_Fireplace_Living": [
+  "Stone",
+  "Dark",
+  "Wood"
+ ],
+ "SM_Nightstand_01": [
+  "Wood",
+  "WoodDark",
+  "Metal"
+ ],
+ "SM_Rocking_Chair": [
+  "Wood",
+  "WoodDark"
+ ],
+ "SM_Side_Table": [
+  "Wood"
+ ],
+ "SM_Sofa_01": [
+  "FabSage",
+  "FabCream",
+  "WoodDark"
+ ],
+ "SM_TV_Old": [
+  "Wood",
+  "WoodDark",
+  "Dark",
+  "Metal"
+ ],
+ "SM_Wardrobe_01": [
+  "Wood",
+  "WoodDark",
+  "Metal"
+ ]
+}

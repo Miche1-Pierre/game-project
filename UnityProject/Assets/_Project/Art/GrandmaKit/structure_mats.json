@@ -1,0 +1,52 @@
+{
+ "SM_Wall_Interior_Solid": [
+  "White",
+  "WoodDark"
+ ],
+ "SM_Wall_Interior_Door": [
+  "White",
+  "WoodDark"
+ ],
+ "SM_Wall_Interior_Opening": [
+  "White",
+  "WoodDark"
+ ],
+ "SM_Wall_1m": [
+  "Cream",
+  "White"
+ ],
+ "SM_Wall_3m": [
+  "Cream",
+  "White"
+ ],
+ "SM_Wall_Corner_Inner": [
+  "Cream",
+  "White"
+ ],
+ "SM_Terrace_Deck": [
+  "Plank",
+  "WoodDark",
+  "Wood"
+ ],
+ "SM_Veranda_Panel": [
+  "White",
+  "Glass"
+ ],
+ "SM_Veranda_Corner": [
+  "White"
+ ],
+ "SM_Veranda_Roof": [
+  "Glass",
+  "White"
+ ],
+ "SM_Veranda_Door": [
+  "Glass",
+  "White",
+  "Metal"
+ ],
+ "SM_Veranda_Bay": [
+  "Glass",
+  "White",
+  "Roof"
+ ]
+}

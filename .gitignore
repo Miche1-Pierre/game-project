@@ -40,3 +40,10 @@ desktop.ini
 # ---- Secrets ----
 .env
 *.local
+
+# ---- Local MCP config (machine-specific paths; each dev copies .mcp.json.example) ----
+.mcp.json
+
+# ---- Unity baked lighting (large, regenerated on bake; e.g. asset-pack demo scenes) ----
+UnityProject/Assets/**/LightingData.asset
+UnityProject/Assets/**/LightingData.asset.meta

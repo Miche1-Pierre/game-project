@@ -1,0 +1,17 @@
+{
+  "_comment": "Copy this file to .mcp.json (git-ignored, machine-specific). 'unity-mcp' connects Claude to the Editor's 'Unity MCP Server' (Edit > Project Settings > Unity MCP Server) through its per-user relay. Enable that server in the Editor (Status must show Running); it creates the relay at %USERPROFILE%\\.unity\\relay\\relay_win.exe. Do NOT use 'unity.exe mcp' (different transport, exposes 0 tools). Blender is optional (needs the Blender MCP addon running).",
+  "mcpServers": {
+    "unity-mcp": {
+      "command": "C:\\Users\\<you>\\.unity\\relay\\relay_win.exe",
+      "args": ["--mcp"]
+    },
+    "blender": {
+      "command": "uvx",
+      "args": ["blender-mcp"],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  }
+}

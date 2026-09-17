@@ -1,0 +1,47 @@
+{
+ "SM_Flask_Set": [
+  "Glass",
+  "HedgeG",
+  "BookBlue"
+ ],
+ "SM_Glasses": [
+  "Dark",
+  "Glass"
+ ],
+ "SM_Keys": [
+  "BookGold",
+  "Metal"
+ ],
+ "SM_Lab_Table": [
+  "Wood",
+  "Glass",
+  "BookBlue",
+  "HedgeG",
+  "Mush"
+ ],
+ "SM_Medicine_Box": [
+  "White",
+  "Mush"
+ ],
+ "SM_Microscope": [
+  "Dark",
+  "Metal"
+ ],
+ "SM_Perfume": [
+  "Glass",
+  "BookGold",
+  "FabRose"
+ ],
+ "SM_Piano": [
+  "WoodDark",
+  "Wood",
+  "White",
+  "Dark",
+  "BookGold"
+ ],
+ "SM_Secretary_Desk": [
+  "Wood",
+  "WoodDark",
+  "Metal"
+ ]
+}

@@ -1,0 +1,44 @@
+{
+ "SM_Door_Interior": [
+  "Wood",
+  "WoodDark",
+  "Metal",
+  "White"
+ ],
+ "SM_Fence_Stone": [
+  "Stone",
+  "Dark"
+ ],
+ "SM_Fountain": [
+  "Stone",
+  "Glass"
+ ],
+ "SM_Scarecrow": [
+  "Wood",
+  "Mush",
+  "FabCream",
+  "WoodDark",
+  "BookGold"
+ ],
+ "SM_Stairs_Spiral": [
+  "Metal",
+  "Wood"
+ ],
+ "SM_Trellis": [
+  "Wood",
+  "HedgeG",
+  "FabRose"
+ ],
+ "SM_Wall_2m": [
+  "Cream",
+  "White"
+ ],
+ "SM_Wall_Corner": [
+  "Cream",
+  "White"
+ ],
+ "SM_Window_Round": [
+  "White",
+  "Glass"
+ ]
+}

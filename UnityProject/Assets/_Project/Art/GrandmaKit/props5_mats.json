@@ -1,0 +1,64 @@
+{
+ "SM_Axe": [
+  "Wood",
+  "Metal"
+ ],
+ "SM_Book_Stack": [
+  "BookBlue",
+  "FabRose",
+  "BookGold"
+ ],
+ "SM_Broom": [
+  "Wood",
+  "BookGold"
+ ],
+ "SM_Bucket": [
+  "Metal"
+ ],
+ "SM_Globe": [
+  "Wood",
+  "BookBlue",
+  "Metal"
+ ],
+ "SM_Hammer": [
+  "Wood",
+  "Metal"
+ ],
+ "SM_Knitting_Basket": [
+  "Wood",
+  "FabRose",
+  "BookGold"
+ ],
+ "SM_Newspaper": [
+  "FabCream",
+  "Dark",
+  "Stone"
+ ],
+ "SM_Saw": [
+  "Metal",
+  "Wood"
+ ],
+ "SM_Sewing_Machine": [
+  "Wood",
+  "Dark",
+  "Metal"
+ ],
+ "SM_Shovel": [
+  "Wood",
+  "Metal"
+ ],
+ "SM_Suitcase": [
+  "WoodDark",
+  "Wood",
+  "Dark"
+ ],
+ "SM_Trunk": [
+  "Wood",
+  "WoodDark",
+  "Metal"
+ ],
+ "SM_Yarn_Ball": [
+  "FabRose",
+  "BookBlue"
+ ]
+}
