@@ -12,6 +12,22 @@ one broken. One second, no GUI, no MCP.
 Edit `SRC` at the top of the script to point at another model. Check the `UP` constant
 first: this pack keeps Y as the up axis after FBX import, other packs use Z.
 
+## Author a carry clip (Blender)
+
+The character pack ships three rigged bodies and zero animations. This writes the carry
+pose onto the rig plus a two-second looping breath, and exports an FBX that Unity imports
+as Humanoid and retargets onto the character.
+
+    blender --background --python tools/blender/author_carry_clip.py
+
+Defaults to `male01_1` and the `Generated/Characters` folder. Override with `--src`,
+`--out` and `--preview` after a bare `--`. It reads up and forward off the bones instead
+of assuming an axis, so it runs on the other two bodies in the pack unedited.
+
+Two manual steps remain in Unity. Blender names the FBX take after the scene, so rename
+the clip to `Carry_Idle` and tick Loop Time. And set the avatar to **Create From This
+Model**, not Copy From Other Avatar: the reason is in the script's `export` docstring.
+
 ## Drive the Blender MCP bridge
 
 The addon will not start from a cold command line without the online flag, and the error
