@@ -5,7 +5,7 @@ _What we use and why. Verified on Pierre's machine, Sept. 2026._
 | Layer | Choice | Note |
 |---|---|---|
 | Engine | Unity 6 (6000.6.0f1) | Most of the co-op corpus is Unity. The 2026 outlier is Meccha Chameleon on Unreal 5, driven by its UEFN background, not by a Unity limitation |
-| Render pipeline | URP (com.unity.template.urp-blank) | Stylized low-poly + post-process, light |
+| Render pipeline | Built-in RP | The project was created from the URP template but no URP package is installed. The third-party packs ship Built-in materials, so switching would break them until upgraded. See `ASSET_AUDIT.md` |
 | Language | C# | |
 | Dev agent | Claude Code + official Unity plugin (MCP) | Loop prompt -> Unity -> test |
 | CLI | Unity CLI 1.0.0-beta.8 | `C:\Users\pierr\AppData\Local\Unity\bin` |

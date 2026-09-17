@@ -5,7 +5,7 @@ _Target: 60 fps on our machines, worst realistic case. Test method: `../11_TESTI
 ## Guidelines
 - Profile before optimizing (Unity Profiler), never guess.
 - Bound rigidbody, particle and NPC counts; pool objects; sleep and cull aggressively.
-- Batch draw calls (URP, GPU instancing, few materials, per `../05_ART/`).
+- Batch draw calls (static and dynamic batching, GPU instancing, few materials, per `../05_ART/`).
 - Avoid per-frame allocations; watch the GC.
 - Do not sync unnecessary network state (`../07_MULTIPLAYER/`).
 

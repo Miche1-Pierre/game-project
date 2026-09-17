@@ -27,7 +27,7 @@ Phase: greybox. The concept is locked and `02_GAME_DESIGN/GREYBOX_SPEC.md` exist
 - No premature optimization. Measure first.
 
 ## 6. UNITY RULES
-- Unity 6 (6000.6.0f1), URP. See `03_TECHNICAL/UNITY_SETUP.md`.
+- Unity 6 (6000.6.0f1), **Built-in RP, not URP**. See `03_TECHNICAL/UNITY_SETUP.md` and `03_TECHNICAL/ASSET_AUDIT.md`.
 - Drive the editor through the Unity MCP (`03_TECHNICAL/MCP_WORKFLOW.md`).
 - After any gameplay change: inspect the scene and read the console (zero errors).
 

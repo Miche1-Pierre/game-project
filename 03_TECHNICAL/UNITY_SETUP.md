@@ -11,7 +11,7 @@ _Verified state and creation procedure. Creation deferred: no project until the 
 
 ## To configure at start
 - Unity version: 6000.6.0f1
-- Render pipeline: URP
+- Render pipeline: Built-in RP (verified 2026-09-17: no URP package, `Shader.Find("Universal Render Pipeline/Lit")` returns null)
 - Input: Input System (package)
 - Physics: 3D (PhysX)
 - Build modules: Windows Build Support (IL2CPP) when we want an .exe (not required to play in the editor)

@@ -1,6 +1,6 @@
 # MATERIALS
 
-_Few materials, coherent, cheap. URP._
+_Few materials, coherent, cheap. Built-in RP, Standard shader._
 
 ## Approach
 - A small shared material library; assets reuse it rather than each bringing its own.

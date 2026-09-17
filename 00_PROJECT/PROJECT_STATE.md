@@ -29,7 +29,7 @@ Added 2026-09-17: **Space to jump** (flattened by the weight you carry) and **ho
 **BLOCKERS:** none technical.
 
 **SCOPE:** Tutorial_01 as specified in `02_GAME_DESIGN/GREYBOX_SPEC.md`. A larger scope from the concept meeting is recorded in the same file and deliberately held.
-**TECH:** Unity 6.6.1f1 + URP + MCP (Unity and Blender both driven over MCP since 2026-09-17). Networking free only, Steam P2P or Unity Netcode, host is a player, no backend, 4 players. Photon excluded (ADR-004). Networking comes last, not in the greybox.
+**TECH:** Unity 6.6.1f1 + Built-in RP + MCP (Unity and Blender both driven over MCP since 2026-09-17). Networking free only, Steam P2P or Unity Netcode, host is a player, no backend, 4 players. Photon excluded (ADR-004). Networking comes last, not in the greybox.
 **ART:** free packs as the base, completed by AI 3D generation. Greybox uses primitives only. Generated assets will be declared on the Steam page.
 **BUSINESS:** price range $4.99 to $14.99, volume over margin, settled later by the final look and the wishlist curve. Team agreement deliberately not formalised.
 **STEAM:** page opens when the tutorial works end to end in V1, not before.
