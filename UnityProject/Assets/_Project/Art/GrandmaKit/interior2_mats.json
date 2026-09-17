@@ -1,0 +1,63 @@
+{
+ "SM_Bathtub_Old": [
+  "White",
+  "Glass",
+  "Metal"
+ ],
+ "SM_Cabinet_Upper": [
+  "Wood",
+  "WoodDark",
+  "Metal"
+ ],
+ "SM_Counter_Straight": [
+  "Wood",
+  "Stone",
+  "WoodDark",
+  "Metal",
+  "Dark"
+ ],
+ "SM_Desk": [
+  "Wood",
+  "WoodDark",
+  "Metal"
+ ],
+ "SM_Fridge_Old": [
+  "FabMint",
+  "Metal"
+ ],
+ "SM_Kitchen_Island": [
+  "Wood",
+  "Stone",
+  "WoodDark",
+  "Metal",
+  "Dark"
+ ],
+ "SM_Range_Hood": [
+  "Metal"
+ ],
+ "SM_Shower": [
+  "White",
+  "Glass",
+  "Metal"
+ ],
+ "SM_Sink": [
+  "Wood",
+  "Stone",
+  "Metal",
+  "WoodDark",
+  "Dark"
+ ],
+ "SM_Sink_Bath": [
+  "White",
+  "Glass",
+  "Metal"
+ ],
+ "SM_Stove_Old": [
+  "White",
+  "Metal",
+  "Dark"
+ ],
+ "SM_Toilet": [
+  "White"
+ ]
+}

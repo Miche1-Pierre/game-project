@@ -1,0 +1,113 @@
+{
+ "SM_Bay_Window": [
+  "Wood",
+  "Roof",
+  "White",
+  "Glass"
+ ],
+ "SM_Bush": [
+  "HedgeG"
+ ],
+ "SM_Chimney": [
+  "Brick",
+  "Stone"
+ ],
+ "SM_Deck_Tile": [
+  "Plank",
+  "Wood"
+ ],
+ "SM_Door_Front": [
+  "White",
+  "Wood",
+  "Metal",
+  "Roof"
+ ],
+ "SM_Door_Garage": [
+  "White",
+  "Stone",
+  "Glass"
+ ],
+ "SM_Dormer": [
+  "Cream",
+  "White",
+  "Glass",
+  "Roof"
+ ],
+ "SM_Fence_Post": [
+  "White"
+ ],
+ "SM_Fence_Section": [
+  "Wood",
+  "White"
+ ],
+ "SM_Floor_4x4": [
+  "Plank",
+  "Wood"
+ ],
+ "SM_Foundation_Brick": [
+  "Brick",
+  "Stone"
+ ],
+ "SM_Gable_Infill": [
+  "Cream",
+  "White"
+ ],
+ "SM_Gate": [
+  "Wood",
+  "White"
+ ],
+ "SM_Hedge": [
+  "HedgeG"
+ ],
+ "SM_Path_Stone": [
+  "Stone"
+ ],
+ "SM_Porch_Beam": [
+  "White"
+ ],
+ "SM_Porch_Column": [
+  "Stone",
+  "White"
+ ],
+ "SM_Porch_Railing": [
+  "White"
+ ],
+ "SM_Roof_GableEnd": [
+  "Cream",
+  "White",
+  "Wood"
+ ],
+ "SM_Roof_Ridge": [
+  "Roof"
+ ],
+ "SM_Roof_Slope": [
+  "Roof",
+  "White"
+ ],
+ "SM_Stairs_Interior": [
+  "Wood",
+  "Plank"
+ ],
+ "SM_Steps_Stoop": [
+  "Stone"
+ ],
+ "SM_Wall_Door": [
+  "Cream",
+  "White"
+ ],
+ "SM_Wall_Garage": [
+  "Cream",
+  "White"
+ ],
+ "SM_Wall_Solid": [
+  "Cream",
+  "White"
+ ],
+ "SM_Wall_Window": [
+  "Cream",
+  "White",
+  "Glass",
+  "Sage",
+  "Wood"
+ ]
+}

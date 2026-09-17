@@ -1,0 +1,75 @@
+{
+ "SM_Alarm_Clock": [
+  "Mush",
+  "White",
+  "Dark",
+  "BookGold"
+ ],
+ "SM_Bird_Cage": [
+  "BookGold",
+  "BookBlue"
+ ],
+ "SM_Candlestick": [
+  "BookGold",
+  "White"
+ ],
+ "SM_Crucifix": [
+  "WoodDark",
+  "BookGold"
+ ],
+ "SM_Curtains": [
+  "Metal",
+  "BookGold",
+  "FabRose"
+ ],
+ "SM_Cushion_01": [
+  "FabSage"
+ ],
+ "SM_Cushion_02": [
+  "FabRose"
+ ],
+ "SM_Dress_Form": [
+  "Wood",
+  "Metal",
+  "FabCream"
+ ],
+ "SM_Mirror_Wall": [
+  "BookGold",
+  "Glass"
+ ],
+ "SM_Model_Ship": [
+  "WoodDark",
+  "Wood",
+  "FabCream"
+ ],
+ "SM_Oil_Lamp": [
+  "Metal",
+  "Glass"
+ ],
+ "SM_Painting": [
+  "BookGold",
+  "BookBlue",
+  "HedgeG"
+ ],
+ "SM_Rug_02": [
+  "FabCream",
+  "FabRose"
+ ],
+ "SM_Telescope": [
+  "Wood",
+  "Dark",
+  "Metal"
+ ],
+ "SM_Vase_02": [
+  "BookBlue",
+  "HedgeG",
+  "FabRose",
+  "BookGold",
+  "Mush"
+ ],
+ "SM_Wall_Sconce": [
+  "Metal",
+  "White",
+  "BookGold"
+ ]
+}

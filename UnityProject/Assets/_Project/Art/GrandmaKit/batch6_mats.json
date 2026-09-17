@@ -1,0 +1,82 @@
+{
+ "SM_Armchair_02": [
+  "FabSage",
+  "WoodDark"
+ ],
+ "SM_Birdhouse": [
+  "Wood",
+  "White",
+  "Roof",
+  "Dark"
+ ],
+ "SM_Bush_01": [
+  "HedgeG",
+  "FabRose"
+ ],
+ "SM_Chest": [
+  "Wood",
+  "WoodDark",
+  "Metal"
+ ],
+ "SM_Coat_Rack": [
+  "Wood",
+  "WoodDark"
+ ],
+ "SM_Display_Cabinet": [
+  "Wood",
+  "Glass",
+  "WoodDark",
+  "White"
+ ],
+ "SM_Flower_02": [
+  "HedgeG",
+  "FabRose",
+  "BookGold",
+  "BookBlue"
+ ],
+ "SM_Garden_Arch": [
+  "Wood",
+  "HedgeG",
+  "FabRose"
+ ],
+ "SM_Grass_Tuft": [
+  "HedgeG"
+ ],
+ "SM_Mushroom_02": [
+  "FabCream",
+  "WoodDark"
+ ],
+ "SM_Planter_Box": [
+  "Wood",
+  "WoodDark",
+  "HedgeG",
+  "FabRose",
+  "BookGold",
+  "BookBlue"
+ ],
+ "SM_Rock_02": [
+  "Stone"
+ ],
+ "SM_Sofa_02": [
+  "FabRose",
+  "FabCream",
+  "WoodDark"
+ ],
+ "SM_Vanity": [
+  "Wood",
+  "WoodDark",
+  "Metal",
+  "Glass"
+ ],
+ "SM_Well": [
+  "Stone",
+  "Dark",
+  "Wood",
+  "Roof"
+ ],
+ "SM_Wood_Stove": [
+  "Dark",
+  "BookGold",
+  "Metal"
+ ]
+}
