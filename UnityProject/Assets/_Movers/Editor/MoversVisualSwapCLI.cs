@@ -21,7 +21,7 @@ namespace Movers.EditorTools
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             Debug.Log("[VisualSwap] opened scene: " + scene.name);
 
-            var log = MoversVisualSwap.Swap("Assets", false);
+            var log = MoversVisualSwap.Swap(MoversVisualSwap.DefaultSourceFolder, false);
             foreach (var l in log) Debug.Log("[VisualSwap] " + l);
 
             EditorSceneManager.MarkSceneDirty(scene);

@@ -1,6 +1,6 @@
 # PROJECT STATE
 
-_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-17, after playtest 001._
+_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-17, after adding jump and carried rotation._
 
 **PHASE:** Greybox built, waiting to be played
 
@@ -21,7 +21,8 @@ _Living dashboard. The agent reads it at start and updates it at end of session.
 **NOT VALIDATED:** the go / no-go. Spontaneous laughter has not been tested, and cannot be solo.
 **INVALIDATED:** "Unity everywhere" as a corpus rule. The largest 2026 hit is Unreal 5. Our Unity choice stands (ADR-001) as a preference, not as a benchmark finding.
 **RUNNING EXPERIMENT:** none
-**CURRENT BUILD:** **Tutorial_01 exists, runs, and has been played.** `UnityProject/` (Unity 6000.6.1f1, pinned to Direct3D11: D3D12 crashes the editor on a hybrid NVIDIA plus Intel laptop). Grab, carry, truck loading, contract, delivery, HUD. Ten of the twelve objects show a real mesh from the dungeon pack. Single player, no networking. Open the scene and press Play.
+**CURRENT BUILD:** **Tutorial_01 exists, runs, and has been played.** `UnityProject/` (Unity 6000.6.1f1, pinned to Direct3D11: D3D12 crashes the editor on a hybrid NVIDIA plus Intel laptop). Grab, carry, truck loading, contract, delivery, HUD. All twelve objects show a real mesh from the house kit (`_Project/Prefabs`, GrandmaKit). The first pass used the dungeon pack, which read wrong; remapped 2026-09-17. Single player, no networking. Open the scene and press Play.
+Added 2026-09-17: **Space to jump** (flattened by the weight you carry) and **hold R to turn the object in your hands** (mouse turns, scroll rolls). The rotation exists because the spec's one emergent problem, the sofa wider than the door, had no solution without it. Both are unplayed by a human: compile and console are clean, the feel is not measured.
 
 **NEXT DECISION:** the verb divergence, settled by playing Tutorial_01.
 

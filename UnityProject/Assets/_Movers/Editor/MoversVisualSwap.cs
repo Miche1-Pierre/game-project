@@ -21,7 +21,11 @@ namespace Movers.EditorTools
         // keep the mesh proportions instead. Tuned on the dungeon pack, 2026-09-17.
         const float MaxAnisotropy = 2.5f;
 
-        string folder = "Assets";
+        // The house kit, not the whole project: scanning "Assets" also finds the dungeon
+        // and storage packs, and the fallback name match then picks a dungeon mesh.
+        public const string DefaultSourceFolder = "Assets/_Project/Prefabs";
+
+        string folder = DefaultSourceFolder;
         bool preserveAspect = false;   // default: fill the collider, see note in Fit()
         Vector2 scroll;
         readonly List<string> log = new List<string>();
@@ -204,21 +208,25 @@ namespace Movers.EditorTools
             return list;
         }
 
-        // Greybox object name -> candidate mesh names, best first.
+        // Greybox object name -> candidate prefab names, best first.
         // Several candidates means the A/B/C copies get DIFFERENT meshes instead of clones,
         // which is the cheapest visual variety available: it costs nothing to author.
+        //
+        // Targets are the house kit under Assets/_Project/Prefabs (GrandmaKit). The first
+        // pass of this table pointed at BrokenVector/LowPolyDungeon, which is why Tutorial_01
+        // read as a dungeon. Remapped 2026-09-17.
         static readonly Dictionary<string, string[]> Map = new Dictionary<string, string[]>
         {
-            { "sofa",       new[] { "Bench" } },
-            { "table",      new[] { "Table_Big", "Table_Small", "Desk" } },
-            { "chair",      new[] { "Chair", "Stool_round", "Stool_square" } },
-            { "box",        new[] { "Chest", "Chest_Worn", "Barrel_Closed", "ChestSmall", "Chest_Wide" } },
-            { "vase",       new[] { "Amphora", "Jar_Big", "Jug" } },
-            { "lamp",       new[] { "Candlestick_Triple", "Candlestick", "Chandelier" } },
-            { "plant",      new[] { "Plant_Root", "Ivy_Branch" } },
-            // No modern appliance in a dungeon pack. These stay grey until we kitbash them.
-            { "television", new string[0] },
-            { "fridge",     new string[0] },
+            { "sofa",       new[] { "PF_Sofa_01", "PF_Sofa_02", "PF_Armchair_01" } },
+            { "table",      new[] { "PF_Dining_Table_01", "PF_Coffee_Table", "PF_Side_Table" } },
+            { "chair",      new[] { "PF_Dining_Chair_01", "PF_Armchair_02", "PF_Rocking_Chair" } },
+            { "box",        new[] { "PF_Crate", "PF_Suitcase", "PF_Trunk", "PF_Chest", "PF_Barrel" } },
+            { "vase",       new[] { "PF_Vase_02", "PF_Vase_Plant", "PF_Jar_01" } },
+            { "lamp",       new[] { "PF_Table_Lamp", "PF_Floor_Lamp", "PF_Oil_Lamp" } },
+            { "plant",      new[] { "PF_Vase_Plant", "PF_Bush_01", "PF_Flower_01" } },
+            // The house kit has the appliances the dungeon pack did not: 12 of 12 now resolve.
+            { "television", new[] { "PF_TV_Old" } },
+            { "fridge",     new[] { "PF_Fridge_Old" } },
         };
 
         static GameObject FindMatch(List<GameObject> meshes, string objectName)
