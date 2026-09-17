@@ -15,6 +15,9 @@ UnityProject/*.aab
 UnityProject/*.unitypackage
 UnityProject/*.app
 UnityProject/crashlytics-build.properties
+# Unity writes the open scene here after a crash; it is a copy, not source
+UnityProject/Assets/_Recovery/
+UnityProject/Assets/_Recovery.meta
 
 # Unity-generated IDE / solution files (regenerated locally)
 *.csproj
