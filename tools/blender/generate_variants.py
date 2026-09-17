@@ -115,14 +115,23 @@ def bevel(o, width, segments=1, angle=0.55):
 
 
 def export(o, path):
+    """Export one object as FBX, in metres.
+
+    The legacy exporter is tried FIRST on purpose. Blender 5 ships wm.fbx_export, which
+    succeeds but writes centimetre units; Unity then applies its own 0.01 conversion and
+    the mesh lands 100x too small. export_scene.fbx takes explicit unit flags, so it is
+    the one that produces a mesh Unity reads at its real size.
+    """
     select_only(o)
     try:
-        bpy.ops.wm.fbx_export(filepath=path, export_selected_objects=True)
-    except Exception:
         bpy.ops.export_scene.fbx(
             filepath=path, use_selection=True,
-            apply_unit_scale=True, axis_forward="-Z", axis_up="Y",
+            global_scale=1.0, apply_unit_scale=False,
+            apply_scale_options="FBX_SCALE_NONE",
+            axis_forward="-Z", axis_up="Y",
         )
+    except Exception:
+        bpy.ops.wm.fbx_export(filepath=path, export_selected_objects=True)
 
 
 def main():
