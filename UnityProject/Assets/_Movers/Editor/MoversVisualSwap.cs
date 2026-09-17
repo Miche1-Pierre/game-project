@@ -88,6 +88,7 @@ namespace Movers.EditorTools
                 var visual = (GameObject)PrefabUtility.InstantiatePrefab(match, mo.transform);
                 if (visual == null) { log.Add("- " + mo.name + ": instantiate failed"); continue; }
                 visual.name = VisualName;
+                StripPhysics(visual);
                 Fit(visual.transform, preserveAspect);
 
                 var r = mo.GetComponent<Renderer>();
@@ -117,6 +118,17 @@ namespace Movers.EditorTools
         }
 
         // ---------- internals ----------
+
+        // The pack prefabs ship their own MeshColliders. Nesting one inside a movable gave the
+        // object a second collider, and a concave MeshCollider on a dynamic Rigidbody is invalid:
+        // Unity logs an error and the collision response is wrong. The greybox BoxCollider on the
+        // parent cube is the only collider that should exist, so the visual is stripped of
+        // everything physical. This is what makes "physics untouched" actually true.
+        static void StripPhysics(GameObject visual)
+        {
+            foreach (var c in visual.GetComponentsInChildren<Collider>(true)) DestroyImmediate(c, true);
+            foreach (var rb in visual.GetComponentsInChildren<Rigidbody>(true)) DestroyImmediate(rb, true);
+        }
 
         // Scales the visual so it fills the parent cube's volume.
         // The parent cube uses a unit mesh, so its world size equals its localScale.

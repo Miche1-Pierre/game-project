@@ -11,10 +11,20 @@ namespace Movers
 
         public float grabRange = 3f;
         public float holdDistance = 2.2f;
-        public float followStrength = 14f;
+        public float followStrength = 10f;   // lowered from 14: more lag reads as more weight
         public float maxSpeed = 9f;
         public float throwForce = 6f;
         public float maxSoloWeight = 60f; // above this the object gets very sluggish (needs 2 players, later)
+
+        [Header("Weight feel")]
+        // Playtest 2026-09-17: the carry read as slightly too floaty. The cause is that
+        // FixedUpdate assigns linearVelocity outright, which cancels gravity and inertia, so
+        // the object hangs at eye level with no mass. Rather than rewrite the control model
+        // (the carry itself was judged correct), heavy objects now hang lower and lag more.
+        public float sagPerKg = 0.006f;        // hold point drops this much per kg
+        public float maxSag = 0.7f;            // a fridge ends up near the floor, not through it
+        public float carriedLinearDamping = 6f;
+        public float carriedAngularDamping = 2.5f;  // was 6, which froze all sway
 
         MovableObject held;
         float savedLinearDamping;
@@ -65,6 +75,9 @@ namespace Movers
         {
             if (held == null) return;
             Vector3 target = cam.position + cam.forward * holdDistance;
+            // Heavy things hang lower. You cannot hold a fridge at eye level, and a settled
+            // offset reads as weight without the object sinking through the floor.
+            target.y -= Mathf.Min(held.weight * sagPerKg, maxSag);
             Vector3 toTarget = target - held.rb.worldCenterOfMass;
             float weightFactor = Mathf.Clamp(maxSoloWeight / Mathf.Max(held.weight, 1f), 0.2f, 1f);
             Vector3 desired = Vector3.ClampMagnitude(toTarget * followStrength * weightFactor, maxSpeed);
