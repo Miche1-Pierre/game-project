@@ -1,6 +1,6 @@
 # PROJECT STATE
 
-_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-17._
+_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-17, after playtest 001._
 
 **PHASE:** Greybox built, waiting to be played
 
@@ -17,25 +17,26 @@ _Living dashboard. The agent reads it at start and updates it at end of session.
 
 **RETIRED:** H3 (players as the detection system rather than NPC AI). Both readings of the concept put the players on the same side, so the comparison does not apply. Retired 2026-09-16, not invalidated.
 
-**VALIDATED:** nothing in play yet. The build exists but has not been tested against its criteria.
+**VALIDATED:** the carry. Playtest 001, solo: picking up and moving an object was judged correct after tuning ("c'est parfait"). That is the feel, not the loop.
+**NOT VALIDATED:** the go / no-go. Spontaneous laughter has not been tested, and cannot be solo.
 **INVALIDATED:** "Unity everywhere" as a corpus rule. The largest 2026 hit is Unreal 5. Our Unity choice stands (ADR-001) as a preference, not as a benchmark finding.
 **RUNNING EXPERIMENT:** none
-**CURRENT BUILD:** **Tutorial_01 exists and runs.** `UnityProject/` (Unity 6000.6.0f1): grab, carry, truck loading, contract, delivery, HUD. Primitives only, single player, no networking. Run it from the editor menu, The Movers > Create Greybox Scene, then Play.
+**CURRENT BUILD:** **Tutorial_01 exists, runs, and has been played.** `UnityProject/` (Unity 6000.6.1f1, pinned to Direct3D11: D3D12 crashes the editor on a hybrid NVIDIA plus Intel laptop). Grab, carry, truck loading, contract, delivery, HUD. Ten of the twelve objects show a real mesh from the dungeon pack. Single player, no networking. Open the scene and press Play.
 
 **NEXT DECISION:** the verb divergence, settled by playing Tutorial_01.
 
 **BLOCKERS:** none technical.
 
 **SCOPE:** Tutorial_01 as specified in `02_GAME_DESIGN/GREYBOX_SPEC.md`. A larger scope from the concept meeting is recorded in the same file and deliberately held.
-**TECH:** Unity 6.6.0f1 + URP + MCP. Networking free only, Steam P2P or Unity Netcode, host is a player, no backend, 4 players. Photon excluded (ADR-004). Networking comes last, not in the greybox.
+**TECH:** Unity 6.6.1f1 + URP + MCP (Unity and Blender both driven over MCP since 2026-09-17). Networking free only, Steam P2P or Unity Netcode, host is a player, no backend, 4 players. Photon excluded (ADR-004). Networking comes last, not in the greybox.
 **ART:** free packs as the base, completed by AI 3D generation. Greybox uses primitives only. Generated assets will be declared on the Steam page.
 **BUSINESS:** price range $4.99 to $14.99, volume over margin, settled later by the final look and the wishlist curve. Team agreement deliberately not formalised.
 **STEAM:** page opens when the tutorial works end to end in V1, not before.
 
 **NEXT 3 ACTIONS:**
-1. **Play Tutorial_01.** It is the first real data point the project has ever had.
-2. Decide the verb divergence from what actually happened while playing, not from the documents.
-3. If it passes, add co-op. If it does not, the owner is probably what is missing.
+1. **Play it with a second person.** The go / no-go is spontaneous laughter and one player cannot produce it. This is the only action that matters.
+2. Decide the verb divergence from what happens in that session, not from the documents.
+3. Only then, decide whether anything else gets built.
 
 ## Open divergence: which verb is the core?
 **The most important open item. Flagged, not decided, per `/CLAUDE.md` rule 16.**
@@ -57,6 +58,7 @@ Five team questions (Q12 to Q15, Q22) were deliberately declined. The stated rea
 Greybox about one week, then V1 about one week, then one month of communication running in parallel with map production, then the beta. Earlier agent-produced duration estimates were rejected as unreliable and removed. See `04_PRODUCTION/MILESTONES.md`.
 
 ## Largest known risks right now
+0. **Everything measured so far is feel and tooling, not fun.** The carry works, the meshes are in, the console is clean, the bridges are wired. None of that answers the one question the greybox exists for.
 1. **The verb is contested and the code has already picked a side.** Every hour spent on the current build before this is settled is a bet on one reading.
 2. **The reason to buy does not exist yet.** R6, R21.
 3. **Networked physics.** Object physics is the core mechanic, and both benchmarked teams named physics in co-op as their hardest problem. R12, R18.
