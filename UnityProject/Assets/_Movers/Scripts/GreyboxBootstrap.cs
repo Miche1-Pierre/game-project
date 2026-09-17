@@ -48,7 +48,12 @@ namespace Movers
             Box("Wall_Div_R", new Vector3(5.3f, y, 5), new Vector3(1.4f, h, t), wall);
 
             BuildTruck(new Vector3(0, 0, -6));
-            BuildPlayer(new Vector3(0, 1.2f, 7.5f));
+            // Spawn outside, between the truck and the house, facing the front opening.
+            // The original spawn put the player inside the far room facing a bare wall 1.5 m
+            // away with every object behind them. No interior spot works either: the room is
+            // 12 m wide and 4 m deep, so from inside you never see both ends. Starting outside
+            // states the job in one frame: that is your truck, that is the house, go.
+            BuildPlayer(new Vector3(0, 1.2f, -3.0f), 0f);
 
             Color wood = new Color(0.6f, 0.45f, 0.3f);
             Color fabric = new Color(0.30f, 0.40f, 0.70f);
@@ -154,11 +159,12 @@ namespace Movers
             truck = trig.AddComponent<TruckCargo>();
         }
 
-        void BuildPlayer(Vector3 at)
+        void BuildPlayer(Vector3 at, float yaw)
         {
             var p = new GameObject("Player");
             p.transform.SetParent(transform);
             p.transform.position = at;
+            p.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             var cc = p.AddComponent<CharacterController>();
             cc.height = 1.8f;
             cc.radius = 0.35f;
