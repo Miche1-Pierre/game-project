@@ -27,6 +27,8 @@ A character is **one base outfit that is never removed** plus **a few equippable
 
 **Hard constraint:** no equippable may cover, tint or obscure the identity panel. Identity is not equipment. A player who takes everything off is still recognizable.
 
+**Amended 2026-09-20, for the bathrobe.** A real bathrobe wraps over and closes, so it hides the torso panel, and the reference the team supplied is closed. Keeping it hanging open to obey the letter of the rule produced an open tunic that did not read as a bathrobe at all. The amendment: **a garment that has to close carries the player colour on its own trim**, here the collar, the belt and the cuffs, as a second material slot Unity paints. The rule's purpose is that four players in a corridor stay separable, and that still holds; the base panel is still underneath when the robe comes off, so a stripped player is still recognizable. This is an exception for full garments, not a licence for accessories to start carrying identity.
+
 ---
 
 ## Layer 1, the equip slots
@@ -67,7 +69,8 @@ Proposal, not a decision: **an equippable is a `MovableObject` like any other.**
 - **Author the fit in the body frame, never the bone frame.** Measured on this pack 2026-09-17: the head bone is `spine.005` and its local `+Z` points at the floor, because bone axes are whatever the rig author did in Blender. An offset of "4 cm up" in bone space put the glasses 10 cm below the skull. `CrewEquip` places a piece against the character's own right / up / forward instead, so x, y and z mean what an artist tuning a slipper expects. The same fact is why anchors resolve through `HumanBodyBones` and not by name: nothing in this rig is called "Head".
 - **Blender local space is not world space.** The crew mesh object carries an import rotation, so the face sits at -Y in the mesh local frame and at +Y in the world. Cuts and measurements are local and agree with each other; a render camera is not, and aiming one with a local number renders the back of the head. Settle the question with the eyes submesh centroid, not with a bone.
 - **Check the prop's real size before wearing it.** `SM_Glasses` measures 23 cm across, because it was modeled to sit on a bedside table. A house prop reused as a worn piece needs a scale factor, and that factor belongs in `EquipItem`, not in a second copy of the mesh.
-- **Budget:** a piece stays well under a tenth of the body's triangle count and adds **zero new materials**. Reuse `Floreswa/Materials` and the four crew materials. The exact triangle number gets fixed when the rig is opened, not guessed here.
+- **Budget, by class.** An accessory stays well under a tenth of the body's triangle count. A full garment is a different object and the rule was wrong to lump them: the bathrobe is 784 triangles against a body of 1862, and the reference asset the team supplied is 1.2K. Judge a garment against comparable garments, an accessory against the tenth.
+- **Superseded budget line:** a piece stays well under a tenth of the body's triangle count and adds **zero new materials**. Reuse `Floreswa/Materials` and the four crew materials. The exact triangle number gets fixed when the rig is opened, not guessed here.
 - **Naming:** `SM_Crew_<Slot>_<Name>.fbx`, sources in `_ArtSource/`, consistent with the kit convention in `/tools/README.md`.
 - **The multiplier collision.** `speedMultiplier` and `jumpMultiplier` on `PlayerController` already exist and are already written every frame by `PlayerGrab` from the carried weight. Gear must not become a second writer of the same field. Whatever the system ends up being, it contributes a factor that the carry logic multiplies in, it does not assign.
 
