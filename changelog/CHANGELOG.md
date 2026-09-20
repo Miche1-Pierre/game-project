@@ -4,6 +4,19 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 
 ## 2026-09-17
 
+### Grandmother's clothes, and an equip system to wear them
+
+- **DESIGN:** the first lot of wearables is hers, stolen: slippers, glasses, a pink dressing gown. Chosen over the obvious lot (hard hat, harness, gloves) on three counts: every co-op game has a hard hat and none has a stolen dressing gown (R17), what you wear says which room you went through, and the go / no-go is spontaneous laughter, which a hard hat has never produced. The brief's own rule had to be amended for it: a piece pays in a stat **or** in social information the silhouette carries.
+- **DESIGN:** the face slot, deliberately shut in the first draft because a balaclava is the most verb-loaded object in the game, reopens for the glasses. They conceal nothing, they humiliate. Open for comedy, shut for concealment until the verb divergence closes.
+- **TECH:** `EquipItem` + `CrewEquip` + `PlayerEquip`. A wearable is a `MovableObject` first, so there is no pickup code, no inventory and no UI. Five slots resolve through `HumanBodyBones`, not by name: this rig is Rigify and nothing in it is called "Head".
+- **TECH:** `MirrorSurface`, planar reflection on the GrandmaKit wall mirror, upstairs in the bedroom. Verified reflecting in Play. It exists because first person means you never see your own outfit and there is no second player yet.
+- **ART:** slippers modelled in `tools/blender/model_slippers.py`, 122 triangles, watertight, left and right as two real meshes because mirroring by negative scale flips the winding. Built to swallow the work boot rather than replace it, which avoids editing the base mesh and a material swap on all four crew variants. Zero of 136 boot vertices outside the shell.
+- **ART:** dressing gown in `tools/blender/model_gown.py`, 628 triangles, the only skinned piece. Derived from the body mesh rather than modelled beside it, so it arrives carrying the body's own 27 vertex groups: the skinning is exact and free, and it cannot clip through the torso because it is the torso pushed outward. Worn open, because no equippable may cover the crew identity colour.
+- **TECH, three export traps, all measured and all now in the brief:** `bake_space_transform` is ON for rigid pieces and OFF for skinned ones, and the earlier blanket "always off" put the slipper's length on Y and laid it on its back. `apply_unit_scale=True` with `FBX_SCALE_ALL`, because the settings copied from `author_carry_clip.py` delivered a mesh 100 times too small with a compensating 100 on the root. And nothing that places a piece may assign over its root transform, since an import can legitimately carry rotation or scale there. Two of the three looked like modelling errors and were not.
+- **TECH:** a fit is authored in the body frame, never the bone frame. On this rig the head bone's local +Z points at the floor, so "4 cm up" in bone space put the glasses 10 cm below the skull.
+- **NOT VERIFIED:** the F key. Every equip was driven from a script, never through `PlayerEquip`. The gown is exported but unwired: a skinned piece needs its bones re-bound to the body's and that path is unwritten.
+
+
 ### Sprint, crouch, reach, and a crew that fits its own doors
 
 - **DESIGN:** Shift sprints (x1.6), Ctrl crouches (capsule 1.80 m to 1.00 m, eye 1.60 m to 0.80 m, speed x0.45). Both are hold, not toggle. Crouch beats sprint, you do not jump while crouched, and you cannot stand up under something. No stamina: a meter to watch is a system nobody asked for.
