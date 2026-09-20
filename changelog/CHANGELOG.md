@@ -18,6 +18,19 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 - **TECH, two traps the test caught and nothing else would have:** `HeldUsable` requires `MovableObject`, which requires a `Rigidbody`, so `AddComponent` on the item brings both along. Adding either one again returns **null**, and the factories threw a NullReferenceException on every spawn: neither item ever reached the ground. And `Awake` fires the instant `AddComponent` runs, so the factory and `Awake` both reached `Build()` and would have doubled every visual piece. Both are guarded now, with the reason in the code.
 - **TESTING, a near miss worth remembering:** the first run reported zero errors and was believed for about a minute. The console had been cleared by a recompile, so "no errors" meant "no log". What gave it away was a missing output file: the run had never reached the step that writes it. Check that a test produced what it was supposed to produce, not only that it complained about nothing.
 
+## 2026-09-20
+
+### The bathrobe, rebuilt to the reference, and still not cloth
+
+- **ART:** `model_gown.py` and `SM_Crew_Chest_Gown.fbx` are gone, replaced by `model_bathrobe.py` and `SM_Crew_Chest_Bathrobe.fbx`. The gown was an open short-sleeved tunic; the reference the team supplied is a full-length wrap bathrobe with a shawl collar, a knotted belt, patch pockets and folded cuffs. Those are shapes rather than parameters, so it is built part by part instead of as one swept band. 784 triangles, against 1.2K for the reference asset.
+- **DESIGN, an amendment to a hard rule:** the robe closes, so it hides the torso identity panel, and `05_ART/CHARACTERS.md` forbids that. Keeping it hanging open to obey the letter of the rule is exactly what produced the tunic. The collar, the belt and the cuffs now carry the player colour on a second material slot. The rule's purpose holds, four players in a corridor still separate, and the panel is still underneath when the robe comes off. Recorded as an exception for full garments, not a licence for accessories.
+- **TECH:** the skirt is weighted to the pelvis rather than by proximity. Bound to the thighs it would scissor open at every step, and cloth simulation is out by the brief. It swings as one cone and the legs travel inside it. The cost is that a high knee can pierce the front, which is why the hem stops at mid calf rather than the floor.
+- **TECH, the same failure as the slipper and the boot:** hand written ring sizes put the robe's waist inside the torso and the shirt showed through two wedges at the belt. The ring table is now measured off the body with the arms excluded, and everything that sits on the robe (collar, belt, pockets) is placed through the same interpolation, so changing the silhouette moves them with it.
+- **NOT FINISHED, judged by the team:** the shapes read as samurai armour rather than cloth. The silhouette and the parts are right, the surface language is not. Causes, all cheap and none structural: a 12 sided superellipse with hard corners, every part meeting its neighbour in a step instead of a blend, a shoulder ring wide and square enough to read as a pauldron, a cuff that stands too proud, and a skirt that is a smooth cone with no vertical folds. Next pass: rounder sections, sloped shoulders, blended joins, folds in the skirt.
+- **DESIGN:** the heart pattern in the reference is deliberately absent. It is a texture and the whole project is flat colour. A direction decision, not an oversight.
+- **NOT VERIFIED:** it has never been seen in Unity. Like the slippers since the axis fix and the mirror pane since the slot fix, it waits on one editor pass.
+
+
 ## 2026-09-17
 
 ### Grandmother's clothes, and an equip system to wear them
