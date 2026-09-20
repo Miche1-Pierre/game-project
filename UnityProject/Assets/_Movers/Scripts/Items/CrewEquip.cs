@@ -30,6 +30,11 @@ namespace Movers
             // is how the slippers first arrived one millimetre long. Kept, multiplied, restored.
             public Vector3 scale;
             public Vector3 secondScale;
+            // Same story for rotation: an FBX exported without baking the axis conversion
+            // carries it on the root, and assigning a world rotation lays the piece on its
+            // back. Composed with, not replaced.
+            public Quaternion rotation;
+            public Quaternion secondRotation;
         }
 
         readonly Dictionary<EquipSlot, Worn> worn = new Dictionary<EquipSlot, Worn>();
@@ -110,6 +115,8 @@ namespace Movers
                 colliders = item.GetComponentsInChildren<Collider>(),
                 scale = item.transform.localScale,
                 secondScale = item.secondPart != null ? item.secondPart.localScale : Vector3.one,
+                rotation = item.transform.localRotation,
+                secondRotation = item.secondPart != null ? item.secondPart.localRotation : Quaternion.identity,
             };
 
             // Physics off while worn. A gown with a live collider inside the player capsule
@@ -124,13 +131,13 @@ namespace Movers
             }
             foreach (var c in record.colliders) c.enabled = false;
 
-            Fit(item.transform, anchor, item.localPosition, item.localEuler, record.scale, item.localScale);
+            Fit(item.transform, anchor, item.localPosition, item.localEuler, record.scale, record.rotation, item.localScale);
 
             if (item.secondPart != null)
             {
                 var other = Anchor(item.slot, true);
                 if (other != null)
-                    Fit(item.secondPart, other, item.secondLocalPosition, item.secondLocalEuler, record.secondScale, item.localScale);
+                    Fit(item.secondPart, other, item.secondLocalPosition, item.secondLocalEuler, record.secondScale, record.secondRotation, item.localScale);
             }
 
             worn[item.slot] = record;
@@ -147,14 +154,14 @@ namespace Movers
         //
         // The world pose is set after parenting, so Unity works out the local transform and the
         // piece still follows the bone when the head turns.
-        void Fit(Transform piece, Transform anchor, Vector3 offset, Vector3 euler, Vector3 baseScale, float scale)
+        void Fit(Transform piece, Transform anchor, Vector3 offset, Vector3 euler, Vector3 baseScale, Quaternion baseRotation, float scale)
         {
             piece.SetParent(anchor, false);
             piece.position = anchor.position
                            + transform.right * offset.x
                            + transform.up * offset.y
                            + transform.forward * offset.z;
-            piece.rotation = transform.rotation * Quaternion.Euler(euler);
+            piece.rotation = transform.rotation * Quaternion.Euler(euler) * baseRotation;
             // Multiplied into whatever the import left there, never assigned over it.
             piece.localScale = baseScale * scale;
         }
@@ -172,10 +179,12 @@ namespace Movers
             {
                 item.secondPart.SetParent(item.transform, true);
                 item.secondPart.localScale = w.secondScale;
+                item.secondPart.localRotation = w.secondRotation;
             }
 
             item.transform.SetParent(w.originalParent, true);
             item.transform.localScale = w.scale;
+            item.transform.localRotation = w.rotation;
 
             foreach (var c in w.colliders) if (c != null) c.enabled = true;
 
