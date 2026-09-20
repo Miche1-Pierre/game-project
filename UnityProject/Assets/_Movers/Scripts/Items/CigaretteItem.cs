@@ -40,7 +40,7 @@ namespace Movers
 
         void Awake()
         {
-            if (transform.childCount == 0) Build();
+            Build();
         }
 
         public override void OnUseBegin()
@@ -94,19 +94,25 @@ namespace Movers
             go.transform.rotation = Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);  // lying down
 
             var item = go.AddComponent<CigaretteItem>();
+            // AddComponent on the item brings MovableObject with it (HeldUsable requires it),
+            // and MovableObject brings a Rigidbody. Asking for either one again returns null,
+            // which is what the first version did and why it threw. Fetch, do not add.
+            var mo = go.GetComponent<MovableObject>();
+            var rb = go.GetComponent<Rigidbody>();
+
             var box = go.AddComponent<BoxCollider>();
             box.size = item.grabBox;
 
-            var rb = go.AddComponent<Rigidbody>();
             rb.linearDamping = 0.4f;
             rb.angularDamping = 1.5f;
 
-            var mo = go.AddComponent<MovableObject>();
             mo.displayName = "Cigarette";
             mo.weight = 0.2f;
             mo.contractValue = 0;
             mo.requiredForContract = false;
             mo.fragile = false;
+            // MovableObject.Awake has already run and set the mass from the old weight.
+            rb.mass = Mathf.Max(0.1f, mo.weight);
 
             item.Build();
             return item;
@@ -114,6 +120,10 @@ namespace Movers
 
         void Build()
         {
+            // Awake fires the moment AddComponent runs, so the factory and Awake both
+            // reach here on the same object. Building twice would double every piece.
+            if (transform.childCount > 0) return;
+
             var paper = ItemArt.Mat(Paper, Color.black);
             ItemArt.Piece(PrimitiveType.Cylinder, transform, "Cigarette_Body",
                           Vector3.zero, new Vector3(0.013f, length * 0.5f, 0.013f), paper);

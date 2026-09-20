@@ -46,7 +46,7 @@ namespace Movers
 
         void Awake()
         {
-            if (transform.childCount == 0) Build();
+            Build();
         }
 
         public override void OnPickedUp(PlayerGrab by)
@@ -117,23 +117,28 @@ namespace Movers
             go.transform.rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
 
             var item = go.AddComponent<BeerItem>();
+            // AddComponent on the item brings MovableObject with it (HeldUsable requires it),
+            // and MovableObject brings a Rigidbody. Asking for either one again returns null,
+            // which is what the first version did and why it threw. Fetch, do not add.
+            var mo = go.GetComponent<MovableObject>();
+            var rb = go.GetComponent<Rigidbody>();
+
             var box = go.AddComponent<BoxCollider>();
             box.size = item.grabBox;
             box.center = new Vector3(0f, item.grabBox.y * 0.5f - 0.11f, 0f);
 
-            var rb = go.AddComponent<Rigidbody>();
             rb.linearDamping = 0.2f;
             rb.angularDamping = 0.8f;
 
-            var mo = go.AddComponent<MovableObject>();
             mo.displayName = "Beer";
             mo.weight = 0.6f;
             mo.contractValue = 0;
             mo.requiredForContract = false;
-            // Breaking is this component's job, not MovableObject's: the generic fragile flag
-            // marks an item grey and keeps it, and a bottle that survives its own smash reads
-            // worse than one that simply goes.
+            // Breaking is this component's job, not MovableObject's: the generic fragile
+            // flag marks an item grey and keeps it, and a bottle that survives its own
+            // smash reads worse than one that simply goes.
             mo.fragile = false;
+            rb.mass = Mathf.Max(0.1f, mo.weight);
 
             item.Build();
             return item;
@@ -141,6 +146,10 @@ namespace Movers
 
         void Build()
         {
+            // Awake fires the moment AddComponent runs, so the factory and Awake both
+            // reach here on the same object. Building twice would double every piece.
+            if (transform.childCount > 0) return;
+
             glass = ItemArt.Mat(Full, Color.black);
             ItemArt.Piece(PrimitiveType.Cylinder, transform, "Beer_Body",
                           Vector3.zero, new Vector3(0.035f, 0.055f, 0.035f), glass);

@@ -975,6 +975,53 @@ Transform:
   - {fileID: 1285563061}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &312717936
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 312717938}
+  - component: {fileID: 312717937}
+  m_Layer: 0
+  m_Name: Spawn_Beer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &312717937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 312717936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 045bc7a1441be424b9a5ac87f17311f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.StartingItemSpawner
+  kind: 1
+  respawnDelay: 0.6
+  snapToGround: 1
+--- !u!4 &312717938
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 312717936}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.2, y: 1.5, z: -3.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &360174753
 GameObject:
   m_ObjectHideFlags: 0
@@ -4187,8 +4234,6 @@ GameObject:
   - component: {fileID: 1157790039}
   - component: {fileID: 1157790038}
   - component: {fileID: 1157790037}
-  - component: {fileID: 1157790036}
-  - component: {fileID: 1157790035}
   - component: {fileID: 1157790034}
   m_Layer: 0
   m_Name: Player
@@ -4229,52 +4274,6 @@ MonoBehaviour:
   grab: {fileID: 1157790038}
   body: {fileID: 2088289551}
   equipKey: 102
---- !u!114 &1157790035
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1157790032}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab33c840047756a49876181d8d520622, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Movers.PlayerBeer
-  cam: {fileID: 1950926656}
-  grab: {fileID: 1157790038}
-  drunk: {fileID: 1157790037}
-  drinkKey: 102
-  drinkSeconds: 4
-  fullBottleDrunk: 1
-  fill: 1
-  holdPosition: {x: -0.23, y: -0.17, z: 0.44}
-  drinkPosition: {x: -0.1, y: -0.06, z: 0.28}
-  drinkTilt: -70
-  raiseSpeed: 7
---- !u!114 &1157790036
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1157790032}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56fbc7a37cb8e784ebaf7c2d24f5a422, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Movers.PlayerCigarette
-  cam: {fileID: 1950926656}
-  grab: {fileID: 1157790038}
-  smokeButton: 1
-  cloudLifetime: 7
-  puffInterval: 0.5
-  puffForward: 0.55
-  puffScatter: 0.15
-  puffStrength: 1
-  holdPosition: {x: 0.24, y: -0.16, z: 0.4}
-  holdTilt: {x: 72, y: -8, z: 0}
-  length: 0.09
 --- !u!114 &1157790037
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4328,6 +4327,7 @@ MonoBehaviour:
   rotateStrength: 14
   maxAngularSpeed: 6
   holdOrientation: 1
+  useHoldThreshold: 0.18
   carrySlop: 0
 --- !u!114 &1157790039
 MonoBehaviour:
@@ -6969,6 +6969,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.203668, y: 0.18104404, z: 0.43140006}
   m_Center: {x: 0.025858402, y: -0.1293287, z: -0.068452835}
+--- !u!1 &1903956400
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1903956402}
+  - component: {fileID: 1903956401}
+  m_Layer: 0
+  m_Name: Spawn_Cigarette
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1903956401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1903956400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 045bc7a1441be424b9a5ac87f17311f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.StartingItemSpawner
+  kind: 0
+  respawnDelay: 0.6
+  snapToGround: 1
+--- !u!4 &1903956402
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1903956400}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.6, y: 1.5, z: -3.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1919482529
 GameObject:
   m_ObjectHideFlags: 0
@@ -7989,3 +8036,5 @@ SceneRoots:
   - {fileID: 1176954520}
   - {fileID: 610444078}
   - {fileID: 299686838}
+  - {fileID: 1903956402}
+  - {fileID: 312717938}
