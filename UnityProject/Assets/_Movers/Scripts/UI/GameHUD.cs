@@ -52,7 +52,7 @@ namespace Movers
             GUILayout.BeginArea(new Rect(12, Screen.height - 74, Screen.width - 24, 70));
             GUILayout.Label("WASD move  |  Shift sprint  |  Ctrl crouch  |  Space jump  |  LMB grab/drop  |  RMB throw  |  E deliver  |  Esc cursor", label);
             GUILayout.Label("Carrying:  scroll to push out / pull in  |  hold R to turn it (mouse turns, scroll rolls)", label);
-            GUILayout.Label("Hands free:  hold RMB to smoke (the cloud blinds anyone in it, you included, 7s)  |  hold F to drink the beer (one bottle, then it is gone)", label);
+            GUILayout.Label("By the truck:  a cigarette and a beer, grab them like anything else  |  holding one, hold RMB to smoke it or F to drink  |  tap RMB to throw it away, another turns up at the van", label);
             GUILayout.EndArea();
         }
     }

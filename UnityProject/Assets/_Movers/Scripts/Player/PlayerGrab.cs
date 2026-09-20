@@ -54,10 +54,17 @@ namespace Movers
         // Kept as a switch because the free-hanging carry is what playtest 001 validated.
         public bool holdOrientation = true;
 
+        [Header("Use what you carry")]
+        // Under this many seconds the right button is a throw, over it, it is a use. Long
+        // enough not to fire on a normal click, short enough that holding feels immediate.
+        public float useHoldThreshold = 0.18f;
+
+        HeldUsable heldUsable;
+        float rmbDownAt;
+        bool usingHeld;
+
         MovableObject held;
 
-        // Read by PlayerCigarette. The right button throws only while something is in your
-        // hands, so the same button is free to light the cigarette while they are empty.
         public bool IsCarrying => held != null;
 
         // Written by Drunkenness, 0 when sober. It loosens the hold rather than dropping it:
@@ -99,8 +106,7 @@ namespace Movers
                 if (held == null) TryGrab();
                 else Release(false);
             }
-            if (Input.GetMouseButtonDown(1) && held != null) Release(true);
-
+            HandleUseInput();
             HandleRotateInput();
             HandleReachInput();
 
@@ -111,6 +117,41 @@ namespace Movers
             controller.jumpMultiplier = held == null
                 ? 1f
                 : Mathf.Clamp(1f - held.weight / 90f, 0.25f, 1f);
+        }
+
+        // The right button, and the only place its two meanings are decided.
+        //
+        // On an ordinary object it throws the instant you press it, exactly as it always has:
+        // a sofa has nothing to offer a long press and a delayed throw would feel broken. On a
+        // HeldUsable it is modal, a tap throws and a hold uses, and the throw moves to the
+        // release because that is the only moment the two can be told apart. Holding it and
+        // letting go never throws: you put the cigarette out, you do not flick it away.
+        void HandleUseInput()
+        {
+            if (held == null || heldUsable == null || !heldUsable.UsesHoldButton)
+            {
+                if (usingHeld) usingHeld = false;   // the object left our hands mid-use
+                if (Input.GetMouseButtonDown(1) && held != null) Release(true);
+                return;
+            }
+
+            if (Input.GetMouseButtonDown(1))
+            {
+                rmbDownAt = Time.time;
+                usingHeld = false;
+            }
+
+            if (Input.GetMouseButton(1) && Time.time - rmbDownAt >= useHoldThreshold)
+            {
+                if (!usingHeld) { usingHeld = true; heldUsable.OnUseBegin(); }
+                heldUsable.OnUseHold(Time.deltaTime);
+            }
+
+            if (Input.GetMouseButtonUp(1))
+            {
+                if (usingHeld) { heldUsable.OnUseEnd(); usingHeld = false; }
+                else Release(true);
+            }
         }
 
         void HandleRotateInput()
@@ -167,6 +208,11 @@ namespace Movers
                     held.rb.maxAngularVelocity = Mathf.Max(savedMaxAngularVelocity, maxAngularSpeed);
                     // pick the object up as it lies, do not snap it to a pose
                     heldLocalRotation = Quaternion.Inverse(PlayerYaw) * held.rb.rotation;
+
+                    // Most things are not usable and this stays null, which is what puts the
+                    // right button back to its plain throw.
+                    heldUsable = held.GetComponent<HeldUsable>();
+                    if (heldUsable != null) heldUsable.OnPickedUp(this);
                 }
             }
         }
@@ -174,6 +220,15 @@ namespace Movers
         public void Release(bool thrown)
         {
             if (held == null) return;
+
+            if (heldUsable != null)
+            {
+                if (usingHeld) heldUsable.OnUseEnd();
+                heldUsable.OnReleased(thrown);
+                heldUsable = null;
+            }
+            usingHeld = false;
+
             held.rb.linearDamping = savedLinearDamping;
             held.rb.angularDamping = savedAngularDamping;
             held.rb.maxAngularVelocity = savedMaxAngularVelocity;

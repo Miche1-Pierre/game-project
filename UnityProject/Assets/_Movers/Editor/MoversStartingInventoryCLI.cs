@@ -5,38 +5,37 @@ using UnityEngine;
 
 namespace Movers.EditorTools
 {
-    // Puts the starting inventory in the hands of players who already exist.
+    // Puts the crew's smokes and beer by the truck, in scenes that were saved before they were
+    // objects.
     //
-    // The scene builders equip anything built from now on, but the scenes were saved before
-    // these items existed and a saved scene does not re-run its builder. This walks every
-    // scene under _Movers/Scenes, finds the players, and adds what is missing: the cigarette
-    // and the beer in their hands, the eyes that smoke can blind, the head that beer can turn.
+    // It also cleans up after the version that came first. Until ADR-007 the two items were
+    // components on the player, `PlayerCigarette` and `PlayerBeer`, and those scripts are gone
+    // now: every scene that was equipped the old way carries two component entries with no
+    // script behind them. Unity draws those as a yellow warning and keeps them forever, so
+    // they are removed here rather than left for someone to find.
     //
     //   Unity.exe -batchmode -quit \
     //     -projectPath C:\dev\game-project\UnityProject \
     //     -executeMethod Movers.EditorTools.MoversStartingInventoryCLI.RunInstall \
     //     -logFile inventory.log
     //
-    // Idempotent: a second run reports "already" and changes nothing. It was called
-    // MoversCigaretteCLI until the beer arrived and made the name a lie.
+    // Idempotent, and it refuses to run while the game is playing, because a scene edited in
+    // Play mode is thrown away when Play stops.
     public static class MoversStartingInventoryCLI
     {
         const string ScenesFolder = "Assets/_Movers/Scenes";
+        const string CigaretteSpawn = "Spawn_Cigarette";
+        const string BeerSpawn = "Spawn_Beer";
 
         [MenuItem("The Movers/Install Starting Inventory in All Scenes")]
         public static void RunInstall()
         {
-            // Not while the game is running. A scene edited in Play mode is thrown away when
-            // Play stops, so this would look like it worked and change nothing, and the save
-            // at the end throws. Found the hard way, with someone playing in the other window.
             if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
                 Debug.LogWarning("[Inventory] the game is running. Stop Play and run this again.");
                 return;
             }
 
-            // The open scene first, and saved before anything else is opened, so no work in
-            // progress is lost when the loop below changes scenes under the editor.
             var openScene = EditorSceneManager.GetActiveScene();
             string openPath = openScene.path;
             int total = 0;
@@ -45,9 +44,6 @@ namespace Movers.EditorTools
             {
                 int n = InstallInOpenScene();
                 total += n;
-                // Saved when we changed it, and also when someone else had: the loop below
-                // switches scenes, and unsaved work in the open one would go with it. A clean
-                // scene we did not touch is left alone, so no scene file churns for nothing.
                 if (n > 0 || openScene.isDirty) EditorSceneManager.SaveScene(openScene);
             }
 
@@ -64,66 +60,79 @@ namespace Movers.EditorTools
 
             if (!string.IsNullOrEmpty(openPath)) EditorSceneManager.OpenScene(openPath, OpenSceneMode.Single);
 
-            Debug.Log("[Inventory] install done, " + total + " player(s) equipped.");
+            Debug.Log("[Inventory] pass done, " + total + " scene change(s).");
         }
 
-        // Every player in the open scene gets the inventory, and every player camera gets the
-        // eyes that the smoke can blind. Returns how many players were touched.
+        // Returns how many things it changed in the open scene.
         public static int InstallInOpenScene()
         {
-            var players = Object.FindObjectsByType<PlayerController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            int touched = 0;
+            string sceneName = EditorSceneManager.GetActiveScene().name;
+            int changed = 0;
 
-            foreach (var pc in players)
+            // 1. the player keeps the two things that are states rather than objects
+            foreach (var pc in Object.FindObjectsByType<PlayerController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
                 var go = pc.gameObject;
+
+                int stale = GameObjectUtility.RemoveMonoBehavioursWithMissingScript(go);
+                if (stale > 0)
+                {
+                    changed += stale;
+                    Debug.Log("[Inventory] removed " + stale + " dead component(s) from " + go.name + " in " + sceneName);
+                }
+
+                if (go.GetComponent<Drunkenness>() == null)
+                {
+                    Undo.AddComponent<Drunkenness>(go);
+                    changed++;
+                    Debug.Log("[Inventory] gave " + go.name + " a head that beer can turn, in " + sceneName);
+                }
+
                 Transform camT = pc.cam;
                 if (camT == null)
                 {
                     var c = go.GetComponentInChildren<Camera>();
                     if (c != null) camT = c.transform;
                 }
-                if (camT == null)
-                {
-                    Debug.LogWarning("[Inventory] " + go.name + " has no camera, skipped.");
-                    continue;
-                }
-
-                bool changed = false;
-
-                if (camT.GetComponent<SmokeVision>() == null)
+                if (camT != null && camT.GetComponent<SmokeVision>() == null)
                 {
                     Undo.AddComponent<SmokeVision>(camT.gameObject);
-                    changed = true;
+                    changed++;
+                    Debug.Log("[Inventory] gave " + go.name + " eyes that smoke can blind, in " + sceneName);
                 }
-
-                var drunk = go.GetComponent<Drunkenness>();
-                if (drunk == null) { drunk = Undo.AddComponent<Drunkenness>(go); changed = true; }
-
-                var cig = go.GetComponent<PlayerCigarette>();
-                if (cig == null) { cig = Undo.AddComponent<PlayerCigarette>(go); changed = true; }
-
-                var beer = go.GetComponent<PlayerBeer>();
-                if (beer == null) { beer = Undo.AddComponent<PlayerBeer>(go); changed = true; }
-
-                // Wired explicitly even though Awake would find all of it, so the inspector
-                // shows what is connected to what instead of a column of empty slots.
-                var pg = go.GetComponent<PlayerGrab>();
-                cig.cam = camT;
-                cig.grab = pg;
-                beer.cam = camT;
-                beer.grab = pg;
-                beer.drunk = drunk;
-                EditorUtility.SetDirty(cig);
-                EditorUtility.SetDirty(beer);
-
-                if (changed) touched++;
-                Debug.Log("[Inventory] " + (changed ? "equipped " : "already equipped ") + go.name
-                          + " in " + EditorSceneManager.GetActiveScene().name);
             }
 
-            if (touched > 0) EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-            return touched;
+            // 2. the items themselves, on the ground at the tailgate
+            var truck = Object.FindFirstObjectByType<TruckCargo>();
+            if (truck == null)
+            {
+                Debug.Log("[Inventory] " + sceneName + " has no truck, so it gets no starting items.");
+                if (changed > 0) EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+                return changed;
+            }
+
+            var t = truck.transform;
+            changed += EnsureSpawner(CigaretteSpawn, StartingItemSpawner.Kind.Cigarette,
+                                     t.position + t.right * -1.6f + t.forward * 1.8f, sceneName);
+            changed += EnsureSpawner(BeerSpawn, StartingItemSpawner.Kind.Beer,
+                                     t.position + t.right * -2.2f + t.forward * 1.8f, sceneName);
+
+            if (changed > 0) EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            return changed;
+        }
+
+        // The height does not matter: the spawner lays the item on whatever floor is under it.
+        static int EnsureSpawner(string name, StartingItemSpawner.Kind kind, Vector3 at, string sceneName)
+        {
+            foreach (var s in Object.FindObjectsByType<StartingItemSpawner>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (s.kind == kind) return 0;
+
+            var go = new GameObject(name);
+            go.transform.position = at;
+            go.AddComponent<StartingItemSpawner>().kind = kind;
+            Undo.RegisterCreatedObjectUndo(go, "add starting item spawner");
+            Debug.Log("[Inventory] put " + kind + " by the truck in " + sceneName + " at " + at.ToString("F1"));
+            return 1;
         }
     }
 }

@@ -2,6 +2,20 @@
 
 _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSINESS, MARKETING._
 
+## 2026-09-20
+
+### The starting items stop being an inventory
+
+- **DESIGN, from the first hands-on QA:** the smoke was judged right and the delivery was not. The cigarette and the beer were viewmodels welded to the camera, which made them a two-slot inventory in a game whose whole premise is that you carry things with your hands. They are ordinary `MovableObject`s now, lying on the ground by the truck, picked up with the grab that already exists. **ADR-007** records it and amends the delivery half of ADR-005 and ADR-006; what a puff does and what a beer does are untouched.
+- **DESIGN:** the right button is modal on a held usable. A tap throws it away, holding it smokes. On everything else it still throws the instant you press, because a sofa has nothing to offer a long press and a delayed throw would feel broken. The throw moves to the release for those two items only: 0.18 s is the line, and it is the one thing the automated test cannot check.
+- **DESIGN, a gain nobody designed:** the puff is born at the tip of the cigarette, and the tip is wherever your hands are. You can hold it out at arm's length and fog a doorway without fogging yourself, or pull it in with the scroll wheel and blind nobody but you. Aiming the smoke is now something you can be bad at.
+- **DESIGN:** throw one away and a fresh one turns up at the van after half a second; the thrown one stays where it landed, as litter. The beer breaks on impact, full or empty, and leaves one flat mark on the floor. Losing a full beer to a bad throw is the funnier of the two outcomes and one rule beats two.
+- **TECH:** `HeldUsable` (the base every usable carried object answers to), `CigaretteItem`, `BeerItem`, `StartingItemSpawner` (a place, not a slot: it lays one down and replaces it when the last is gone) and `ItemArt`. `PlayerCigarette` and `PlayerBeer` are deleted.
+- **TECH:** a cigarette is 13 mm across and nobody can put a crosshair on that at three metres, so the object you grab is a fist-sized invisible box around a thin visual. Deliberate, and written down rather than discovered later.
+- **TECH:** the migration also strips the two dead component entries the old version left in four scenes. A removed script leaves a yellow warning in the inspector forever, so `GameObjectUtility.RemoveMonoBehavioursWithMissingScript` cleans up after ADR-005 and ADR-006 rather than leaving it for someone to find.
+- **TECH:** F is shared with `PlayerEquip` and they do not collide, because that one acts on what is in your hands and gives up at once when it is not a wearable. Noted in both files so the next person to add a case knows.
+- **TESTING:** the two separate smoke and beer playtests are replaced by one `MoversItemsPlaytestCLI`: both items laid out, the cigarette smoked through its own API, the puffs checked to land on the cigarette rather than on the player, the thrown one checked to still be lying there while a new one turns up at the van, the bottle drunk, broken, and replaced, and every effect checked back to exactly zero once sober.
+
 ## 2026-09-17
 
 ### Grandmother's clothes, and an equip system to wear them

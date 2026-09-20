@@ -48,6 +48,7 @@ namespace Movers
             Box("Wall_Div_R", new Vector3(5.3f, y, 5), new Vector3(1.4f, h, t), wall);
 
             BuildTruck(new Vector3(0, 0, -6));
+            BuildStartingItems(new Vector3(0, 0, -6));
             // Spawn outside, between the truck and the house, facing the front opening.
             // The original spawn put the player inside the far room facing a bare wall 1.5 m
             // away with every object behind them. No interior spot works either: the room is
@@ -185,16 +186,26 @@ namespace Movers
             var pg = p.AddComponent<PlayerGrab>();
             pg.cam = camGO.transform;
             pg.controller = pc;
-            // Starting inventory, GREYBOX_SPEC: a cigarette and a beer. Both build their own
-            // view at Play, and both only work with your hands empty.
-            var drunk = p.AddComponent<Drunkenness>();
-            var cig = p.AddComponent<PlayerCigarette>();
-            cig.cam = camGO.transform;
-            cig.grab = pg;
-            var beer = p.AddComponent<PlayerBeer>();
-            beer.cam = camGO.transform;
-            beer.grab = pg;
-            beer.drunk = drunk;
+            // What a beer does to you is a state of the player, so it lives here. The bottle
+            // that causes it does not: it is an object by the truck, like everything else you
+            // can pick up (ADR-007).
+            p.AddComponent<Drunkenness>();
+        }
+
+        // The starting inventory is a place, not a slot: the crew leaves its smokes and its
+        // beer on the ground at the tailgate. Throw one away and another turns up here.
+        void BuildStartingItems(Vector3 truckAt)
+        {
+            Spawner("Spawn_Cigarette", truckAt + new Vector3(-1.6f, 0.1f, 1.8f), StartingItemSpawner.Kind.Cigarette);
+            Spawner("Spawn_Beer", truckAt + new Vector3(-2.2f, 0.1f, 1.8f), StartingItemSpawner.Kind.Beer);
+        }
+
+        void Spawner(string name, Vector3 at, StartingItemSpawner.Kind kind)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform);
+            go.transform.position = at;
+            go.AddComponent<StartingItemSpawner>().kind = kind;
         }
     }
 }

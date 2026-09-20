@@ -1,6 +1,8 @@
 # ADR-005: The cigarette is a smoke screen, not a prop
 
 ## Status
+**Amended 2026-09-20 by [ADR-007](ADR-007-starting-items-are-objects.md):** the cigarette is no longer in your hand at the start, it is an object lying by the truck that you pick up like anything else. What a puff does, below, is unchanged.
+
 **Accepted (2026-09-17), and flagged.** Asked for by the team and built the same day. It is flagged because it does two things the current documents do not allow, and both are recorded below rather than quietly absorbed: it gives a gameplay function to an item the spec calls useless, and it is built while the core verb is still contested (`00_PROJECT/PROJECT_STATE.md`, open divergence).
 
 ## Context

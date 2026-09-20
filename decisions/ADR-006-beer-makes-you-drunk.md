@@ -1,6 +1,8 @@
 # ADR-006: The beer wrecks the person holding it
 
 ## Status
+**Amended 2026-09-20 by [ADR-007](ADR-007-starting-items-are-objects.md):** the beer is an object by the truck now, not a bottle welded to the camera, and it breaks when you throw it. What drinking does, below, is unchanged.
+
 **Accepted (2026-09-17), and flagged**, on the same terms as [ADR-005](ADR-005-cigarette-smoke-screen.md). The team was asked the question rather than told the answer, because ADR-005 had recorded that the beer was next and that "give it a function too" was not automatically right. The answer came back: it makes you drunk.
 
 ## Context

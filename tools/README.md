@@ -47,30 +47,34 @@ Physics is never touched. The reverse method is `RunRestore`.
 
 The same operation is available from the editor menu: **The Movers > Visual Swap**.
 
-## Check the starting inventory (Unity, no clicking)
+## Check the starting items (Unity, no clicking)
 
 The cigarette and the beer, from the editor or from a command line. All of these are also in
 the editor menu under **The Movers**. None of them saves a scene, the puffs they spawn are
 removed on the way out, and the images they leave under `Generated/` are gitignored debug
 output, regenerated on every run: worth looking at, not worth arguing with in a diff.
 
-Put both items in the hands of players in scenes that were saved before the items existed.
-Idempotent, and it refuses to run while the game is playing:
+Put the two items on the ground by the truck, in scenes saved before they were objects, and
+strip the dead components the viewmodel version left behind. Idempotent, and it refuses to run
+while the game is playing, because a scene edited in Play mode is thrown away on exit:
 
     Unity.exe -batchmode -quit \
       -projectPath C:\dev\game-project\UnityProject \
       -executeMethod Movers.EditorTools.MoversStartingInventoryCLI.RunInstall \
       -logFile inventory.log
 
-Drink the whole bottle without a keyboard and check what it does to the player. Enters Play
-for about twelve seconds, shortens the sobering clock so the run is not half a minute, says so
-in the log, and restores every project setting it touched. Do NOT pass `-quit`:
+Both items end to end: laid out, smoked, thrown, replaced, drunk, broken, replaced, and every
+effect back to zero once sober. Enters Play for about fifteen seconds, shortens the sobering
+clock so the run is not half a minute, says so in the log, and restores every project setting
+it touched. Do NOT pass `-quit`, it exits by itself:
 
-    ... -executeMethod Movers.EditorTools.MoversBeerPlaytestCLI.RunPlaytest
+    ... -executeMethod Movers.EditorTools.MoversItemsPlaytestCLI.RunPlaytest
 
-### The smoke, in three entry points
+It drives the items through their own API rather than a keyboard, so one thing is deliberately
+**not covered**: whether a tap of the right button throws and a hold smokes. That is input
+timing. Press it yourself, it is the first thing to check by hand.
 
-Three, because the feature makes three promises that fail differently.
+### The smoke itself, in two more entry points
 
 Numbers only, no graphics device needed. Prints the density of one puff over its whole life,
 the falloff by distance, and what stacking puffs does:
@@ -86,12 +90,6 @@ the cloud in front of it and paints the real overlay on top, into
 preview cannot drift from what ships:
 
     ... -executeMethod Movers.EditorTools.MoversSmokeCLI.RunPreview
-
-The part that only exists while the game runs. Enters Play mode for about ten seconds, checks
-that the cigarette was built in the hand with no collider on it, then watches one puff live and
-die on the wall clock. Do NOT pass `-quit`, it exits by itself:
-
-    ... -executeMethod Movers.EditorTools.MoversSmokePlaytestCLI.RunPlaytest
 
 ## Pack inventory
 
