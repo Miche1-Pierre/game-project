@@ -36,6 +36,7 @@ After ~30-60 minutes: does moving the furniture already create little stories an
 
 ## How to run
 Unity editor (6000.6.0f1): menu **The Movers > Create Greybox Scene**, then press Play. Or: create an empty scene, add an empty GameObject, add the `GreyboxBootstrap` component, press Play.
+The grandmother's house: open `Assets/_Movers/Scenes/Map01_PierreKit_House.unity` and press Play. Same controls, twelve items on the contract, the truck is at the driveway gate.
 Controls: WASD move, Shift sprint, Ctrl crouch, Space jump, mouse look, LMB grab/drop, RMB throw, E deliver (when all loaded), Esc frees the cursor.
 While carrying: scroll to push the object out or pull it in. Hold R and the mouse turns it instead of your head, scroll rolls it. Look is suspended while R is held, so the mouse belongs to the object. One wheel, two jobs, split by whether R is down.
 The cigarette and the beer are on the ground by the truck: grab them like anything else. Holding one, hold RMB to smoke it or F to drink it, and tap RMB to throw it away. On anything else RMB still throws the instant you press it.
@@ -46,6 +47,8 @@ The cigarette and the beer are on the ground by the truck: grab them like anythi
 The concept meeting of 2026-09-16 specified a **larger greybox** than Tutorial_01, built on the "steal under watch" reading of the concept. It is recorded here because the decisions are real, and held here because `GAME_CONCEPT.md` carries an unresolved divergence on the core verb.
 
 Do not build this until that divergence is settled.
+
+**Status 2026-09-25:** on Pierre's explicit request, the map itself exists and is playable: `Assets/_Movers/Scenes/Map01_PierreKit_House.unity`, ten rooms, garage, cellar, garden, about 100 inert objects, the truck and the starting items, all on the Tutorial_01 systems. What depends on the verb stays unbuilt: the grandmother is a static placeholder with no patrol, and there is no theft ledger, no cat, no fish and no window entry.
 
 - **Map:** the grandmother's house, 10 rooms. Entrance, kitchen, living room, bedroom, attic, garage, cellar, garden, bathroom, hallway. Handcrafted, no procedural generation.
 - **Garage over barn.** Delegated to the agent at the meeting and decided: it is attached, so no second building shell and no long outdoor traversal; it faces the truck, so it is the natural loading path; it justifies bulky heavy objects that exercise the physics hardest; and its door is a large openable or breakable surface, which gives a second entry route with no extra art.

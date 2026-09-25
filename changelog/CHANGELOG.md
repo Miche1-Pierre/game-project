@@ -2,6 +2,22 @@
 
 _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSINESS, MARKETING._
 
+## 2026-09-25
+
+### The house becomes a playable greybox
+
+- **CONTENT:** Pierre rebuilt one plank floor with square-cut ends. Measured by raycasting its top surface, the holes drop from 22 % to 1 %. It now floors every wooden room, the porch and the terrace (36 tiles). His three other plank floors still use the staggered pattern and still show 21 to 27 % holes, so they are no longer placed.
+- **CONTENT:** two extension pieces close the glass lean-to, `PKX_Veranda_Cheek` (a glazed triangle at each end) and `PKX_Veranda_Lintel` (a beam over the veranda doorway). `assets_extension.blend` now holds 19 pieces. `assets.blend` is still only read.
+- **DESIGN:** `Map01_PierreKit_House` is playable with the Tutorial_01 systems and nothing else. 102 movable objects in ten rooms on three levels, 12 on the contract (sofa, armchair, bookshelf, dining table, two chairs, fridge, the cellar wine barrel, bed, wardrobe, dresser, attic trunk), 26 fragile. Everything else is extra value, since `ContractManager` already pays for whatever is in the truck at delivery. 15 minute timer. Positions, weights and values live in one table, `_ArtSource/house_objects.txt`.
+- **DESIGN:** the truck is the car pack's box truck with its closed cargo box hidden and an open-backed box built on its bed: 2.2 x 2.3 x 5.7 m inside, floor at 1.39 m, backed up to the driveway gate with a 16 degree ramp. The ramp fills that gate, so the driveway is the loading dock and the pedestrian gate is the way in. The garage faces the truck, as the concept meeting asked.
+- **DESIGN:** the player starts on the driveway with the red crew body and the equip key. The cigarette and the beer lie on the grass by the ramp. The grandmother's glasses and slippers (copied from Map01_Grandma with their tuned offsets) are on her nightstand and by her bed, and her working mirror hangs over the bathroom sink.
+- **DESIGN, flagged:** a grandmother body stands on the veranda. Static, no behaviour, no detection. The NPC and everything else that depends on the verb (theft ledger, cat, fish, window entry) stays unbuilt until the divergence in `PROJECT_STATE.md` is settled.
+- **CONTENT:** the garden is dressed from packs already in the project (8 trees, hedges along the street fence, bushes, flower beds along the path, fountain, well, vegetable beds, scarecrow, bench, birdhouse, mailbox), plus a street with a kerb and 16 warm room lights without shadows.
+- **TESTING, measured before anyone opened it:** all 102 objects start clear of every wall and of each other. All 19 doors and openings pass the player capsule with the furniture in place, both stairs climb, and 9 carry routes walk end to end: spawn to front door, driveway through garage and dining to the hall, up the ramp into the truck, living room to veranda, hall to kitchen to dining, back door over the terrace past the chimney, and round both sides of the garden. The first pass found 8 faults (an armchair and a rocking chair in doorways, the guest bed across its door, four overlaps, the back door leaf across the terrace) and all were fixed. In Play, after 12 s every object was asleep, none fell through and none broke. One perfume slid into the concave sink basin and now stands on the floor. The console was clean, about 260 fps.
+- **TECH, for the breakage system:** `breakThreshold` is compared with the collision impulse, which is mass times velocity change. A 20 kg television breaks on a 0.3 m/s bump while a 0.5 kg plate dropped from a table never reaches 6. Worth switching to relative velocity, or impulse divided by mass, when breakage is built.
+- **KEPT:** Pierre's hand edits to the scene (two open double gates, their posts, the flipped driveway tile). His porch decks overlapped by half a tile to hide the floor holes are replaced by the square floor that makes them unnecessary.
+- **NOT DONE:** breakage is still a grey tint (Pierre builds that system). Object values and weights are first guesses. The grandmother is a male body from the character pack in its bind pose. Roof crossings are still visible from inside the attic.
+
 ## 2026-09-21
 
 ### Pierre's hand-made kit reaches Unity, and a real house gets built from it

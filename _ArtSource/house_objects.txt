@@ -1,0 +1,182 @@
+# name|prefab|x|y|z|face|kind|kg|value|req|fragile|display|frontSign  (generated, see Map01_PierreKit_House)
+Sofa|_Project/Prefabs/GrandmaKit/Furniture/PF_Sofa_01|2.0|0.0|0.675|N|M|80|350|1|0|Sofa|-1
+Coffee_Table|_Project/Prefabs/GrandmaKit/Furniture/PF_Coffee_Table|2.0|0.0|1.75|-|M|15|60|0|0|Coffee Table|1
+Rug_Living|_Project/Prefabs/GrandmaKit/Props/Textiles/PF_Rug_02|2.0|0.004|1.75|-|D|5|10|0|0|Rug Living|1
+Armchair|_Project/Prefabs/GrandmaKit/Furniture/PF_Armchair_01|0.58|0.0|1.95|E|M|25|120|1|0|Armchair|-1
+Bookshelf|_Project/Prefabs/GrandmaKit/Furniture/PF_Bookshelf_01|0.32|0.0|0.8|E|M|45|150|1|0|Bookshelf|1
+Floor_Lamp|_Project/Prefabs/GrandmaKit/Props/Lighting/PF_Floor_Lamp|0.45|0.0|2.95|-|M|6|40|0|1|Floor Lamp|1
+Television|_Project/Prefabs/GrandmaKit/Furniture/PF_TV_Old|3.2|0.0|5.515|S|M|20|400|0|1|Television|1
+Piano|_Project/Prefabs/GrandmaKit/Furniture/PF_Piano|4.6|0.0|5.365|S|M|180|900|0|0|Piano|1
+Vase|_Project/Prefabs/GrandmaKit/Props/Decoration/PF_Vase_02|0.3|on:Coffee_Table|0.0|-|M|4|90|0|1|Vase|1
+Books|_Project/Prefabs/GrandmaKit/Props/Books/PF_Book_Stack|-0.3|on:Coffee_Table|0.05|-|M|2|15|0|0|Books|1
+Candlestick_A|_Project/Prefabs/GrandmaKit/Props/Lighting/PF_Candlestick|-0.6|on:Piano|0.0|-|M|1|25|0|1|Candlestick A|1
+Photo_Frame|_Project/Prefabs/GrandmaKit/Props/Decoration/PF_Picture_Frame_01|-0.1|on:Piano|0.0|S|M|1|60|0|1|Photo Frame|1
+Rocking_Chair|_Project/Prefabs/GrandmaKit/Furniture/PF_Rocking_Chair|-2.3|0.0|4.0|E|M|12|80|0|0|Rocking Chair|-1
+Veranda_Table|_Project/Prefabs/GrandmaKit/Furniture/PF_Side_Table|-2.35|0.0|5.25|-|M|10|50|0|0|Veranda Table|1
+Potted_Plant|_Project/Prefabs/GrandmaKit/Props/Decoration/PF_Vase_Plant|0.0|on:Veranda_Table|0.0|-|M|6|35|0|1|Potted Plant|1
+Bird_Cage|_Project/Prefabs/GrandmaKit/Props/Special/PF_Bird_Cage|-2.45|0.0|2.4|-|M|3|60|0|1|Bird Cage|1
+Knitting_Basket|_Project/Prefabs/GrandmaKit/Props/Sewing/PF_Knitting_Basket|-0.9|0.0|5.2|-|M|2|25|0|0|Knitting Basket|1
+Yarn_Ball|_Project/Prefabs/GrandmaKit/Props/Sewing/PF_Yarn_Ball|-0.9|0.0|4.6|-|M|0.3|5|0|0|Yarn Ball|1
+Coat_Rack|_Project/Prefabs/GrandmaKit/Furniture/PF_Coat_Rack|6.5|0.0|-2.5|-|M|8|30|0|0|Coat Rack|1
+Hall_Table|_Project/Prefabs/GrandmaKit/Furniture/PF_Side_Table|7.3|0.0|-0.43|S|M|10|50|0|0|Hall Table|1
+Table_Lamp|_Project/Prefabs/GrandmaKit/Props/Lighting/PF_Table_Lamp|-0.1|on:Hall_Table|0.0|-|M|3|40|0|1|Table Lamp|1
+Keys|_Project/Prefabs/GrandmaKit/Props/Misc/PF_Keys|0.15|on:Hall_Table|0.1|-|M|0.2|5|0|0|Keys|1
+Suitcase_A|_Project/Prefabs/GrandmaKit/Props/Luggage/PF_Suitcase|8.2|0.0|-2.4|N|M|8|30|0|0|Suitcase A|1
+Suitcase_B|_Project/Prefabs/GrandmaKit/Props/Luggage/PF_Suitcase|0.0|on:Suitcase_A|0.0|N|M|6|30|0|0|Suitcase B|1
+Dining_Table|_Project/Prefabs/GrandmaKit/Furniture/PF_Dining_Table_01|15.0|0.0|1.2|-|M|30|120|1|0|Dining Table|1
+Chair_A|_Project/Prefabs/GrandmaKit/Furniture/PF_Dining_Chair_01|14.5|0.0|0.48|N|M|8|40|1|0|Chair A|-1
+Chair_B|_Project/Prefabs/GrandmaKit/Furniture/PF_Dining_Chair_01|15.5|0.0|0.48|N|M|8|40|1|0|Chair B|-1
+Chair_C|_Project/Prefabs/GrandmaKit/Furniture/PF_Dining_Chair_01|16.25|0.0|1.2|W|M|8|40|0|0|Chair C|-1
+Chair_D|_Project/Prefabs/GrandmaKit/Furniture/PF_Dining_Chair_01|13.75|0.0|1.2|E|M|8|40|0|0|Chair D|-1
+Display_Cabinet|_Project/Prefabs/GrandmaKit/Furniture/PF_Display_Cabinet|16.9|0.0|0.47|N|M|55|220|0|0|Display Cabinet|1
+Fruit_Bowl|_Project/Prefabs/GrandmaKit/Props/Kitchenware/PF_Fruit_Bowl|0.0|on:Dining_Table|0.0|-|M|1.5|10|0|0|Fruit Bowl|1
+Plate_A|_Project/Prefabs/GrandmaKit/Props/Kitchenware/PF_Plate|-0.55|on:Dining_Table|-0.2|-|M|0.5|15|0|1|Plate A|1
+Plate_B|_Project/Prefabs/GrandmaKit/Props/Kitchenware/PF_Plate|0.55|on:Dining_Table|-0.2|-|M|0.5|15|0|1|Plate B|1
+Wine_Bottle|_Project/Prefabs/GrandmaKit/Food/PF_Wine_Bottle|-0.3|on:Dining_Table|0.25|-|M|1.2|30|0|1|Wine Bottle|1
+Candlestick_B|_Project/Prefabs/GrandmaKit/Props/Lighting/PF_Candlestick|0.35|on:Dining_Table|0.25|-|M|1|25|0|1|Candlestick B|1
+Chandelier|_Project/Prefabs/GrandmaKit/Props/Lighting/PF_Chandelier|15.0|2.2|1.2|-|D|5|10|0|0|Chandelier|1
+Counter_1|_Project/Prefabs/GrandmaKit/Kitchen/PF_Counter_Straight|12.9|0.0|5.52|S|S|5|10|0|0|Counter 1|1
+Kitchen_Sink|_Project/Prefabs/GrandmaKit/Kitchen/PF_Sink|13.96|0.0|5.52|S|S|5|10|0|0|Kitchen Sink|1
+Counter_2|_Project/Prefabs/GrandmaKit/Kitchen/PF_Counter_Straight|15.02|0.0|5.52|S|S|5|10|0|0|Counter 2|1
+Stove|_Project/Prefabs/GrandmaKit/Kitchen/PF_Stove_Old|15.93|0.0|5.495|S|M|70|120|0|0|Stove|1
+Fridge|_Project/Prefabs/GrandmaKit/Kitchen/PF_Fridge_Old|17.1|0.0|5.485|S|M|120|250|1|0|Fridge|1
+Wall_Cabinet_1|_Project/Prefabs/GrandmaKit/Kitchen/PF_Cabinet_Upper|12.9|1.55|5.645|S|S|5|10|0|0|Wall Cabinet 1|1
+Wall_Cabinet_2|_Project/Prefabs/GrandmaKit/Kitchen/PF_Cabinet_Upper|15.02|1.55|5.645|S|S|5|10|0|0|Wall Cabinet 2|1
+Kettle|_Project/Prefabs/GrandmaKit/Props/Kitchenware/PF_Kettle|0.2|on:Counter_1|0.0|S|M|1.5|20|0|0|Kettle|1
+Jar|_Project/Prefabs/GrandmaKit/Props/Kitchenware/PF_Jar_01|-0.3|on:Counter_1|0.1|-|M|0.8|8|0|1|Jar|1
+Cake|_Project/Prefabs/GrandmaKit/Food/PF_Cake|-0.1|on:Counter_1|-0.1|-|M|1.5|12|0|0|Cake|1
+Coffee_Pot|_Project/Prefabs/GrandmaKit/Props/Kitchenware/PF_Coffee_Pot|-0.25|on:Counter_2|0.0|S|M|1|25|0|1|Coffee Pot|1
+Utensils|_Project/Prefabs/GrandmaKit/Props/Kitchenware/PF_Utensils_Jar|0.3|on:Counter_2|0.12|-|M|0.8|10|0|0|Utensils|1
+Cup|_Project/Prefabs/GrandmaKit/Props/Kitchenware/PF_Cup|0.1|on:Counter_2|-0.12|-|M|0.3|8|0|1|Cup|1
+Garage_Shelves|_Project/Prefabs/GrandmaKit/Props/Basement/PF_Shelving_Unit_Cave|23.55|0.0|1.6|W|M|35|40|0|0|Garage Shelves|1
+Crate_G1|_Project/Prefabs/GrandmaKit/Props/Basement/PF_Crate|22.4|0.0|-2.3|-|M|12|15|0|0|Crate G1|1
+Crate_G2|_Project/Prefabs/GrandmaKit/Props/Basement/PF_Crate|23.1|0.0|-2.3|-|M|12|15|0|0|Crate G2|1
+Crate_G3|_Project/Prefabs/GrandmaKit/Props/Basement/PF_Crate|0.0|on:Crate_G1|0.0|-|M|10|15|0|0|Crate G3|1
+Wheelbarrow|_Project/Prefabs/GrandmaKit/Garden/PF_Wheelbarrow|22.3|0.0|0.1|-|M|18|45|0|0|Wheelbarrow|1
+Barrel_Garage|_Project/Prefabs/GrandmaKit/Props/Basement/PF_Barrel|23.3|0.0|-1.0|-|M|40|30|0|0|Barrel Garage|1
+Bucket|_Project/Prefabs/GrandmaKit/Props/Tools/PF_Bucket|21.9|0.0|2.4|-|M|3|5|0|0|Bucket|1
+Shovel|_Project/Prefabs/GrandmaKit/Props/Tools/PF_Shovel|0.0|on:Crate_G2|0.0|-|M|2|15|0|0|Shovel|1
+Axe|_Project/Prefabs/GrandmaKit/Props/Tools/PF_Axe|0.0|on:Crate_G3|0.0|-|M|2|20|0|0|Axe|1
+Broom|_Project/Prefabs/GrandmaKit/Props/Tools/PF_Broom|21.5|0.0|1.6|-|M|1|5|0|0|Broom|1
+Garden_Table|_Project/Prefabs/Props/PF_GardenTable|4.5|0.0|10.8|-|M|20|60|0|0|Garden Table|1
+Garden_Bench_Terrace|_Project/Prefabs/GrandmaKit/Garden/PF_Garden_Bench|10.5|0.0|11.6|S|M|25|70|0|0|Garden Bench Terrace|-1
+Flower_Pot|_Project/Prefabs/GrandmaKit/Props/Decoration/PF_Vase_Plant|0.0|on:Garden_Table|0.0|-|M|5|20|0|1|Flower Pot|1
+Lab_Table|_Project/Prefabs/GrandmaKit/Props/Lab/PF_Lab_Table|14.6|-3.06|0.805|N|M|60|150|0|0|Lab Table|1
+Microscope|_Project/Prefabs/GrandmaKit/Props/Lab/PF_Microscope|0.35|on:Lab_Table|0.0|N|M|5|350|0|1|Microscope|1
+Flask_Set|_Project/Prefabs/GrandmaKit/Props/Lab/PF_Flask_Set|-0.35|on:Lab_Table|0.0|N|M|2|80|0|1|Flask Set|1
+Wine_Barrel|_Project/Prefabs/GrandmaKit/Props/Basement/PF_Barrel|17.3|-3.06|0.65|-|M|40|60|1|0|Wine Barrel|1
+Barrel_Old|_Project/Prefabs/GrandmaKit/Props/Basement/PF_Barrel|16.55|-3.06|0.65|-|M|40|30|0|0|Barrel Old|1
+Cellar_Shelves|_Project/Prefabs/GrandmaKit/Props/Basement/PF_Shelving_Unit_Cave|17.49|-3.06|3.2|W|S|5|10|0|0|Cellar Shelves|1
+Wine_A|_Project/Prefabs/GrandmaKit/Food/PF_Wine_Bottle|0.0|on:Cellar_Shelves|-0.35|-|M|1.2|35|0|1|Wine A|1
+Wine_B|_Project/Prefabs/GrandmaKit/Food/PF_Wine_Bottle|0.0|on:Cellar_Shelves|0.0|-|M|1.2|35|0|1|Wine B|1
+Wine_C|_Project/Prefabs/GrandmaKit/Food/PF_Wine_Bottle|0.0|on:Cellar_Shelves|0.35|-|M|1.2|35|0|1|Wine C|1
+Crate_C1|_Project/Prefabs/GrandmaKit/Props/Basement/PF_Crate|12.5|-3.06|5.35|-|M|12|15|0|0|Crate C1|1
+Crate_C2|_Project/Prefabs/GrandmaKit/Props/Basement/PF_Crate|13.2|-3.06|5.35|-|M|12|15|0|0|Crate C2|1
+Workbench|_Project/Prefabs/GrandmaKit/Office/PF_Desk|9.64|-3.06|4.2|E|M|30|70|0|0|Workbench|1
+Hammer|_Project/Prefabs/GrandmaKit/Props/Tools/PF_Hammer|0.0|on:Workbench|-0.3|-|M|1|10|0|0|Hammer|1
+Saw|_Project/Prefabs/GrandmaKit/Props/Tools/PF_Saw|0.0|on:Workbench|0.3|-|M|1|15|0|0|Saw|1
+Crate_W|_Project/Prefabs/GrandmaKit/Props/Basement/PF_Crate|11.3|-3.06|5.3|-|M|12|15|0|0|Crate W|1
+Box_Workshop|BrokenVector/LowPolyStoragePack/Prefabs/Box_01_Yellow|10.3|-3.06|5.35|-|M|10|20|0|0|Box Workshop|1
+Bed|_Project/Prefabs/GrandmaKit/Furniture/PF_Bed_Old|1.29|3.06|3.0|E|M|60|300|1|0|Bed|-1
+Nightstand_A|_Project/Prefabs/GrandmaKit/Furniture/PF_Nightstand_01|0.51|3.06|1.9|E|M|10|50|0|0|Nightstand A|1
+Nightstand_B|_Project/Prefabs/GrandmaKit/Furniture/PF_Nightstand_01|0.51|3.06|4.12|E|M|10|50|0|0|Nightstand B|1
+Wardrobe|_Project/Prefabs/GrandmaKit/Furniture/PF_Wardrobe_01|1.6|3.06|5.435|S|M|70|260|1|0|Wardrobe|1
+Dresser|_Project/Prefabs/GrandmaKit/Furniture/PF_Dresser_01|4.0|3.06|0.535|N|M|45|200|1|0|Dresser|1
+Vanity|_Project/Prefabs/GrandmaKit/Furniture/PF_Vanity|5.605|3.06|4.6|W|M|35|180|0|0|Vanity|1
+Armchair_Bedroom|_Project/Prefabs/GrandmaKit/Furniture/PF_Armchair_02|3.6|3.06|5.33|S|M|20|90|0|0|Armchair Bedroom|-1
+Jewel_Chest|_Project/Prefabs/GrandmaKit/Furniture/PF_Chest|2.65|3.06|3.0|E|M|20|300|0|0|Jewel Chest|1
+Alarm_Clock|_Project/Prefabs/GrandmaKit/Props/Misc/PF_Alarm_Clock|0.0|on:Nightstand_B|0.0|E|M|0.5|15|0|1|Alarm Clock|1
+Bedside_Books|_Project/Prefabs/GrandmaKit/Props/Books/PF_Book_Stack|0.0|on:Nightstand_A|0.1|-|M|2|15|0|0|Bedside Books|1
+Perfume|_Project/Prefabs/GrandmaKit/Props/Misc/PF_Perfume|0.25|on:Dresser|0.0|-|M|0.4|45|0|1|Perfume|1
+Medicine_Box|_Project/Prefabs/GrandmaKit/Props/Misc/PF_Medicine_Box|-0.25|on:Dresser|0.0|-|M|0.3|20|0|0|Medicine Box|1
+Trunk|_Project/Prefabs/GrandmaKit/Props/Luggage/PF_Trunk|11.57|3.06|-1.2|W|M|25|80|1|0|Trunk|1
+Model_Ship|_Project/Prefabs/GrandmaKit/Props/Special/PF_Model_Ship|0.0|on:Trunk|0.0|-|M|3|200|0|1|Model Ship|1
+Painting|_Project/Prefabs/GrandmaKit/Props/Decoration/PF_Painting|9.3|3.06|-0.27|S|M|4|250|0|0|Painting|1
+Suitcase_C|_Project/Prefabs/GrandmaKit/Props/Luggage/PF_Suitcase|11.3|3.06|-2.35|N|M|8|30|0|0|Suitcase C|1
+Suitcase_D|_Project/Prefabs/GrandmaKit/Props/Luggage/PF_Suitcase|0.0|on:Suitcase_C|0.0|N|M|6|30|0|0|Suitcase D|1
+Globe|_Project/Prefabs/GrandmaKit/Props/Special/PF_Globe|9.9|3.06|-2.35|N|M|4|120|0|1|Globe|1
+Telescope|_Project/Prefabs/GrandmaKit/Props/Special/PF_Telescope|7.0|3.06|-2.3|S|M|8|180|0|0|Telescope|1
+Dress_Form|_Project/Prefabs/GrandmaKit/Props/Special/PF_Dress_Form|8.4|3.06|-2.4|N|M|10|60|0|0|Dress Form|1
+Box_Attic_A|BrokenVector/LowPolyStoragePack/Prefabs/Box_01_Red|10.8|3.06|-0.45|S|M|10|20|0|0|Box Attic A|1
+Box_Attic_B|BrokenVector/LowPolyStoragePack/Prefabs/Box_01_Blue|0.0|on:Box_Attic_A|0.0|-|M|10|20|0|0|Box Attic B|1
+Box_A|BrokenVector/LowPolyStoragePack/Prefabs/Box_01_Red|9.55|3.06|8.4|-|M|10|20|0|0|Box A|1
+Box_B|BrokenVector/LowPolyStoragePack/Prefabs/Box_01_Blue|10.25|3.06|8.4|-|M|10|20|0|0|Box B|1
+Box_C|BrokenVector/LowPolyStoragePack/Prefabs/Box_01_Yellow|0.0|on:Box_A|0.0|-|M|10|20|0|0|Box C|1
+Box_D|BrokenVector/LowPolyStoragePack/Prefabs/Box_01_Red|11.3|3.06|8.4|-|M|10|20|0|0|Box D|1
+Guest_Bed|_Project/Prefabs/Furniture/PF_Furniture_Bed|14.5|3.06|1.8|-|M|50|150|0|0|Guest Bed|1
+Sewing_Desk|_Project/Prefabs/GrandmaKit/Office/PF_Desk|16.6|3.06|0.58|N|M|30|70|0|0|Sewing Desk|1
+Sewing_Machine|_Project/Prefabs/GrandmaKit/Props/Sewing/PF_Sewing_Machine|0.0|on:Sewing_Desk|0.0|N|M|12|150|0|0|Sewing Machine|1
+Bathtub|_Project/Prefabs/GrandmaKit/Bathroom/PF_Bathtub_Old|14.2|3.06|5.39|90|S|5|10|0|0|Bathtub|1
+Toilet|_Project/Prefabs/GrandmaKit/Bathroom/PF_Toilet|15.8|3.06|5.395|S|S|5|10|0|0|Toilet|1
+Bathroom_Sink|_Project/Prefabs/GrandmaKit/Bathroom/PF_Sink_Bath|17.1|3.06|5.56|S|S|5|10|0|0|Bathroom Sink|1
+Soap_Perfume|_Project/Prefabs/GrandmaKit/Props/Misc/PF_Perfume|15.25|3.06|5.55|-|M|0.4|30|0|1|Soap Perfume|1
+Hedge_00|_Project/Prefabs/CottageKit/PF_Hedge|-7.8|0.0|-14.35|N|S|5|10|0|0|Hedge 00|1
+Hedge_01|_Project/Prefabs/CottageKit/PF_Hedge|-5.8|0.0|-14.35|N|S|5|10|0|0|Hedge 01|1
+Hedge_02|_Project/Prefabs/CottageKit/PF_Hedge|-3.8|0.0|-14.35|N|S|5|10|0|0|Hedge 02|1
+Hedge_03|_Project/Prefabs/CottageKit/PF_Hedge|-1.8|0.0|-14.35|N|S|5|10|0|0|Hedge 03|1
+Hedge_04|_Project/Prefabs/CottageKit/PF_Hedge|0.2|0.0|-14.35|N|S|5|10|0|0|Hedge 04|1
+Hedge_05|_Project/Prefabs/CottageKit/PF_Hedge|2.2|0.0|-14.35|N|S|5|10|0|0|Hedge 05|1
+Hedge_06|_Project/Prefabs/CottageKit/PF_Hedge|4.2|0.0|-14.35|N|S|5|10|0|0|Hedge 06|1
+Hedge_07|_Project/Prefabs/CottageKit/PF_Hedge|6.2|0.0|-14.35|N|S|5|10|0|0|Hedge 07|1
+Hedge_08|_Project/Prefabs/CottageKit/PF_Hedge|13.6|0.0|-14.35|N|S|5|10|0|0|Hedge 08|1
+Hedge_09|_Project/Prefabs/CottageKit/PF_Hedge|15.6|0.0|-14.35|N|S|5|10|0|0|Hedge 09|1
+Hedge_10|_Project/Prefabs/CottageKit/PF_Hedge|22.6|0.0|-14.35|N|S|5|10|0|0|Hedge 10|1
+Hedge_11|_Project/Prefabs/CottageKit/PF_Hedge|24.6|0.0|-14.35|N|S|5|10|0|0|Hedge 11|1
+Hedge_12|_Project/Prefabs/CottageKit/PF_Hedge|26.6|0.0|-14.35|N|S|5|10|0|0|Hedge 12|1
+Hedge_13|_Project/Prefabs/CottageKit/PF_Hedge|28.4|0.0|-14.35|N|S|5|10|0|0|Hedge 13|1
+Fountain|_Project/Prefabs/GrandmaKit/Garden/PF_Fountain|3.0|0.0|-10.0|-|S|5|10|0|0|Fountain|1
+Mailbox|_Project/Prefabs/GrandmaKit/Garden/PF_Mailbox|12.7|0.0|-14.2|S|S|5|10|0|0|Mailbox|1
+Well|_Project/Prefabs/GrandmaKit/Garden/PF_Well|14.5|0.0|14.5|-|S|5|10|0|0|Well|1
+Garden_Bench|_Project/Prefabs/GrandmaKit/Garden/PF_Garden_Bench|3.5|0.0|13.2|S|S|5|10|0|0|Garden Bench|-1
+Birdhouse|_Project/Prefabs/GrandmaKit/Garden/PF_Birdhouse|-5.5|0.0|12.0|-|S|5|10|0|0|Birdhouse|1
+Trellis|_Project/Prefabs/GrandmaKit/Garden/PF_Trellis|-5.0|0.0|17.0|S|S|5|10|0|0|Trellis|1
+Scarecrow|_Project/Prefabs/GrandmaKit/Garden/PF_Scarecrow|23.5|0.0|12.6|S|S|5|10|0|0|Scarecrow|1
+Vegetable_Bed_0|_Project/Prefabs/GrandmaKit/Garden/PF_Planter_Box|18.5|0.0|12.0|S|S|5|10|0|0|Vegetable Bed 0|1
+Vegetable_Bed_1|_Project/Prefabs/GrandmaKit/Garden/PF_Planter_Box|20.2|0.0|12.0|S|S|5|10|0|0|Vegetable Bed 1|1
+Vegetable_Bed_2|_Project/Prefabs/GrandmaKit/Garden/PF_Planter_Box|18.5|0.0|13.4|S|S|5|10|0|0|Vegetable Bed 2|1
+Vegetable_Bed_3|_Project/Prefabs/GrandmaKit/Garden/PF_Planter_Box|20.2|0.0|13.4|S|S|5|10|0|0|Vegetable Bed 3|1
+Bush_00|_Project/Prefabs/CottageKit/PF_Bush|1.2|0.0|-0.9|0|S|5|10|0|0|Bush 00|1
+Bush_01|_Project/Prefabs/GrandmaKit/Nature/PF_Bush_01|4.6|0.0|-0.9|67|S|5|10|0|0|Bush 01|1
+Bush_02|_Project/Prefabs/CottageKit/PF_Bush|-4.2|0.0|-0.7|134|S|5|10|0|0|Bush 02|1
+Bush_03|_Project/Prefabs/GrandmaKit/Nature/PF_Bush_01|-4.3|0.0|5.2|201|S|5|10|0|0|Bush 03|1
+Bush_04|_Project/Prefabs/CottageKit/PF_Bush|21.8|0.0|-3.9|268|S|5|10|0|0|Bush 04|1
+Bush_05|_Project/Prefabs/GrandmaKit/Nature/PF_Bush_01|24.8|0.0|-1.5|335|S|5|10|0|0|Bush 05|1
+Bush_06|_Project/Prefabs/CottageKit/PF_Bush|13.3|0.0|-3.8|42|S|5|10|0|0|Bush 06|1
+Bush_07|_Project/Prefabs/GrandmaKit/Nature/PF_Bush_01|16.6|0.0|-3.8|109|S|5|10|0|0|Bush 07|1
+Flower_00|_Project/Prefabs/GrandmaKit/Nature/PF_Flower_01|9.25|0.0|-13.6|0|D|5|10|0|0|Flower 00|1
+Flower_01|_Project/Prefabs/GrandmaKit/Nature/PF_Flower_02|9.25|0.0|-12.1|41|D|5|10|0|0|Flower 01|1
+Flower_02|_Project/Prefabs/GrandmaKit/Nature/PF_Flower_01|9.25|0.0|-10.6|82|D|5|10|0|0|Flower 02|1
+Flower_03|_Project/Prefabs/GrandmaKit/Nature/PF_Flower_02|9.25|0.0|-9.1|123|D|5|10|0|0|Flower 03|1
+Flower_04|_Project/Prefabs/GrandmaKit/Nature/PF_Flower_01|9.25|0.0|-7.6|164|D|5|10|0|0|Flower 04|1
+Flower_05|_Project/Prefabs/GrandmaKit/Nature/PF_Flower_02|11.75|0.0|-13.6|205|D|5|10|0|0|Flower 05|1
+Flower_06|_Project/Prefabs/GrandmaKit/Nature/PF_Flower_01|11.75|0.0|-12.1|246|D|5|10|0|0|Flower 06|1
+Flower_07|_Project/Prefabs/GrandmaKit/Nature/PF_Flower_02|11.75|0.0|-10.6|287|D|5|10|0|0|Flower 07|1
+Flower_08|_Project/Prefabs/GrandmaKit/Nature/PF_Flower_01|11.75|0.0|-9.1|328|D|5|10|0|0|Flower 08|1
+Flower_09|_Project/Prefabs/GrandmaKit/Nature/PF_Flower_02|11.75|0.0|-7.6|9|D|5|10|0|0|Flower 09|1
+Rock_0|_Project/Prefabs/GrandmaKit/Nature/PF_Rock_01|-7.5|0.0|-3.0|0|S|5|10|0|0|Rock 0|1
+Rock_1|_Project/Prefabs/GrandmaKit/Nature/PF_Rock_02|28.2|0.0|2.5|83|S|5|10|0|0|Rock 1|1
+Rock_2|_Project/Prefabs/GrandmaKit/Nature/PF_Rock_01|25.5|0.0|16.2|166|S|5|10|0|0|Rock 2|1
+Rock_3|_Project/Prefabs/GrandmaKit/Nature/PF_Rock_02|-2.0|0.0|16.0|249|S|5|10|0|0|Rock 3|1
+Mushroom_0|_Project/Prefabs/GrandmaKit/Nature/PF_Mushroom_01|2.3|0.0|14.8|0|D|5|10|0|0|Mushroom 0|1
+Mushroom_1|_Project/Prefabs/GrandmaKit/Nature/PF_Mushroom_02|4.5|0.0|15.9|57|D|5|10|0|0|Mushroom 1|1
+Mushroom_2|_Project/Prefabs/GrandmaKit/Nature/PF_Mushroom_01|15.2|0.0|16.4|114|D|5|10|0|0|Mushroom 2|1
+Mushroom_3|_Project/Prefabs/GrandmaKit/Nature/PF_Mushroom_02|-6.2|0.0|-9.4|171|D|5|10|0|0|Mushroom 3|1
+Mushroom_4|_Project/Prefabs/GrandmaKit/Nature/PF_Mushroom_01|26.4|0.0|-8.3|228|D|5|10|0|0|Mushroom 4|1
+Grass_0|_Project/Prefabs/GrandmaKit/Nature/PF_Grass_Tuft|-2.0|0.0|-8.0|0|D|5|10|0|0|Grass 0|1
+Grass_1|_Project/Prefabs/GrandmaKit/Nature/PF_Grass_Tuft|0.5|0.0|-12.5|37|D|5|10|0|0|Grass 1|1
+Grass_2|_Project/Prefabs/GrandmaKit/Nature/PF_Grass_Tuft|6.5|0.0|-9.0|74|D|5|10|0|0|Grass 2|1
+Grass_3|_Project/Prefabs/GrandmaKit/Nature/PF_Grass_Tuft|15.5|0.0|-11.0|111|D|5|10|0|0|Grass 3|1
+Grass_4|_Project/Prefabs/GrandmaKit/Nature/PF_Grass_Tuft|25.0|0.0|-12.5|148|D|5|10|0|0|Grass 4|1
+Grass_5|_Project/Prefabs/GrandmaKit/Nature/PF_Grass_Tuft|-7.0|0.0|8.0|185|D|5|10|0|0|Grass 5|1
+Grass_6|_Project/Prefabs/GrandmaKit/Nature/PF_Grass_Tuft|27.5|0.0|8.5|222|D|5|10|0|0|Grass 6|1
+Grass_7|_Project/Prefabs/GrandmaKit/Nature/PF_Grass_Tuft|9.0|0.0|15.5|259|D|5|10|0|0|Grass 7|1
+Grass_8|_Project/Prefabs/GrandmaKit/Nature/PF_Grass_Tuft|21.0|0.0|16.5|296|D|5|10|0|0|Grass 8|1
+Grass_9|_Project/Prefabs/GrandmaKit/Nature/PF_Grass_Tuft|-3.5|0.0|10.5|333|D|5|10|0|0|Grass 9|1
+Tree_0|BrokenVector/LowPolyTreePack/Prefabs/Tree Type2 03|-5.5|0.0|-10.5|0|T|5|10|0|0|Tree 0|1
+Tree_1|BrokenVector/LowPolyTreePack/Prefabs/Tree Type4 02|27.0|0.0|-9.5|53|T|5|10|0|0|Tree 1|1
+Tree_2|BrokenVector/LowPolyTreePack/Prefabs/Tree Type0 01|3.5|0.0|16.5|106|T|5|10|0|0|Tree 2|1
+Tree_3|BrokenVector/LowPolyTreePack/Prefabs/Tree Type3 01|-7.0|0.0|4.0|159|T|5|10|0|0|Tree 3|1
+Tree_4|BrokenVector/LowPolyTreePack/Prefabs/Tree Type1 02|26.5|0.0|14.0|212|T|5|10|0|0|Tree 4|1
+Tree_5|BrokenVector/LowPolyTreePack/Prefabs/Tree Type2 01|16.0|0.0|16.8|265|T|5|10|0|0|Tree 5|1
+Tree_6|BrokenVector/LowPolyTreePack/Prefabs/Tree Type4 04|-7.2|0.0|15.2|318|T|5|10|0|0|Tree 6|1
+Tree_7|BrokenVector/LowPolyTreePack/Prefabs/Tree Type3 03|28.3|0.0|0.5|11|T|5|10|0|0|Tree 7|1
