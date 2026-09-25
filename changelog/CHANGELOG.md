@@ -2,6 +2,19 @@
 
 _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSINESS, MARKETING._
 
+## 2026-09-21
+
+### Pierre's hand-made kit reaches Unity, and a real house gets built from it
+
+- **CONTENT:** Pierre modelled a structure kit by hand in `_ArtSource/assets.blend` (walls, floors, stairs, tiled roof sections, glass veranda). It is exported as 26 joined modules to `Art/PierreKit` with prefabs and colliders. His file is only ever read, never written.
+- **CONTENT:** 17 structure pieces continue his list in his style and materials, in a separate `_ArtSource/assets_extension.blend`: partition with door, carry arch, garage wall, stone cellar wall, two gables, brick quoin, plinth, railing, chimney, fireplace, fence, gate, step. Details and what is still missing in `05_ART/ASSET_LIST.md`.
+- **TECH, a scale decision:** the kit is imported at 1.5. It is authored on a 2 m module with a 1.5 m door and the player is 1.80 m. At 1.5 the grid is 3 m and the door 1.2 x 2.25 m. One number on the importer, reversible, the Blender file untouched.
+- **DESIGN:** `Map01_PierreKit_House.unity` is a cross-shaped cottage, not a box: two-storey body, front-gabled cross wing with the entrance and porch, veranda west, garage east, cellar stair in a back ell, terrace, chimney, garden. The plan is data (`_ArtSource/house_plan.json`), chosen by a panel of three designs scored against Pierre's reference plans, then machine validated.
+- **TESTING, measured instead of believed:** the last generated house could not be entered and its upper floor could not be reached, and a playtester had to find that out. This one was walked by physics queries before anyone opened it: 62 checks, every floor height, all 19 doors and openings with the player capsule, both stairs, spawn to front door. The first pass failed on three real faults (no room at the foot of the cellar stair, two door leaves swinging across a route) and they were fixed before the report, not after.
+- **TECH, what the kit cannot do alone:** the stair rises 2.79 m for a 3.06 m storey and its steps are 0.44 m once scaled, above the 0.30 m the player climbs. The map sets each flight on a 0.27 m stone plinth and lays an invisible ramp over it. The kit corner covers half a module per side, which puts windows half a module off the partitions, so corners are closed with a brick quoin.
+- **TECH, a trap in the source file:** 673 objects in `assets.blend` carry stale keyframes inherited by duplication. A frame change or a render moves 377 of them. Clear the keyframes in Blender before anything animates that file.
+- **NOT DONE:** no contract, no movable objects, no grandmother in this scene. Roof valleys are two roofs passing through each other, fine from outside, visible from inside the attic. The veranda roof has open end triangles.
+
 ## 2026-09-20
 
 ### The starting items stop being an inventory

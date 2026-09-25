@@ -1,0 +1,1125 @@
+{
+ "concept": "Final plan: the judges' winner (\"gameplay\", 2 votes of 3) with every named flaw fixed and the best grafts of the two others. A cross-shaped country cottage, not a box. A two-storey main body runs east-west (x0..5, z0..1, ridge X). A two-storey cross wing (x2..3, z-1..2, ridge Z, same eave, so a true cross gable) gives the front gable with a full-width vestibule, front door and two-cell porch on the SOUTH, and the back stair wing with the back door on the NORTH. WEST: a two-cell glass veranda on a brick base leaning on the living room gable. EAST: a single-storey garage with its own south-facing gable (ref_03) pushed one cell forward, so front gable and garage gable frame a small front court facing the truck. BACK: a small single-storey gabled scullery ell (x4..5, z2) holds the stone cellar stair. It replaces the winner's lean-to: same cells, but a plain GABLE prism, so no second roof primitive and no half-gable cheek. Ground floor: hall spine x=3 from front door to back door; living room west behind ONE INT_DOOR, with the veranda entered at its far end; dining room on the street side and grandmother's kitchen at the back as in Pierre's drawing, forming a 6-cell loop around a wall (hall, dining, kitchen); garage reached through one INT_DOOR from the dining room, plus a garage rear door that closes an outdoor loop. The wooden stair is its own walled stair hall with only the foot open onto \"the knot\" (3,2): stair foot west, cellar stairhead east, back door north, corridor south. Upstairs keeps Pierre's 1er etage: grandmother's bedroom west, bathroom north-east, guest room south-east (linked by a second door for an upstairs loop), a lived-in sewing attic in the front gable behind the two feature windows, a trunk store in the north wing, a railed gallery over the stairwell. Cellar: 8 cells, main cellar with boiler corner plus a workshop. 24 + 16 + 8 = 48 cells.",
+ "cells": [
+  {
+   "level": -1,
+   "cx": 3,
+   "cz": 0,
+   "room": "workshop",
+   "isVoid": false,
+   "spec": "other"
+  },
+  {
+   "level": -1,
+   "cx": 3,
+   "cz": 1,
+   "room": "workshop",
+   "isVoid": false,
+   "spec": "other"
+  },
+  {
+   "level": -1,
+   "cx": 4,
+   "cz": 0,
+   "room": "cellar",
+   "isVoid": false,
+   "spec": "cellar"
+  },
+  {
+   "level": -1,
+   "cx": 4,
+   "cz": 1,
+   "room": "cellar",
+   "isVoid": false,
+   "spec": "cellar"
+  },
+  {
+   "level": -1,
+   "cx": 4,
+   "cz": 2,
+   "room": "cellar",
+   "isVoid": false,
+   "spec": "cellar"
+  },
+  {
+   "level": -1,
+   "cx": 5,
+   "cz": 0,
+   "room": "cellar",
+   "isVoid": false,
+   "spec": "cellar"
+  },
+  {
+   "level": -1,
+   "cx": 5,
+   "cz": 1,
+   "room": "cellar",
+   "isVoid": false,
+   "spec": "cellar"
+  },
+  {
+   "level": -1,
+   "cx": 5,
+   "cz": 2,
+   "room": "cellar",
+   "isVoid": false,
+   "spec": "cellar"
+  },
+  {
+   "level": 0,
+   "cx": -1,
+   "cz": 0,
+   "room": "veranda",
+   "isVoid": false,
+   "spec": "veranda"
+  },
+  {
+   "level": 0,
+   "cx": -1,
+   "cz": 1,
+   "room": "veranda",
+   "isVoid": false,
+   "spec": "veranda"
+  },
+  {
+   "level": 0,
+   "cx": 0,
+   "cz": 0,
+   "room": "living",
+   "isVoid": false,
+   "spec": "living_room"
+  },
+  {
+   "level": 0,
+   "cx": 0,
+   "cz": 1,
+   "room": "living",
+   "isVoid": false,
+   "spec": "living_room"
+  },
+  {
+   "level": 0,
+   "cx": 1,
+   "cz": 0,
+   "room": "living",
+   "isVoid": false,
+   "spec": "living_room"
+  },
+  {
+   "level": 0,
+   "cx": 1,
+   "cz": 1,
+   "room": "living",
+   "isVoid": false,
+   "spec": "living_room"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": -1,
+   "room": "entrance",
+   "isVoid": false,
+   "spec": "entrance"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": 0,
+   "room": "hall",
+   "isVoid": false,
+   "spec": "hallway"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": 1,
+   "room": "stair_hall",
+   "isVoid": false,
+   "spec": "hallway"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": 2,
+   "room": "stair_hall",
+   "isVoid": false,
+   "spec": "hallway"
+  },
+  {
+   "level": 0,
+   "cx": 3,
+   "cz": -1,
+   "room": "entrance",
+   "isVoid": false,
+   "spec": "entrance"
+  },
+  {
+   "level": 0,
+   "cx": 3,
+   "cz": 0,
+   "room": "hall",
+   "isVoid": false,
+   "spec": "hallway"
+  },
+  {
+   "level": 0,
+   "cx": 3,
+   "cz": 1,
+   "room": "hall",
+   "isVoid": false,
+   "spec": "hallway"
+  },
+  {
+   "level": 0,
+   "cx": 3,
+   "cz": 2,
+   "room": "hall",
+   "isVoid": false,
+   "spec": "hallway"
+  },
+  {
+   "level": 0,
+   "cx": 4,
+   "cz": 0,
+   "room": "dining",
+   "isVoid": false,
+   "spec": "other"
+  },
+  {
+   "level": 0,
+   "cx": 4,
+   "cz": 1,
+   "room": "kitchen",
+   "isVoid": false,
+   "spec": "kitchen"
+  },
+  {
+   "level": 0,
+   "cx": 4,
+   "cz": 2,
+   "room": "hall",
+   "isVoid": true,
+   "spec": "hallway"
+  },
+  {
+   "level": 0,
+   "cx": 5,
+   "cz": 0,
+   "room": "dining",
+   "isVoid": false,
+   "spec": "other"
+  },
+  {
+   "level": 0,
+   "cx": 5,
+   "cz": 1,
+   "room": "kitchen",
+   "isVoid": false,
+   "spec": "kitchen"
+  },
+  {
+   "level": 0,
+   "cx": 5,
+   "cz": 2,
+   "room": "hall",
+   "isVoid": true,
+   "spec": "hallway"
+  },
+  {
+   "level": 0,
+   "cx": 6,
+   "cz": -1,
+   "room": "garage",
+   "isVoid": false,
+   "spec": "garage"
+  },
+  {
+   "level": 0,
+   "cx": 6,
+   "cz": 0,
+   "room": "garage",
+   "isVoid": false,
+   "spec": "garage"
+  },
+  {
+   "level": 0,
+   "cx": 7,
+   "cz": -1,
+   "room": "garage",
+   "isVoid": false,
+   "spec": "garage"
+  },
+  {
+   "level": 0,
+   "cx": 7,
+   "cz": 0,
+   "room": "garage",
+   "isVoid": false,
+   "spec": "garage"
+  },
+  {
+   "level": 1,
+   "cx": 0,
+   "cz": 0,
+   "room": "bedroom",
+   "isVoid": false,
+   "spec": "bedroom"
+  },
+  {
+   "level": 1,
+   "cx": 0,
+   "cz": 1,
+   "room": "bedroom",
+   "isVoid": false,
+   "spec": "bedroom"
+  },
+  {
+   "level": 1,
+   "cx": 1,
+   "cz": 0,
+   "room": "bedroom",
+   "isVoid": false,
+   "spec": "bedroom"
+  },
+  {
+   "level": 1,
+   "cx": 1,
+   "cz": 1,
+   "room": "bedroom",
+   "isVoid": false,
+   "spec": "bedroom"
+  },
+  {
+   "level": 1,
+   "cx": 2,
+   "cz": -1,
+   "room": "gable_attic",
+   "isVoid": false,
+   "spec": "attic"
+  },
+  {
+   "level": 1,
+   "cx": 2,
+   "cz": 0,
+   "room": "landing",
+   "isVoid": false,
+   "spec": "hallway"
+  },
+  {
+   "level": 1,
+   "cx": 2,
+   "cz": 1,
+   "room": "landing",
+   "isVoid": true,
+   "spec": "hallway"
+  },
+  {
+   "level": 1,
+   "cx": 2,
+   "cz": 2,
+   "room": "landing",
+   "isVoid": true,
+   "spec": "hallway"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": -1,
+   "room": "gable_attic",
+   "isVoid": false,
+   "spec": "attic"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": 0,
+   "room": "landing",
+   "isVoid": false,
+   "spec": "hallway"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": 1,
+   "room": "landing",
+   "isVoid": false,
+   "spec": "hallway"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": 2,
+   "room": "box_room",
+   "isVoid": false,
+   "spec": "attic"
+  },
+  {
+   "level": 1,
+   "cx": 4,
+   "cz": 0,
+   "room": "guest_room",
+   "isVoid": false,
+   "spec": "bedroom"
+  },
+  {
+   "level": 1,
+   "cx": 4,
+   "cz": 1,
+   "room": "bathroom",
+   "isVoid": false,
+   "spec": "bathroom"
+  },
+  {
+   "level": 1,
+   "cx": 5,
+   "cz": 0,
+   "room": "guest_room",
+   "isVoid": false,
+   "spec": "bedroom"
+  },
+  {
+   "level": 1,
+   "cx": 5,
+   "cz": 1,
+   "room": "bathroom",
+   "isVoid": false,
+   "spec": "bathroom"
+  }
+ ],
+ "edges": [
+  {
+   "level": -1,
+   "cx": 3,
+   "cz": 0,
+   "side": "E",
+   "type": "INT_DOOR"
+  },
+  {
+   "level": -1,
+   "cx": 3,
+   "cz": 0,
+   "side": "S",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": -1,
+   "cx": 3,
+   "cz": 0,
+   "side": "W",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": -1,
+   "cx": 3,
+   "cz": 1,
+   "side": "E",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": -1,
+   "cx": 3,
+   "cz": 1,
+   "side": "N",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": -1,
+   "cx": 3,
+   "cz": 1,
+   "side": "W",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": -1,
+   "cx": 4,
+   "cz": 0,
+   "side": "S",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": -1,
+   "cx": 4,
+   "cz": 2,
+   "side": "N",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": -1,
+   "cx": 4,
+   "cz": 2,
+   "side": "W",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": -1,
+   "cx": 5,
+   "cz": 0,
+   "side": "E",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": -1,
+   "cx": 5,
+   "cz": 0,
+   "side": "S",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": -1,
+   "cx": 5,
+   "cz": 1,
+   "side": "E",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": -1,
+   "cx": 5,
+   "cz": 2,
+   "side": "E",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": -1,
+   "cx": 5,
+   "cz": 2,
+   "side": "N",
+   "type": "CELLAR_WALL"
+  },
+  {
+   "level": 0,
+   "cx": -1,
+   "cz": 0,
+   "side": "S",
+   "type": "VERANDA_DOOR"
+  },
+  {
+   "level": 0,
+   "cx": -1,
+   "cz": 0,
+   "side": "W",
+   "type": "VERANDA_GLASS"
+  },
+  {
+   "level": 0,
+   "cx": -1,
+   "cz": 1,
+   "side": "N",
+   "type": "VERANDA_GLASS"
+  },
+  {
+   "level": 0,
+   "cx": -1,
+   "cz": 1,
+   "side": "W",
+   "type": "VERANDA_GLASS"
+  },
+  {
+   "level": 0,
+   "cx": 0,
+   "cz": 0,
+   "side": "S",
+   "type": "EXT_WINDOW_BIG"
+  },
+  {
+   "level": 0,
+   "cx": 0,
+   "cz": 0,
+   "side": "W",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 0,
+   "cz": 1,
+   "side": "N",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 0,
+   "cz": 1,
+   "side": "W",
+   "type": "INT_WIDE_OPENING"
+  },
+  {
+   "level": 0,
+   "cx": 1,
+   "cz": 0,
+   "side": "E",
+   "type": "INT_DOOR"
+  },
+  {
+   "level": 0,
+   "cx": 1,
+   "cz": 0,
+   "side": "S",
+   "type": "EXT_WINDOW_BIG"
+  },
+  {
+   "level": 0,
+   "cx": 1,
+   "cz": 1,
+   "side": "E",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 1,
+   "cz": 1,
+   "side": "N",
+   "type": "EXT_WINDOW_BIG"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": -1,
+   "side": "N",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": -1,
+   "side": "S",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": -1,
+   "side": "W",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": 0,
+   "side": "N",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": 1,
+   "side": "E",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": 2,
+   "side": "E",
+   "type": "NONE"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": 2,
+   "side": "N",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 0,
+   "cx": 2,
+   "cz": 2,
+   "side": "W",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 3,
+   "cz": -1,
+   "side": "E",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 0,
+   "cx": 3,
+   "cz": -1,
+   "side": "N",
+   "type": "INT_WIDE_OPENING"
+  },
+  {
+   "level": 0,
+   "cx": 3,
+   "cz": -1,
+   "side": "S",
+   "type": "EXT_DOOR"
+  },
+  {
+   "level": 0,
+   "cx": 3,
+   "cz": 0,
+   "side": "E",
+   "type": "INT_DOOR"
+  },
+  {
+   "level": 0,
+   "cx": 3,
+   "cz": 1,
+   "side": "E",
+   "type": "INT_WIDE_OPENING"
+  },
+  {
+   "level": 0,
+   "cx": 3,
+   "cz": 2,
+   "side": "N",
+   "type": "EXT_DOOR"
+  },
+  {
+   "level": 0,
+   "cx": 4,
+   "cz": 0,
+   "side": "N",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 4,
+   "cz": 0,
+   "side": "S",
+   "type": "EXT_WINDOW_BIG"
+  },
+  {
+   "level": 0,
+   "cx": 4,
+   "cz": 1,
+   "side": "N",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 4,
+   "cz": 2,
+   "side": "N",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 0,
+   "cx": 5,
+   "cz": 0,
+   "side": "E",
+   "type": "INT_DOOR"
+  },
+  {
+   "level": 0,
+   "cx": 5,
+   "cz": 0,
+   "side": "N",
+   "type": "INT_WIDE_OPENING"
+  },
+  {
+   "level": 0,
+   "cx": 5,
+   "cz": 0,
+   "side": "S",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 0,
+   "cx": 5,
+   "cz": 1,
+   "side": "E",
+   "type": "EXT_WINDOW_BIG"
+  },
+  {
+   "level": 0,
+   "cx": 5,
+   "cz": 1,
+   "side": "N",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 5,
+   "cz": 2,
+   "side": "E",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 5,
+   "cz": 2,
+   "side": "N",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 6,
+   "cz": -1,
+   "side": "S",
+   "type": "GARAGE_DOOR"
+  },
+  {
+   "level": 0,
+   "cx": 6,
+   "cz": -1,
+   "side": "W",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 6,
+   "cz": 0,
+   "side": "N",
+   "type": "EXT_DOOR"
+  },
+  {
+   "level": 0,
+   "cx": 7,
+   "cz": -1,
+   "side": "E",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 0,
+   "cx": 7,
+   "cz": -1,
+   "side": "S",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 7,
+   "cz": 0,
+   "side": "E",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 0,
+   "cx": 7,
+   "cz": 0,
+   "side": "N",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 0,
+   "cz": 0,
+   "side": "S",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 1,
+   "cx": 0,
+   "cz": 0,
+   "side": "W",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 0,
+   "cz": 1,
+   "side": "N",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 0,
+   "cz": 1,
+   "side": "W",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 1,
+   "cz": 0,
+   "side": "E",
+   "type": "INT_DOOR"
+  },
+  {
+   "level": 1,
+   "cx": 1,
+   "cz": 0,
+   "side": "S",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 1,
+   "cx": 1,
+   "cz": 1,
+   "side": "E",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 1,
+   "cz": 1,
+   "side": "N",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 1,
+   "cx": 2,
+   "cz": -1,
+   "side": "N",
+   "type": "INT_DOOR"
+  },
+  {
+   "level": 1,
+   "cx": 2,
+   "cz": -1,
+   "side": "S",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 1,
+   "cx": 2,
+   "cz": -1,
+   "side": "W",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 2,
+   "cz": 1,
+   "side": "E",
+   "type": "RAILING"
+  },
+  {
+   "level": 1,
+   "cx": 2,
+   "cz": 2,
+   "side": "E",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 2,
+   "cz": 2,
+   "side": "N",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 1,
+   "cx": 2,
+   "cz": 2,
+   "side": "W",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": -1,
+   "side": "E",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": -1,
+   "side": "N",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": -1,
+   "side": "S",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": 0,
+   "side": "E",
+   "type": "INT_DOOR"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": 1,
+   "side": "E",
+   "type": "INT_DOOR"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": 1,
+   "side": "N",
+   "type": "INT_DOOR"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": 2,
+   "side": "E",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 3,
+   "cz": 2,
+   "side": "N",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 1,
+   "cx": 4,
+   "cz": 0,
+   "side": "N",
+   "type": "INT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 4,
+   "cz": 0,
+   "side": "S",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 1,
+   "cx": 4,
+   "cz": 1,
+   "side": "N",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 5,
+   "cz": 0,
+   "side": "E",
+   "type": "EXT_PLAIN"
+  },
+  {
+   "level": 1,
+   "cx": 5,
+   "cz": 0,
+   "side": "N",
+   "type": "INT_DOOR"
+  },
+  {
+   "level": 1,
+   "cx": 5,
+   "cz": 0,
+   "side": "S",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 1,
+   "cx": 5,
+   "cz": 1,
+   "side": "E",
+   "type": "EXT_WINDOW_SMALL"
+  },
+  {
+   "level": 1,
+   "cx": 5,
+   "cz": 1,
+   "side": "N",
+   "type": "EXT_PLAIN"
+  }
+ ],
+ "stairs": [
+  {
+   "lower": 0,
+   "upper": 1,
+   "c0x": 2,
+   "c0z": 2,
+   "c1x": 2,
+   "c1z": 1,
+   "dir": "S",
+   "ex": 2,
+   "ez": 0,
+   "kind": "WOOD"
+  },
+  {
+   "lower": -1,
+   "upper": 0,
+   "c0x": 5,
+   "c0z": 2,
+   "c1x": 4,
+   "c1z": 2,
+   "dir": "W",
+   "ex": 3,
+   "ez": 2,
+   "kind": "STONE"
+  }
+ ],
+ "roofs": [
+  {
+   "kind": "GABLE",
+   "x0": 0,
+   "z0": 0,
+   "x1": 5,
+   "z1": 1,
+   "ridge": "X",
+   "high": "",
+   "eave": 2
+  },
+  {
+   "kind": "GABLE",
+   "x0": 2,
+   "z0": -1,
+   "x1": 3,
+   "z1": 2,
+   "ridge": "Z",
+   "high": "",
+   "eave": 2
+  },
+  {
+   "kind": "GABLE",
+   "x0": 6,
+   "z0": -1,
+   "x1": 7,
+   "z1": 0,
+   "ridge": "Z",
+   "high": "",
+   "eave": 1
+  },
+  {
+   "kind": "GABLE",
+   "x0": 4,
+   "z0": 2,
+   "x1": 5,
+   "z1": 2,
+   "ridge": "Z",
+   "high": "",
+   "eave": 1
+  },
+  {
+   "kind": "GLASS",
+   "x0": -1,
+   "z0": 0,
+   "x1": -1,
+   "z1": 1,
+   "ridge": "",
+   "high": "E",
+   "eave": 1
+  }
+ ],
+ "porch": [
+  {
+   "cx": 2,
+   "cz": -2
+  },
+  {
+   "cx": 3,
+   "cz": -2
+  }
+ ],
+ "terrace": [
+  {
+   "cx": 1,
+   "cz": 2
+  },
+  {
+   "cx": 1,
+   "cz": 3
+  },
+  {
+   "cx": 2,
+   "cz": 3
+  },
+  {
+   "cx": 3,
+   "cz": 3
+  }
+ ],
+ "truckX": 5,
+ "truckZ": -5,
+ "chimX": 0,
+ "chimZ": 1,
+ "chimSide": "N"
+}

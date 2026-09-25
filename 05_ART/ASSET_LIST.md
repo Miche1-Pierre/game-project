@@ -193,6 +193,24 @@ _Trees reuse the existing Broken Vector Tree Pack; make custom only if the style
 
 ## 11. Already produced
 
+### PierreKit, the hand-made structure kit (26 modules, 2026-09-21), now the reference style
+Source: `_ArtSource/assets.blend`, modelled by Pierre. It is never written to by tooling. Cream plaster, pink brick accents, chamfered slightly irregular wood, grey stone. Materials: `wall`, `brique`, `brique.001`, `wood`, `wood.001`, `glass`, `metal`.
+- Exported as one joined mesh per module to `Assets/_Project/Art/PierreKit/PK_*.fbx`, prefabs with mesh colliders in `Assets/_Project/Prefabs/PierreKit/`, materials in `Art/PierreKit/Materials/PK_*.mat` (Standard shader, Blender linear colours converted to sRGB). The joined modules with their pivots are kept in `_ArtSource/PierreKit_export_modules.blend`.
+- Modules: Wall_Plain, Wall_Window_Small, Wall_Window_Big, Wall_Door, Door_Leaf, Wall_Interior, Wall_Corner, Floor_Plank_A/B, Floor_Stone, Floor_Upper_A/B, Post_T, Stairs_Wood, Stairs_Stone, Veranda_Roof, Veranda_Panel_Narrow/Wide, Veranda_Glass_Flat, Veranda_Glass_Wall, Pillar_Brick, Roof_8 (gutter and ridge), Roof_10 (plain), Roof_11 (ridge), Roof_12 (gutter), Roof_9 (rounded corner).
+- **Import scale is 1.5** (`ModelImporter.globalScale`), Blender file untouched. The kit is authored on a 2 m module with a 0.75 x 1.5 m door, and the player is 1.80 m, so at 1:1 nobody gets through a door. At 1.5 the module is 3 m, a storey 3.06 m, the door 1.2 x 2.25 m.
+- Unity orientation of every module: length on X, outside face towards +Z, pivot at the bottom centre (floors: top centre). Roof sections: pivot at the eave, rising towards -Z, ridge line at 3.40 m, pitch 30 degrees, tile field 3.45 m wide. Stairs: pivot at the foot, climbing towards -Z, 4.9 m long, 2.79 m of rise.
+- Three things the kit does not do on its own: the stair rises 2.79 m for a 3.06 m storey (the map sets it on a 0.27 m stone plinth), its steps are 0.44 m high once scaled while the player climbs 0.30 (the map adds an invisible ramp over each flight), and `Wall_Corner` covers half a module on each side, which shifts every window half a module off the partitions, so the map closes corners with a brick quoin instead.
+- **Trap in `assets.blend`:** 673 objects carry stale keyframes inherited through duplication. Any frame change or F12 render snaps 377 of them to old positions (the roof gutters fall to the ground). Fix in Blender: select all, Object > Animation > Clear Keyframes.
+
+### PierreKit extension, batch 1 (17 structure pieces, 2026-09-21), same style, separate file
+Source: `_ArtSource/assets_extension.blend` (collection `EXT Structure`, append it into `assets.blend` when wanted). FBX in `Assets/_Project/Art/PierreKit_Ext/PKX_*.fbx`, prefabs in `Prefabs/PierreKit_Ext/`. Same materials by name, same 2 m module, same 1.5 import scale.
+Wall_Int_Door (0.9 x 1.6 m opening), Wall_Int_Arch (1.5 x 1.7 m carry opening), Wall_Garage (1.7 x 1.75 m opening), Wall_Cellar (grey stone blocks), Gable_4m and Gable_4m_Window (30 degree gable infill for a two-module wing, timber truss), Corner_Quoin, Plinth_Stone, Railing_2m, Railing_Post, Chimney_Stack (stackable, one storey), Chimney_Cap, Fireplace, Fence_2m, Fence_Post, Fence_Gate, Step_Stone.
+Still missing for a complete structure set: roof valley and verge (barge board) pieces, a dormer, a glazed veranda door leaf and veranda roof end cheeks, a garage door leaf, interior door leaves, window shutters.
+
+### Map 1 on the PierreKit (`Assets/_Movers/Scenes/Map01_PierreKit_House.unity`)
+Cross-shaped cottage on the 3 m grid, 48 cells: two-storey main body, two-storey cross wing with the front gable, entrance and two-cell porch, glass veranda west, garage with its own gable east, scullery ell with the cellar stair at the back, L-shaped terrace, chimney, fenced garden, path and drive. The plan is data: `_ArtSource/house_plan.json` (and the flat `house_plan.txt` the assembly reads). It came out of a three-designer panel judged against Pierre's reference plans, and it validates with zero errors (every perimeter edge, every room reachable, stairs, roofs matching column heights).
+Walkability was measured, not assumed: 62 physics checks pass (every floor at its height, all 19 doors and openings with the 1.80 x 0.70 m player capsule, both stairs climbed from cellar to upper floor with no rise above 0.30 m, spawn to front door). Player and truck are copied from Tutorial_01. No contract, no movable objects yet.
+
 ### Furniture batch 1 (14, `Assets/_Project/Art/GrandmaKit/Furniture` + `/Prefabs/GrandmaKit/Furniture`)
 Bed_Old, Nightstand_01, Dresser_01, Wardrobe_01 (bedroom); Sofa_01, Armchair_01, Rocking_Chair, Coffee_Table, Side_Table, Bookshelf_01 (with books), TV_Old, Fireplace_Living (living); Dining_Table_01, Dining_Chair_01 (dining). Flat-colored prefabs + colliders. Rebuild via menu **The Movers > Build Kit Prefabs** (scans CottageKit + GrandmaKit).
 
