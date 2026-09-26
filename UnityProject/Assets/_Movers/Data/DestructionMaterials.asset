@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8314398f47fce54f83bfefae72e4376, type: 3}
+  m_Name: DestructionMaterials
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.DestructionMaterialTable
+  rows:
+  - material: 0
+    durability: 25
+    minImpactSpeed: 2.2
+    density: 2500
+    blastFactor: 1
+    impactFactor: 1
+    cover: 0.9
+    sound: 1
+  - material: 1
+    durability: 35
+    minImpactSpeed: 2.8
+    density: 2000
+    blastFactor: 1
+    impactFactor: 1
+    cover: 0.8
+    sound: 1
+  - material: 2
+    durability: 80
+    minImpactSpeed: 4
+    density: 900
+    blastFactor: 1
+    impactFactor: 1
+    cover: 0.8
+    sound: 4
+  - material: 3
+    durability: 180
+    minImpactSpeed: 4.5
+    density: 600
+    blastFactor: 1
+    impactFactor: 1
+    cover: 0.5
+    sound: 2
+  - material: 4
+    durability: 260
+    minImpactSpeed: 7
+    density: 300
+    blastFactor: 1
+    impactFactor: 1
+    cover: 0.6
+    sound: 4
+  - material: 5
+    durability: 420
+    minImpactSpeed: 7
+    density: 3000
+    blastFactor: 1
+    impactFactor: 1
+    cover: 0.35
+    sound: 3
+  - material: 6
+    durability: 2200
+    minImpactSpeed: 9
+    density: 2200
+    blastFactor: 1
+    impactFactor: 1
+    cover: 0.35
+    sound: 3
+  - material: 7
+    durability: 1200
+    minImpactSpeed: 8
+    density: 1400
+    blastFactor: 1
+    impactFactor: 1
+    cover: 0.35
+    sound: 3
+  - material: 8
+    durability: 1800
+    minImpactSpeed: 9
+    density: 1900
+    blastFactor: 1
+    impactFactor: 1
+    cover: 0.3
+    sound: 3
+  - material: 9
+    durability: 3000
+    minImpactSpeed: 10
+    density: 2400
+    blastFactor: 1
+    impactFactor: 1
+    cover: 0.25
+    sound: 3
+  blastDamage: 1600
+  paneBlastFactor: 0.3125
+  solidCover: 0.35
+  damagedCoverOpening: 0.15
+  fracturedCoverOpening: 0.4
+  structureFocus: 0.5
+  impactDamageScale: 9
+  crushMinMass: 30
+  chunkDamagedAt: 0.6
+  chunkFracturedAt: 0.25
+  collapseBelowShare: 0.3
+  fractureAtShare: 0.4
+  structureDebrisLifetime: 25
+  propDebrisLifetime: 18
+  glassShardLifetime: 8

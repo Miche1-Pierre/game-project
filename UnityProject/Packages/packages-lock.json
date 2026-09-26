@@ -1,5 +1,16 @@
 {
   "dependencies": {
+    "com.sahland.lumaflow": {
+      "version": "0.1.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.modules.uielements": "1.0.0",
+        "com.unity.modules.accessibility": "1.0.0",
+        "com.unity.modules.vectorgraphics": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
+    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 1,

@@ -171,6 +171,13 @@ namespace Movers
 
             var mo = item.GetComponent<MovableObject>();
             var rb = mo != null && mo.rb != null ? mo.rb : item.GetComponent<Rigidbody>();
+            if (mo != null)
+            {
+                // On a body is not in the truck, even if it was put on standing in the truck:
+                // switched-off colliders send the cargo zone no exit (same as a pocket).
+                mo.worn = true;
+                PlayerPockets.LeaveTruck(mo);
+            }
 
             var record = new Worn
             {
@@ -528,6 +535,7 @@ namespace Movers
                 rb.isKinematic = w.wasKinematic;
                 rb.useGravity = w.hadGravity;
             }
+            if (mo != null) mo.worn = false;
 
             return item;
         }

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d920fc721d5193c42bf6261a5bc5e37c, type: 3}
+  m_Name: GameLoopTuning
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.GameLoopTuning
+  numbers:
+    defaultTimeLimit: 600
+    policeCountdown: 8
+    introCardSeconds: 6
+    introCardSkipAfter: 1
+    restartDelay: 3
+    damagedPayFraction: 0.5
+    destroyedBillFraction: 1
+    unseenTheftPayFraction: 1
+    witnessedFineFraction: 1
+    breakInCost: 250
+    pocketMaxKg: 1.5
+    pocketMaxSide: 0.35

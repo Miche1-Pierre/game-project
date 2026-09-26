@@ -2,21 +2,35 @@ using UnityEngine;
 
 namespace Movers
 {
-    // Minimal first-person controller (classic Input Manager, CharacterController).
+    // Minimal first-person controller (CharacterController), driven by this player's CrewInput.
     // speedMultiplier, jumpMultiplier and lookLocked are all driven by PlayerGrab:
     // carrying something heavy slows you down and flattens your jump, and holding the
-    // rotate key hands the mouse to the held object instead of your head.
+    // rotate button hands the look to the held object instead of your head.
+    // AddImpulse is the one way in for anything outside the player: an explosion shoves you
+    // through it, and the shove fades on its own instead of taking your controls away.
+    //
+    // It never reads UnityEngine.Input. The keyboard, a gamepad or a test script all arrive
+    // through CrewInput, so two of these on one machine answer to two different people. The
+    // cursor is not a player's business either: CursorLock owns it.
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
         public Transform cam;
         public float walkSpeed = 4.5f;
-        public float mouseSensitivity = 2f;
+        public float mouseSensitivity = 2f;   // degrees per unit of look delta (mouse-axis units)
         public float gravity = -18f;
 
+        [Header("Eyes")]
+        // Metres from the floor to the eyes. 0 keeps the camera where the scene put it (the
+        // tutorial, where the carry was validated). Measured from the floor under the feet, not
+        // from the capsule bottom: a CharacterController hovers skinWidth above the ground
+        // (measured: exactly 0.08 m with the house player's settings), and the body stands on
+        // the floor, so the eyes have to be counted from there too.
+        public float eyeHeight = 0f;
+
         [Header("Jump")]
-        // Space. Sized to climb into the truck bed and step over a dropped crate,
-        // not to vault a wall. Out of scope: double jump.
+        // Sized to climb into the truck bed and step over a dropped crate, not to vault a wall.
+        // Out of scope: double jump.
         public float jumpHeight = 1.1f;
         // Grace window after walking off an edge. Without it a CharacterController
         // eats jumps on ramps and doorsteps, which is a frustrating failure, not a funny one.
@@ -25,9 +39,8 @@ namespace Movers
         [Header("Sprint and crouch")]
         // Both are hold, not toggle: a mover sprints across the garden and ducks under a
         // shelf, they do not live in either state. Crouch wins over sprint, and no stamina:
-        // a meter to watch is a system nobody asked for.
-        public KeyCode sprintKey = KeyCode.LeftShift;
-        public KeyCode crouchKey = KeyCode.LeftControl;
+        // a meter to watch is a system nobody asked for. Which key or button it is belongs to
+        // the input source (KeyboardMouseSource: Shift and Ctrl, as before).
         public float sprintMultiplier = 1.6f;
         public float crouchSpeedMultiplier = 0.45f;
         public float crouchHeight = 1.0f;
@@ -45,40 +58,77 @@ namespace Movers
         [HideInInspector] public Vector3 lookSway = Vector3.zero;
         [HideInInspector] public float moveDrift = 0f;
 
+        [Header("Knockback")]
+        // How fast a shove from AddImpulse dies out, per second. On the ground your feet catch
+        // you after a stumble; in the air nothing does, so the same blast carries you several
+        // metres when it lifts you and about two when it does not.
+        public float knockbackGroundDecay = 5f;
+        public float knockbackAirDecay = 1.2f;
+        // Five grenades going off together should throw you across the room, not across the map.
+        public float maxKnockbackSpeed = 16f;
+
         CharacterController cc;
+        CrewInput input;
         float pitch;
         float vy;
         float lastGroundedTime = -999f;
+        Vector3 knockback;    // horizontal m/s added on top of the walk, decays by itself
 
         // stance geometry, captured once so the crouch math follows whatever the scene authored
         float standHeight;
         Vector3 standCenter;
-        float feetOffset;     // feet relative to the transform, kept constant while crouching
+        float feetOffset;     // capsule bottom relative to the transform, kept constant while crouching
         float headTopGap;     // distance from the eye to the top of the capsule
+
+        // Where the floor is, in this transform's space: the capsule bottom minus the skin the
+        // CharacterController hovers on. The crew body stands here (CrewAnimator).
+        public float FeetHeight => feetOffset - (cc != null ? cc.skinWidth : 0f);
+
+        // Metres per second from the last Move, for the animation driver. Zero while the capsule
+        // is switched off (the truck seat does that): it would otherwise keep the last walk.
+        public Vector3 Velocity => cc != null && cc.enabled ? cc.velocity : Vector3.zero;
+
+        public CrewInput Input => input;
 
         void Awake()
         {
             cc = GetComponent<CharacterController>();
-            Cursor.lockState = CursorLockMode.Locked;
+            input = CrewSetup.InputOf(gameObject);
 
             standHeight = cc.height;
             standCenter = cc.center;
             feetOffset = standCenter.y - standHeight * 0.5f;
+
+            if (eyeHeight > 0f && cam != null)
+            {
+                var p = cam.localPosition;
+                p.y = FeetHeight + eyeHeight;
+                cam.localPosition = p;
+            }
+
             float standEyeAboveFeet = (cam != null ? cam.localPosition.y : 0f) - feetOffset;
             headTopGap = standHeight - standEyeAboveFeet;
         }
 
+        void Start()
+        {
+            // A scene nobody set up for the crew (an older test map) still plays: its player is
+            // put on the roster and takes the keyboard, instead of standing there deaf.
+            if (CrewSpawner.Active == null) CrewSpawner.CreateDefault();
+        }
+
         void Update()
         {
-            // look (suspended while PlayerGrab is using the mouse to turn a held object)
+            // look (suspended while PlayerGrab is using the look to turn a held object)
             if (!lookLocked)
             {
-                float mx = Input.GetAxis("Mouse X") * mouseSensitivity;
-                float my = Input.GetAxis("Mouse Y") * mouseSensitivity;
+                Vector2 look = input.LookDelta;
+                float mx = look.x * mouseSensitivity;
+                float my = look.y * mouseSensitivity;
                 transform.Rotate(0f, mx, 0f);
                 pitch = Mathf.Clamp(pitch - my, -85f, 85f);
             }
-            // Applied every frame, not only when the mouse is free, so a drunk head keeps
+            // Applied every frame, not only when the look is free, so a drunk head keeps
             // wandering while you are busy turning a sofa. Zero sway reproduces the old line
             // exactly.
             if (cam != null) cam.localRotation = Quaternion.Euler(pitch + lookSway.x, lookSway.y, lookSway.z);
@@ -86,15 +136,14 @@ namespace Movers
             UpdateStance();
 
             // move
-            float h = Input.GetAxisRaw("Horizontal");
-            float v = Input.GetAxisRaw("Vertical");
-            Vector3 dir = transform.right * h + transform.forward * v;
+            Vector2 move = input.Move;
+            Vector3 dir = transform.right * move.x + transform.forward * move.y;
             if (dir.sqrMagnitude > 1f) dir.Normalize();
             // You do not walk where you point any more. Rotating the direction rather than
             // nudging the input keeps full speed: drunk is crooked, not slow.
             if (moveDrift != 0f) dir = Quaternion.Euler(0f, moveDrift, 0f) * dir;
 
-            bool sprinting = Input.GetKey(sprintKey) && !crouching;
+            bool sprinting = input.Held(CrewButton.Sprint) && !crouching;
             float stance = crouching ? crouchSpeedMultiplier : (sprinting ? sprintMultiplier : 1f);
 
             if (cc.isGrounded)
@@ -106,7 +155,7 @@ namespace Movers
             // jump: v = sqrt(2 * g * h). A loaded crew jumps lower, it never stops jumping,
             // because a fridge that refuses to leave the ground is a rule, and a fridge that
             // barely hops is a joke. Crouched, you do not jump at all: let go of crouch first.
-            if (Input.GetButtonDown("Jump") && !crouching && Time.time - lastGroundedTime <= coyoteTime)
+            if (input.Down(CrewButton.Jump) && !crouching && Time.time - lastGroundedTime <= coyoteTime)
             {
                 float h2 = Mathf.Max(0.05f, jumpHeight * jumpMultiplier);
                 vy = Mathf.Sqrt(2f * -gravity * h2);
@@ -116,17 +165,62 @@ namespace Movers
             vy += gravity * Time.deltaTime;
 
             Vector3 vel = dir * walkSpeed * speedMultiplier * stance + Vector3.up * vy;
+            // A blast rides on top of whatever you were doing rather than replacing it: you can
+            // still steer while you fly, you just cannot stop. Zero knockback leaves the line
+            // above exactly as it was.
+            if (knockback != Vector3.zero)
+            {
+                vel += knockback;
+                float decay = cc.isGrounded ? knockbackGroundDecay : knockbackAirDecay;
+                knockback *= Mathf.Exp(-decay * Time.deltaTime);
+                if (knockback.sqrMagnitude < 0.0025f) knockback = Vector3.zero;
+            }
             cc.Move(vel * Time.deltaTime);
+        }
 
-            if (Input.GetKeyDown(KeyCode.Escape)) Cursor.lockState = CursorLockMode.None;
-            if (Input.GetMouseButtonDown(0) && Cursor.lockState != CursorLockMode.Locked)
-                Cursor.lockState = CursorLockMode.Locked;
+        // A shove from outside the player, as a change of velocity in m/s (Explosion today).
+        // The horizontal part is added to the walk and fades by itself. The upward part throws
+        // you the way a jump does: it sets the climb rather than adding to it, so two blasts in
+        // the same instant, or a blast under a player who is already jumping, do not stack into
+        // a rocket. The grounded check in Update only resets a falling vy, so the lift survives
+        // the frame it lands in. Both parts are capped at maxKnockbackSpeed.
+        public void AddImpulse(Vector3 velocityChange)
+        {
+            // A NaN or an infinity from any caller would put the player's position at NaN, and
+            // nothing brings him back from there. Ignore the shove instead.
+            if (!IsFinite(velocityChange.x) || !IsFinite(velocityChange.y) || !IsFinite(velocityChange.z)) return;
+
+            knockback += new Vector3(velocityChange.x, 0f, velocityChange.z);
+            knockback = Vector3.ClampMagnitude(knockback, maxKnockbackSpeed);
+
+            float y = Mathf.Clamp(velocityChange.y, -maxKnockbackSpeed, maxKnockbackSpeed);
+            if (y > 0f) vy = Mathf.Max(vy, y);
+            else vy += y;
+        }
+
+        // Puts the player somewhere else at once (the debug "bring the other player here").
+        // The CharacterController keeps its own copy of the position, so it is switched off
+        // for the jump; the fall and any shove in progress are dropped with it.
+        public void Teleport(Vector3 position, float yaw)
+        {
+            bool was = cc.enabled;
+            cc.enabled = false;
+            transform.SetPositionAndRotation(position, Quaternion.Euler(0f, yaw, 0f));
+            cc.enabled = was;
+            vy = 0f;
+            knockback = Vector3.zero;
+        }
+
+        // float.IsFinite is missing from some of Unity's API profiles; this works in all of them.
+        static bool IsFinite(float f)
+        {
+            return !float.IsNaN(f) && !float.IsInfinity(f);
         }
 
         // Grows and shrinks the capsule around fixed feet, and rides the camera down with it.
         void UpdateStance()
         {
-            bool wantCrouch = Input.GetKey(crouchKey);
+            bool wantCrouch = input.Held(CrewButton.Crouch);
             if (!wantCrouch && crouching && !HasHeadroom()) wantCrouch = true;   // something overhead, stay down
             crouching = wantCrouch;
 

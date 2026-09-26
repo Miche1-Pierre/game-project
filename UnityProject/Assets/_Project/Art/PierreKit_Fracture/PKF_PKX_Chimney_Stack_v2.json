@@ -1,0 +1,1089 @@
+{
+ "schema": "movers-chunkset-1",
+ "module": "PKX_Chimney_Stack",
+ "variant": 2,
+ "source_fbx": "C:/GameProject/UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Chimney_Stack.fbx",
+ "fbx": "PKF_PKX_Chimney_Stack_v2.fbx",
+ "kind": "stack",
+ "unity": {
+  "import_scale": 1.5,
+  "mapping": "unity_local = (-bx, bz, -by) * import_scale; import the chunk FBX with the same ModelImporter settings as the intact module (globalScale, useFileScale, materials remapped by name); the chunk root placed on the intact module at identity overlays it",
+  "units_note": "values without suffix are Blender module space (m, Z up, before import scale); *_unity values are in the Unity model space of the module"
+ },
+ "params": {
+  "seed": 40289,
+  "target_chunks": 8,
+  "range": [
+   6,
+   10
+  ],
+  "gamma": 1.5,
+  "min_extent": 0.12,
+  "min_vol_frac": 0.2,
+  "touch_tolerance": 0.03,
+  "anchor_tolerance": 0.0105,
+  "hull_void_limit_unity": 0.002
+ },
+ "frame": {
+  "thickness_axis": null,
+  "plane_axes": [
+   "x",
+   "y",
+   "z"
+  ],
+  "core_bounds": {
+   "min": [
+    -0.4151,
+    -0.41567,
+    -0.00022
+   ],
+   "max": [
+    0.41346,
+    0.4133,
+    2.04112
+   ]
+  },
+  "core_bounds_unity": {
+   "min": [
+    -0.62019,
+    -0.00033,
+    -0.61995
+   ],
+   "max": [
+    0.62265,
+    3.06168,
+    0.6235
+   ]
+  },
+  "anchor_bounds_unity": {
+   "min": [
+    -0.62019,
+    -0.00033,
+    -0.61995
+   ],
+   "max": [
+    0.62265,
+    3.06168,
+    0.6235
+   ]
+  },
+  "anchor_note": "anchors test the core bounds (the masonry body without trim that overhangs it: corner bricks, a threshold below the floor), which is where the floor and the neighbour modules meet it",
+  "module_bounds_unity": {
+   "min": [
+    -0.62019,
+    -0.00033,
+    -0.61995
+   ],
+   "max": [
+    0.62265,
+    3.06168,
+    0.6235
+   ]
+  },
+  "module_bounds_no_glass_unity": {
+   "min": [
+    -0.62019,
+    -0.00033,
+    -0.61995
+   ],
+   "max": [
+    0.62265,
+    3.06168,
+    0.6235
+   ]
+  },
+  "slab_band": null
+ },
+ "intact": {
+  "tris": 704,
+  "bounds": {
+   "min": [
+    -0.4151,
+    -0.41567,
+    -0.00022
+   ],
+   "max": [
+    0.41346,
+    0.4133,
+    2.04112
+   ]
+  },
+  "volume": 1.16699,
+  "volume_unity": 3.938591,
+  "volume_raw_parts": 1.16699,
+  "loose_parts": 16,
+  "duplicate_faces_skipped": 0,
+  "repaired_parts": [],
+  "dropped_parts": [],
+  "normals_fixed_parts": [],
+  "weld": {
+   "parts_welded": 0,
+   "verts_removed": 0,
+   "reverted": 0
+  },
+  "dissolve": {
+   "tris_before": 704,
+   "tris_after": 704,
+   "reverted_parts": 0
+  },
+  "glass_parts_excluded": [],
+  "frame_subtraction": [],
+  "slivers_dropped": []
+ },
+ "fracture": {
+  "structure": {
+   "courses": 8,
+   "blocks": 16,
+   "groups_of_parts": [
+    [
+     0,
+     1,
+     2,
+     3
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     9
+    ],
+    [
+     8
+    ],
+    [
+     10,
+     11
+    ],
+    [
+     12,
+     13
+    ],
+    [
+     14,
+     15
+    ]
+   ],
+   "split_courses": 2
+  },
+  "bisect_ops": 0,
+  "cap_faces_created": 0
+ },
+ "chunks": [
+  {
+   "index": 0,
+   "name": "PKX_Chimney_Stack_Chunk_00",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique"
+   ],
+   "centroid": [
+    -0.00124,
+    -0.00426,
+    0.25472
+   ],
+   "centroid_unity": [
+    0.00187,
+    0.38209,
+    0.00639
+   ],
+   "bounds": {
+    "min": [
+     -0.4151,
+     -0.41567,
+     -0.00022
+    ],
+    "max": [
+     0.4109,
+     0.40911,
+     0.51127
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.61635,
+     -0.00033,
+     -0.61366
+    ],
+    "max": [
+     0.62265,
+     0.76691,
+     0.6235
+    ]
+   },
+   "volume": 0.2928583,
+   "volume_unity": 0.9883969,
+   "mass_share": 0.250722,
+   "min_width": 0.5614,
+   "min_width_unity": 0.8421,
+   "tris": 176,
+   "shells": 4,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": true,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_pos",
+    "side_ux_neg"
+   ],
+   "anchors": {
+    "bottom": true,
+    "top": false,
+    "side_pos": true,
+    "side_neg": true
+   },
+   "neighbors": [
+    {
+     "chunk": 1,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 1.0864004,
+   "hull_tris": 76,
+   "hull_excess_frac": 0.0992,
+   "hull_void_area_unity": null,
+   "hull_overlap_area_unity": null,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 1,
+   "name": "PKX_Chimney_Stack_Chunk_01",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique"
+   ],
+   "centroid": [
+    0.00123,
+    -0.00049,
+    0.63891
+   ],
+   "centroid_unity": [
+    -0.00185,
+    0.95836,
+    0.00074
+   ],
+   "bounds": {
+    "min": [
+     -0.40696,
+     -0.40589,
+     0.51059
+    ],
+    "max": [
+     0.40638,
+     0.40473,
+     0.76466
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.60957,
+     0.76588,
+     -0.60709
+    ],
+    "max": [
+     0.61043,
+     1.14698,
+     0.60884
+    ]
+   },
+   "volume": 0.1431806,
+   "volume_unity": 0.4832346,
+   "mass_share": 0.12258,
+   "min_width": 0.3051,
+   "min_width_unity": 0.4577,
+   "tris": 88,
+   "shells": 2,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_pos",
+    "side_ux_neg"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": true,
+    "side_neg": true
+   },
+   "neighbors": [
+    {
+     "chunk": 0,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 2,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 0.5218925,
+   "hull_tris": 60,
+   "hull_excess_frac": 0.08,
+   "hull_void_area_unity": null,
+   "hull_overlap_area_unity": null,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    4,
+    5
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 2,
+   "name": "PKX_Chimney_Stack_Chunk_02",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique"
+   ],
+   "centroid": [
+    0.00445,
+    0.00019,
+    0.89309
+   ],
+   "centroid_unity": [
+    -0.00668,
+    1.33964,
+    -0.00028
+   ],
+   "bounds": {
+    "min": [
+     -0.4036,
+     -0.40899,
+     0.76576
+    ],
+    "max": [
+     0.40531,
+     0.40686,
+     1.01954
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.60797,
+     1.14864,
+     -0.61029
+    ],
+    "max": [
+     0.6054,
+     1.5293,
+     0.61348
+    ]
+   },
+   "volume": 0.1454625,
+   "volume_unity": 0.490936,
+   "mass_share": 0.124533,
+   "min_width": 0.3036,
+   "min_width_unity": 0.4554,
+   "tris": 88,
+   "shells": 2,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_neg"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": false,
+    "side_neg": true
+   },
+   "neighbors": [
+    {
+     "chunk": 1,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 3,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 4,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 0.5231992,
+   "hull_tris": 58,
+   "hull_excess_frac": 0.0657,
+   "hull_void_area_unity": null,
+   "hull_overlap_area_unity": null,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    6,
+    7
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 3,
+   "name": "PKX_Chimney_Stack_Chunk_03",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique"
+   ],
+   "centroid": [
+    -0.00378,
+    -0.2072,
+    1.14528
+   ],
+   "centroid_unity": [
+    0.00567,
+    1.71791,
+    0.3108
+   ],
+   "bounds": {
+    "min": [
+     -0.40738,
+     -0.41016,
+     1.02297
+    ],
+    "max": [
+     0.40396,
+     -0.00577,
+     1.26691
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.60595,
+     1.53445,
+     0.00866
+    ],
+    "max": [
+     0.61107,
+     1.90037,
+     0.61524
+    ]
+   },
+   "volume": 0.0718533,
+   "volume_unity": 0.2425049,
+   "mass_share": 0.061515,
+   "min_width": 0.2954,
+   "min_width_unity": 0.4431,
+   "tris": 44,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_pos",
+    "side_ux_neg"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": true,
+    "side_neg": true
+   },
+   "neighbors": [
+    {
+     "chunk": 2,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 4,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 5,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 0.2447485,
+   "hull_tris": 44,
+   "hull_excess_frac": 0.0093,
+   "hull_void_area_unity": null,
+   "hull_overlap_area_unity": null,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    8
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 4,
+   "name": "PKX_Chimney_Stack_Chunk_04",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique"
+   ],
+   "centroid": [
+    -0.00499,
+    0.20577,
+    1.149
+   ],
+   "centroid_unity": [
+    0.00749,
+    1.7235,
+    -0.30865
+   ],
+   "bounds": {
+    "min": [
+     -0.40758,
+     0.00835,
+     1.02242
+    ],
+    "max": [
+     0.40033,
+     0.4028,
+     1.27545
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.6005,
+     1.53363,
+     -0.6042
+    ],
+    "max": [
+     0.61137,
+     1.91318,
+     -0.01253
+    ]
+   },
+   "volume": 0.0725112,
+   "volume_unity": 0.2447253,
+   "mass_share": 0.062078,
+   "min_width": 0.3044,
+   "min_width_unity": 0.4566,
+   "tris": 44,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_pos"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": true,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 2,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 3,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 5,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 0.2464296,
+   "hull_tris": 44,
+   "hull_excess_frac": 0.007,
+   "hull_void_area_unity": null,
+   "hull_overlap_area_unity": null,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    9
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 5,
+   "name": "PKX_Chimney_Stack_Chunk_05",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique"
+   ],
+   "centroid": [
+    0.00161,
+    0.00198,
+    1.40513
+   ],
+   "centroid_unity": [
+    -0.00241,
+    2.10769,
+    -0.00297
+   ],
+   "bounds": {
+    "min": [
+     -0.41094,
+     -0.40981,
+     1.27637
+    ],
+    "max": [
+     0.40309,
+     0.40978,
+     1.53154
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.60463,
+     1.91456,
+     -0.61466
+    ],
+    "max": [
+     0.61641,
+     2.2973,
+     0.61471
+    ]
+   },
+   "volume": 0.1470944,
+   "volume_unity": 0.4964436,
+   "mass_share": 0.12593,
+   "min_width": 0.293,
+   "min_width_unity": 0.4396,
+   "tris": 88,
+   "shells": 2,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_pos",
+    "side_ux_neg"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": true,
+    "side_neg": true
+   },
+   "neighbors": [
+    {
+     "chunk": 3,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 4,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 6,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 0.5293367,
+   "hull_tris": 66,
+   "hull_excess_frac": 0.0663,
+   "hull_void_area_unity": null,
+   "hull_overlap_area_unity": null,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    10,
+    11
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 6,
+   "name": "PKX_Chimney_Stack_Chunk_06",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique"
+   ],
+   "centroid": [
+    0.00156,
+    0.00127,
+    1.65512
+   ],
+   "centroid_unity": [
+    -0.00234,
+    2.48267,
+    -0.00191
+   ],
+   "bounds": {
+    "min": [
+     -0.40792,
+     -0.40621,
+     1.52822
+    ],
+    "max": [
+     0.41022,
+     0.4133,
+     1.78678
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.61533,
+     2.29233,
+     -0.61995
+    ],
+    "max": [
+     0.61188,
+     2.68018,
+     0.60932
+    ]
+   },
+   "volume": 0.1478682,
+   "volume_unity": 0.4990552,
+   "mass_share": 0.126593,
+   "min_width": 0.3068,
+   "min_width_unity": 0.4602,
+   "tris": 88,
+   "shells": 2,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_pos",
+    "side_ux_neg"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": true,
+    "side_neg": true
+   },
+   "neighbors": [
+    {
+     "chunk": 5,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 7,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 0.5334013,
+   "hull_tris": 62,
+   "hull_excess_frac": 0.0688,
+   "hull_void_area_unity": null,
+   "hull_overlap_area_unity": null,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    12,
+    13
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 7,
+   "name": "PKX_Chimney_Stack_Chunk_07",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique"
+   ],
+   "centroid": [
+    0.00071,
+    7e-05,
+    1.91302
+   ],
+   "centroid_unity": [
+    -0.00107,
+    2.86953,
+    -0.0001
+   ],
+   "bounds": {
+    "min": [
+     -0.40688,
+     -0.40767,
+     1.78425
+    ],
+    "max": [
+     0.41346,
+     0.40502,
+     2.04112
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.62019,
+     2.67637,
+     -0.60753
+    ],
+    "max": [
+     0.61032,
+     3.06168,
+     0.61151
+    ]
+   },
+   "volume": 0.1472335,
+   "volume_unity": 0.496913,
+   "mass_share": 0.126049,
+   "min_width": 0.2997,
+   "min_width_unity": 0.4496,
+   "tris": 88,
+   "shells": 2,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": false,
+   "touches_top": true,
+   "touches_side": [
+    "side_ux_pos",
+    "side_ux_neg"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": true,
+    "side_pos": true,
+    "side_neg": true
+   },
+   "neighbors": [
+    {
+     "chunk": 6,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 0.5270593,
+   "hull_tris": 64,
+   "hull_excess_frac": 0.0607,
+   "hull_void_area_unity": null,
+   "hull_overlap_area_unity": null,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    14,
+    15
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  }
+ ],
+ "adjacency": [
+  {
+   "a": 0,
+   "b": 1,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 1,
+   "b": 2,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 2,
+   "b": 3,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 2,
+   "b": 4,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 3,
+   "b": 4,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 3,
+   "b": 5,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 4,
+   "b": 5,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 5,
+   "b": 6,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 6,
+   "b": 7,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  }
+ ],
+ "validation": {
+  "all_manifold": true,
+  "nonmanifold_chunks": [],
+  "intact_volume": 1.16699,
+  "intact_volume_note": "closed non-glass parts after the embedded wood is taken out of the masonry (the union of masonry and wood); raw sum of parts before that: 1.166990",
+  "intact_volume_raw_parts": 1.16699,
+  "frame_overlap_removed": 0,
+  "island_slivers_dropped_volume": 0.0,
+  "chunk_volume": 1.168062,
+  "volume_error_pct": 0.0919,
+  "volume_within_3pct": true,
+  "masonry_count": 8,
+  "masonry_count_range": [
+   6,
+   10
+  ],
+  "masonry_count_in_range": true,
+  "frame_count": 0,
+  "min_size_rule": {
+   "min_caliper_width_masonry": 0.12,
+   "min_caliper_width_masonry_unity": 0.18,
+   "min_vol_frac_of_masonry_mean": 0.2,
+   "frames": "kept whole: exempt (reported in per_kind.frame)"
+  },
+  "chunks_under_size_floor": [],
+  "per_kind": {
+   "masonry": {
+    "count": 8,
+    "mean_volume": 0.146008,
+    "min_volume": 0.071853,
+    "min_volume_frac_of_mean": 0.492,
+    "min_width": 0.293,
+    "min_width_unity": 0.4396,
+    "tris_min": 44,
+    "tris_max": 176,
+    "tris_total": 704,
+    "hull_tris_max": 76
+   }
+  },
+  "intact_tris": 704,
+  "chunk_tris_total": 704,
+  "degenerate_tris": 0,
+  "adjacency_connected": true,
+  "adjacency_edges": 9,
+  "floating_chunks": [],
+  "glass_parts_excluded": 0,
+  "cut_face_materials": [],
+  "hull_void_max_unity": null,
+  "hull_void_limit_unity": 0.002,
+  "hull_void_ok": true,
+  "open_source_parts": [],
+  "holes_fill_fallback_faces": 0,
+  "cap_failures_first_try": 0,
+  "clip_retries": 0,
+  "clip_retry_failed": 0,
+  "coplanar_caps_pushed": 0,
+  "internal_cut_area_total": 0.0,
+  "ok": true
+ },
+ "timings_s": {
+  "build_chunks": 0.015,
+  "adjacency": 0.0,
+  "export_fbx": 0.011,
+  "render": 0.304
+ }
+}

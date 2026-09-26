@@ -65,6 +65,12 @@ namespace Movers
             SetWisp(2.5f);
         }
 
+        // The keyboard went to the other player mid-drag: the smoker lowers the cigarette.
+        public override void OnUseCancelled()
+        {
+            if (smoking) OnUseEnd();
+        }
+
         public override void OnReleased(bool thrown)
         {
             // Let go mid-drag and the cigarette stops smoking, wherever it lands.
@@ -83,6 +89,7 @@ namespace Movers
 
             Vector3 at = Tip + dir * puffAhead + Random.insideUnitSphere * puffScatter;
             SmokeCloud.Spawn(at, dir, cloudLifetime, puffStrength);
+            WorldEvents.Raise(WorldEventType.PlayerSmoking, at, HolderActor, 0f, 0f, 0, this);
         }
 
         // ---- the object ----
@@ -111,6 +118,9 @@ namespace Movers
             mo.contractValue = 0;
             mo.requiredForContract = false;
             mo.fragile = false;
+            // The crew's own: it fits in a pocket, and taking it home is not theft.
+            mo.pocketable = true;
+            mo.ownedByGrandma = false;
             // MovableObject.Awake has already run and set the mass from the old weight.
             rb.mass = Mathf.Max(0.1f, mo.weight);
 

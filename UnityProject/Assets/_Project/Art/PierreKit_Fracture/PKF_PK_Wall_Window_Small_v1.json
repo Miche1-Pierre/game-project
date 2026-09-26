@@ -1,0 +1,2398 @@
+{
+ "schema": "movers-chunkset-1",
+ "module": "PK_Wall_Window_Small",
+ "variant": 1,
+ "source_fbx": "C:/Users/pierr/AppData/Local/Temp/claude/C--GameProject/535759f0-5938-45db-9978-dd1560356f1b/scratchpad/slice/staging/KIT/Assets/_Project/Art/PierreKit/PK_Wall_Window_Small.fbx",
+ "fbx": "PKF_PK_Wall_Window_Small_v1.fbx",
+ "kind": "wall",
+ "unity": {
+  "import_scale": 1.5,
+  "mapping": "unity_local = (-bx, bz, -by) * import_scale; import the chunk FBX with the same ModelImporter settings as the intact module (globalScale, useFileScale, materials remapped by name); the chunk root placed on the intact module at identity overlays it",
+  "units_note": "values without suffix are Blender module space (m, Z up, before import scale); *_unity values are in the Unity model space of the module"
+ },
+ "params": {
+  "seed": 96933,
+  "target_chunks": 12,
+  "range": [
+   8,
+   15
+  ],
+  "gamma": 1.5,
+  "min_extent": 0.12,
+  "min_vol_frac": 0.2,
+  "touch_tolerance": 0.0105,
+  "anchor_tolerance": 0.0105,
+  "hull_void_limit_unity": 0.002
+ },
+ "frame": {
+  "thickness_axis": "y",
+  "plane_axes": [
+   "x",
+   "z"
+  ],
+  "core_bounds": {
+   "min": [
+    -1.0,
+    -0.12,
+    -0.0
+   ],
+   "max": [
+    1.0,
+    0.12,
+    2.0
+   ]
+  },
+  "core_bounds_unity": {
+   "min": [
+    -1.5,
+    -0.0,
+    -0.18
+   ],
+   "max": [
+    1.5,
+    3.0,
+    0.18
+   ]
+  },
+  "anchor_bounds_unity": {
+   "min": [
+    -1.5,
+    -0.0,
+    -0.18
+   ],
+   "max": [
+    1.5,
+    3.0,
+    0.18
+   ]
+  },
+  "anchor_note": "anchors test the core bounds (the masonry body without trim that overhangs it: corner bricks, a threshold below the floor), which is where the floor and the neighbour modules meet it",
+  "module_bounds_unity": {
+   "min": [
+    -1.5542,
+    -0.0,
+    -0.21397
+   ],
+   "max": [
+    1.542,
+    3.06686,
+    0.31168
+   ]
+  },
+  "module_bounds_no_glass_unity": {
+   "min": [
+    -1.5542,
+    -0.0,
+    -0.21397
+   ],
+   "max": [
+    1.542,
+    3.06686,
+    0.31168
+   ]
+  },
+  "slab_band": [
+   -0.12,
+   0.12
+  ]
+ },
+ "intact": {
+  "tris": 898,
+  "bounds": {
+   "min": [
+    -1.028,
+    -0.20779,
+    -0.0
+   ],
+   "max": [
+    1.03614,
+    0.14265,
+    2.04457
+   ]
+  },
+  "volume": 0.954614,
+  "volume_unity": 3.221821,
+  "volume_raw_parts": 0.955002,
+  "loose_parts": 8,
+  "duplicate_faces_skipped": 0,
+  "repaired_parts": [],
+  "dropped_parts": [],
+  "normals_fixed_parts": [],
+  "weld": {
+   "parts_welded": 0,
+   "verts_removed": 0,
+   "reverted": 0
+  },
+  "dissolve": {
+   "tris_before": 1100,
+   "tris_after": 562,
+   "reverted_parts": 1,
+   "reverted": [
+    {
+     "part": 2,
+     "role": "masonry",
+     "closed": true,
+     "dvol": -8.449059758997013e-06
+    }
+   ]
+  },
+  "glass_parts_excluded": [],
+  "frame_subtraction": [
+   {
+    "masonry": 2,
+    "frame": 4,
+    "solver": "EXACT",
+    "removed": 4e-06,
+    "frame_volume": 0.000867,
+    "frame_box_volume": 0.000952,
+    "notch_faces": 4
+   },
+   {
+    "masonry": 2,
+    "frame": 5,
+    "solver": "EXACT",
+    "removed": 3e-06,
+    "frame_volume": 0.000875,
+    "frame_box_volume": 0.000964,
+    "notch_faces": 4
+   },
+   {
+    "masonry": 2,
+    "frame": 7,
+    "solver": "EXACT",
+    "removed": 8.3e-05,
+    "frame_volume": 0.000819,
+    "frame_box_volume": 0.000899,
+    "notch_faces": 5
+   },
+   {
+    "masonry": 3,
+    "frame": 4,
+    "solver": "EXACT",
+    "removed": 8.4e-05,
+    "frame_volume": 0.000867,
+    "frame_box_volume": 0.000952,
+    "notch_faces": 6
+   },
+   {
+    "masonry": 3,
+    "frame": 5,
+    "solver": "EXACT",
+    "removed": 0.000114,
+    "frame_volume": 0.000875,
+    "frame_box_volume": 0.000964,
+    "notch_faces": 6
+   },
+   {
+    "masonry": 3,
+    "frame": 6,
+    "solver": "EXACT",
+    "removed": 0.000101,
+    "frame_volume": 0.000807,
+    "frame_box_volume": 0.000879,
+    "notch_faces": 5
+   }
+  ],
+  "slivers_dropped": []
+ },
+ "fracture": {
+  "structure": {
+   "seeds": [
+    [
+     -0.08304,
+     0.0,
+     0.0852
+    ],
+    [
+     -0.9112,
+     0.0,
+     0.08819
+    ],
+    [
+     0.66635,
+     0.0,
+     1.01225
+    ],
+    [
+     0.50524,
+     0.0,
+     0.25602
+    ],
+    [
+     -0.9136,
+     0.0,
+     0.64413
+    ],
+    [
+     -0.00598,
+     0.0,
+     0.68819
+    ],
+    [
+     -0.52548,
+     0.0,
+     1.57066
+    ],
+    [
+     -0.31363,
+     0.0,
+     1.28247
+    ],
+    [
+     -0.58945,
+     0.0,
+     0.88836
+    ],
+    [
+     0.23636,
+     0.0,
+     1.87032
+    ],
+    [
+     0.52735,
+     0.0,
+     1.59572
+    ]
+   ],
+   "cells": 11,
+   "pruned_seeds": 0,
+   "islands": 12,
+   "merges": [
+    {
+     "merged": [
+      2
+     ],
+     "into": [
+      5
+     ],
+     "vol": 1e-05,
+     "extent": 0.0056,
+     "how": "shared cut 0.0054 m2",
+     "hull_void_after_unity": 0.0
+    },
+    {
+     "merged": [
+      7
+     ],
+     "into": [
+      9
+     ],
+     "vol": 0.004321,
+     "extent": 0.1224,
+     "how": "shared cut 0.0427 m2",
+     "hull_void_after_unity": 0.0
+    }
+   ],
+   "opening_splits": [
+    {
+     "void_before_unity": 0.00428,
+     "overlap_before_unity": 0.00108,
+     "plane_n": [
+      -1.0,
+      0.0,
+      0.0
+     ],
+     "plane_c": [
+      0.3009,
+      -0.0,
+      -0.0
+     ],
+     "pieces": 2,
+     "score_after_unity": 0.001
+    },
+    {
+     "void_before_unity": 0.03281,
+     "overlap_before_unity": 0.00342,
+     "plane_n": [
+      -0.0,
+      0.0,
+      -1.0
+     ],
+     "plane_c": [
+      0.0,
+      -0.0,
+      1.5266
+     ],
+     "pieces": 2,
+     "score_after_unity": 6e-05
+    }
+   ],
+   "attempts": [
+    {
+     "attempt": 0,
+     "seeds_asked": 12,
+     "seeds_kept": 12,
+     "pruned_seeds": 0,
+     "islands": 12,
+     "opening_splits": 4,
+     "merges": 3,
+     "chunks": 13,
+     "undersized": 0,
+     "nonmanifold_chunks": 0,
+     "zero_area_tris": 1,
+     "max_hull_void_unity": 0.0
+    },
+    {
+     "attempt": 1,
+     "seeds_asked": 11,
+     "seeds_kept": 11,
+     "pruned_seeds": 0,
+     "islands": 12,
+     "opening_splits": 2,
+     "merges": 2,
+     "chunks": 12,
+     "undersized": 0,
+     "nonmanifold_chunks": 0,
+     "zero_area_tris": 0,
+     "max_hull_void_unity": 0.00054
+    }
+   ]
+  },
+  "bisect_ops": 239,
+  "cap_faces_created": 2183
+ },
+ "chunks": [
+  {
+   "index": 0,
+   "name": "PK_Wall_Window_Small_Chunk_00",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "wall"
+   ],
+   "centroid": [
+    -0.74814,
+    0.0,
+    0.18351
+   ],
+   "centroid_unity": [
+    1.12221,
+    0.27527,
+    -0.0
+   ],
+   "bounds": {
+    "min": [
+     -1.0,
+     -0.12,
+     -0.0
+    ],
+    "max": [
+     -0.49611,
+     0.12,
+     0.36795
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     0.74417,
+     -0.0,
+     -0.18
+    ],
+    "max": [
+     1.5,
+     0.55192,
+     0.18
+    ]
+   },
+   "volume": 0.0443075,
+   "volume_unity": 0.1495379,
+   "mass_share": 0.046431,
+   "min_width": 0.3679,
+   "min_width_unity": 0.5519,
+   "tris": 14,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.4708,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [
+    "wall"
+   ],
+   "touches_bottom": true,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_pos"
+   ],
+   "anchors": {
+    "bottom": true,
+    "top": false,
+    "side_pos": true,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 1,
+     "shared_cut_area_unity": 0.19869
+    },
+    {
+     "chunk": 4,
+     "shared_cut_area_unity": 0.2721
+    }
+   ],
+   "hull_volume_unity": 0.1495379,
+   "hull_tris": 14,
+   "hull_excess_frac": 0.0,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [
+    1
+   ],
+   "source_parts": [
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 1,
+   "name": "PK_Wall_Window_Small_Chunk_01",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "wall"
+   ],
+   "centroid": [
+    -0.15391,
+    0.0,
+    0.19459
+   ],
+   "centroid_unity": [
+    0.23087,
+    0.29189,
+    -0.0
+   ],
+   "bounds": {
+    "min": [
+     -0.49744,
+     -0.12,
+     -0.0
+    ],
+    "max": [
+     0.26064,
+     0.12,
+     0.43457
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.39096,
+     -0.0,
+     -0.18
+    ],
+    "max": [
+     0.74615,
+     0.65185,
+     0.18
+    ]
+   },
+   "volume": 0.0670295,
+   "volume_unity": 0.2262247,
+   "mass_share": 0.070241,
+   "min_width": 0.4346,
+   "min_width_unity": 0.6519,
+   "tris": 36,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.7708,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [
+    "wall"
+   ],
+   "touches_bottom": true,
+   "touches_top": false,
+   "touches_side": [],
+   "anchors": {
+    "bottom": true,
+    "top": false,
+    "side_pos": false,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 0,
+     "shared_cut_area_unity": 0.19869
+    },
+    {
+     "chunk": 2,
+     "shared_cut_area_unity": 0.20305
+    },
+    {
+     "chunk": 3,
+     "shared_cut_area_unity": 0.31284
+    },
+    {
+     "chunk": 4,
+     "shared_cut_area_unity": 0.02039
+    },
+    {
+     "chunk": 5,
+     "shared_cut_area_unity": 0.03566
+    }
+   ],
+   "hull_volume_unity": 0.2262247,
+   "hull_tris": 22,
+   "hull_excess_frac": 0.0,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [
+    0
+   ],
+   "source_parts": [
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 2,
+   "name": "PK_Wall_Window_Small_Chunk_02",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "wall"
+   ],
+   "centroid": [
+    0.6047,
+    0.0,
+    0.30116
+   ],
+   "centroid_unity": [
+    -0.90705,
+    0.45175,
+    -0.0
+   ],
+   "bounds": {
+    "min": [
+     0.15579,
+     -0.12,
+     -0.0
+    ],
+    "max": [
+     1.0,
+     0.12,
+     0.6701
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -1.5,
+     -0.0,
+     -0.18
+    ],
+    "max": [
+     -0.23368,
+     1.00514,
+     0.18
+    ]
+   },
+   "volume": 0.1128503,
+   "volume_unity": 0.3808697,
+   "mass_share": 0.118258,
+   "min_width": 0.6701,
+   "min_width_unity": 1.0051,
+   "tris": 20,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.74342,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [
+    "wall"
+   ],
+   "touches_bottom": true,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_neg"
+   ],
+   "anchors": {
+    "bottom": true,
+    "top": false,
+    "side_pos": false,
+    "side_neg": true
+   },
+   "neighbors": [
+    {
+     "chunk": 1,
+     "shared_cut_area_unity": 0.20305
+    },
+    {
+     "chunk": 3,
+     "shared_cut_area_unity": 0.21839
+    },
+    {
+     "chunk": 6,
+     "shared_cut_area_unity": 0.3218
+    }
+   ],
+   "hull_volume_unity": 0.3808697,
+   "hull_tris": 16,
+   "hull_excess_frac": 0.0,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [
+    3
+   ],
+   "source_parts": [
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 3,
+   "name": "PK_Wall_Window_Small_Chunk_03",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique",
+    "wall"
+   ],
+   "centroid": [
+    0.0043,
+    -0.01049,
+    0.69021
+   ],
+   "centroid_unity": [
+    -0.00645,
+    1.03532,
+    0.01573
+   ],
+   "bounds": {
+    "min": [
+     -0.41868,
+     -0.20779,
+     0.3611
+    ],
+    "max": [
+     0.41664,
+     0.12,
+     0.92442
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.62497,
+     0.54164,
+     -0.18
+    ],
+    "max": [
+     0.62803,
+     1.38662,
+     0.31168
+    ]
+   },
+   "volume": 0.1007361,
+   "volume_unity": 0.3399842,
+   "mass_share": 0.105563,
+   "min_width": 0.5633,
+   "min_width_unity": 0.845,
+   "tris": 240,
+   "shells": 4,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 1.11762,
+   "internal_cut_area_unity": 0.02418,
+   "frame_notch_area_unity": 0.07853,
+   "cut_materials": [
+    "brique",
+    "wall"
+   ],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": false,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 1,
+     "shared_cut_area_unity": 0.31284
+    },
+    {
+     "chunk": 2,
+     "shared_cut_area_unity": 0.21839
+    },
+    {
+     "chunk": 5,
+     "shared_cut_area_unity": 0.34497
+    },
+    {
+     "chunk": 6,
+     "shared_cut_area_unity": 0.23061
+    },
+    {
+     "chunk": 12,
+     "shared_cut_area_unity": 0.03802
+    },
+    {
+     "chunk": 14,
+     "shared_cut_area_unity": 0.00125
+    }
+   ],
+   "hull_volume_unity": 0.3451675,
+   "hull_tris": 80,
+   "hull_excess_frac": 0.0152,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.00185,
+   "hull_void_bounds_unity": null,
+   "source_cells": [
+    2,
+    5
+   ],
+   "source_parts": [
+    2,
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 4,
+   "name": "PK_Wall_Window_Small_Chunk_04",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "wall"
+   ],
+   "centroid": [
+    -0.81838,
+    0.0,
+    0.61079
+   ],
+   "centroid_unity": [
+    1.22758,
+    0.91618,
+    -0.0
+   ],
+   "bounds": {
+    "min": [
+     -1.0,
+     -0.12,
+     0.36578
+    ],
+    "max": [
+     -0.47503,
+     0.12,
+     1.09602
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     0.71254,
+     0.54867,
+     -0.18
+    ],
+    "max": [
+     1.5,
+     1.64402,
+     0.18
+    ]
+   },
+   "volume": 0.0478915,
+   "volume_unity": 0.1616339,
+   "mass_share": 0.050186,
+   "min_width": 0.4445,
+   "min_width_unity": 0.6668,
+   "tris": 24,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.76358,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [
+    "wall"
+   ],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_pos"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": true,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 0,
+     "shared_cut_area_unity": 0.2721
+    },
+    {
+     "chunk": 1,
+     "shared_cut_area_unity": 0.02039
+    },
+    {
+     "chunk": 5,
+     "shared_cut_area_unity": 0.47108
+    }
+   ],
+   "hull_volume_unity": 0.161634,
+   "hull_tris": 16,
+   "hull_excess_frac": 0.0,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [
+    4
+   ],
+   "source_parts": [
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 5,
+   "name": "PK_Wall_Window_Small_Chunk_05",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique",
+    "wall"
+   ],
+   "centroid": [
+    -0.60036,
+    -0.00257,
+    0.90184
+   ],
+   "centroid_unity": [
+    0.90053,
+    1.35275,
+    0.00386
+   ],
+   "bounds": {
+    "min": [
+     -1.0,
+     -0.20779,
+     0.39928
+    ],
+    "max": [
+     -0.25101,
+     0.12,
+     1.27101
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     0.37651,
+     0.59892,
+     -0.18
+    ],
+    "max": [
+     1.5,
+     1.90651,
+     0.31168
+    ]
+   },
+   "volume": 0.084781,
+   "volume_unity": 0.2861357,
+   "mass_share": 0.088843,
+   "min_width": 0.4974,
+   "min_width_unity": 0.7461,
+   "tris": 156,
+   "shells": 2,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 1.26919,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.02076,
+   "cut_materials": [
+    "brique",
+    "wall"
+   ],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_pos"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": true,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 1,
+     "shared_cut_area_unity": 0.03566
+    },
+    {
+     "chunk": 3,
+     "shared_cut_area_unity": 0.34497
+    },
+    {
+     "chunk": 4,
+     "shared_cut_area_unity": 0.47108
+    },
+    {
+     "chunk": 7,
+     "shared_cut_area_unity": 0.24013
+    },
+    {
+     "chunk": 9,
+     "shared_cut_area_unity": 0.17741
+    },
+    {
+     "chunk": 12,
+     "shared_cut_area_unity": 0.00276
+    },
+    {
+     "chunk": 13,
+     "shared_cut_area_unity": 0.00762
+    }
+   ],
+   "hull_volume_unity": 0.3190309,
+   "hull_tris": 62,
+   "hull_excess_frac": 0.115,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [
+    8
+   ],
+   "source_parts": [
+    2,
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 6,
+   "name": "PK_Wall_Window_Small_Chunk_06",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique",
+    "wall"
+   ],
+   "centroid": [
+    0.6811,
+    -0.00101,
+    0.97307
+   ],
+   "centroid_unity": [
+    -1.02166,
+    1.4596,
+    0.00152
+   ],
+   "bounds": {
+    "min": [
+     0.30086,
+     -0.20779,
+     0.54589
+    ],
+    "max": [
+     1.0,
+     0.12,
+     1.40003
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -1.5,
+     0.81884,
+     -0.18
+    ],
+    "max": [
+     -0.45129,
+     2.10004,
+     0.31168
+    ]
+   },
+   "volume": 0.1154289,
+   "volume_unity": 0.3895725,
+   "mass_share": 0.12096,
+   "min_width": 0.6991,
+   "min_width_unity": 1.0487,
+   "tris": 166,
+   "shells": 2,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.9278,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.05797,
+   "cut_materials": [
+    "brique",
+    "wall"
+   ],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_neg"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": false,
+    "side_neg": true
+   },
+   "neighbors": [
+    {
+     "chunk": 2,
+     "shared_cut_area_unity": 0.3218
+    },
+    {
+     "chunk": 3,
+     "shared_cut_area_unity": 0.23061
+    },
+    {
+     "chunk": 8,
+     "shared_cut_area_unity": 0.38752
+    },
+    {
+     "chunk": 14,
+     "shared_cut_area_unity": 0.02855
+    }
+   ],
+   "hull_volume_unity": 0.4370506,
+   "hull_tris": 54,
+   "hull_excess_frac": 0.1219,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [
+    2
+   ],
+   "source_parts": [
+    2,
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 7,
+   "name": "PK_Wall_Window_Small_Chunk_07",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "wall"
+   ],
+   "centroid": [
+    -0.42999,
+    -0.00014,
+    1.24463
+   ],
+   "centroid_unity": [
+    0.64499,
+    1.86695,
+    0.00021
+   ],
+   "bounds": {
+    "min": [
+     -0.6729,
+     -0.12,
+     0.98496
+    ],
+    "max": [
+     -0.308,
+     0.12,
+     1.50857
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     0.462,
+     1.47744,
+     -0.18
+    ],
+    "max": [
+     1.00935,
+     2.26285,
+     0.18
+    ]
+   },
+   "volume": 0.0228598,
+   "volume_unity": 0.0771517,
+   "mass_share": 0.023955,
+   "min_width": 0.3649,
+   "min_width_unity": 0.5473,
+   "tris": 36,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.48434,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.09196,
+   "cut_materials": [
+    "wall"
+   ],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": false,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 5,
+     "shared_cut_area_unity": 0.24013
+    },
+    {
+     "chunk": 9,
+     "shared_cut_area_unity": 0.24421
+    },
+    {
+     "chunk": 13,
+     "shared_cut_area_unity": 0.04598
+    }
+   ],
+   "hull_volume_unity": 0.0773815,
+   "hull_tris": 14,
+   "hull_excess_frac": 0.003,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [
+    7
+   ],
+   "source_parts": [
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 8,
+   "name": "PK_Wall_Window_Small_Chunk_08",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "wall"
+   ],
+   "centroid": [
+    0.6048,
+    -7e-05,
+    1.41624
+   ],
+   "centroid_unity": [
+    -0.90719,
+    2.12436,
+    0.00011
+   ],
+   "bounds": {
+    "min": [
+     0.30116,
+     -0.12,
+     1.23354
+    ],
+    "max": [
+     1.0,
+     0.12,
+     1.5266
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -1.5,
+     1.85031,
+     -0.18
+    ],
+    "max": [
+     -0.45174,
+     2.2899,
+     0.18
+    ]
+   },
+   "volume": 0.0351409,
+   "volume_unity": 0.1186007,
+   "mass_share": 0.036825,
+   "min_width": 0.2861,
+   "min_width_unity": 0.4292,
+   "tris": 32,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.76454,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.05273,
+   "cut_materials": [
+    "wall"
+   ],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [
+    "side_ux_neg"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": false,
+    "side_neg": true
+   },
+   "neighbors": [
+    {
+     "chunk": 6,
+     "shared_cut_area_unity": 0.38752
+    },
+    {
+     "chunk": 11,
+     "shared_cut_area_unity": 0.37727
+    },
+    {
+     "chunk": 14,
+     "shared_cut_area_unity": 0.02636
+    }
+   ],
+   "hull_volume_unity": 0.1187676,
+   "hull_tris": 12,
+   "hull_excess_frac": 0.0014,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [
+    10
+   ],
+   "source_parts": [
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 9,
+   "name": "PK_Wall_Window_Small_Chunk_09",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique",
+    "wall"
+   ],
+   "centroid": [
+    -0.66244,
+    -0.00026,
+    1.71285
+   ],
+   "centroid_unity": [
+    0.99366,
+    2.56927,
+    0.00038
+   ],
+   "bounds": {
+    "min": [
+     -1.028,
+     -0.14547,
+     1.24034
+    ],
+    "max": [
+     -0.11655,
+     0.14265,
+     2.04457
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     0.17483,
+     1.8605,
+     -0.21397
+    ],
+    "max": [
+     1.542,
+     3.06686,
+     0.21821
+    ]
+   },
+   "volume": 0.1558672,
+   "volume_unity": 0.5260518,
+   "mass_share": 0.163336,
+   "min_width": 0.8042,
+   "min_width_unity": 1.2064,
+   "tris": 154,
+   "shells": 2,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.73619,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.00937,
+   "cut_materials": [
+    "wall"
+   ],
+   "touches_bottom": false,
+   "touches_top": true,
+   "touches_side": [
+    "side_ux_pos"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": true,
+    "side_pos": true,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 5,
+     "shared_cut_area_unity": 0.17741
+    },
+    {
+     "chunk": 7,
+     "shared_cut_area_unity": 0.24421
+    },
+    {
+     "chunk": 10,
+     "shared_cut_area_unity": 0.31458
+    },
+    {
+     "chunk": 13,
+     "shared_cut_area_unity": 0.00386
+    },
+    {
+     "chunk": 15,
+     "shared_cut_area_unity": 0.00082
+    }
+   ],
+   "hull_volume_unity": 0.5078369,
+   "hull_tris": 66,
+   "hull_excess_frac": -0.0346,
+   "hull_void_area_unity": 0.00054,
+   "hull_overlap_area_unity": 0.00014,
+   "hull_void_bounds_unity": {
+    "min": [
+     0.4425,
+     2.273,
+     -0.14292
+    ],
+    "max": [
+     0.4575,
+     2.288,
+     0.14292
+    ]
+   },
+   "source_cells": [
+    6
+   ],
+   "source_parts": [
+    0,
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 10,
+   "name": "PK_Wall_Window_Small_Chunk_10",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique",
+    "wall"
+   ],
+   "centroid": [
+    0.12829,
+    -5e-05,
+    1.7987
+   ],
+   "centroid_unity": [
+    -0.19243,
+    2.69805,
+    7e-05
+   ],
+   "bounds": {
+    "min": [
+     -0.28307,
+     -0.14547,
+     1.5269
+    ],
+    "max": [
+     0.67293,
+     0.14265,
+     2.04146
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -1.0094,
+     2.29035,
+     -0.21397
+    ],
+    "max": [
+     0.4246,
+     3.06219,
+     0.21821
+    ]
+   },
+   "volume": 0.0687066,
+   "volume_unity": 0.2318848,
+   "mass_share": 0.071999,
+   "min_width": 0.4957,
+   "min_width_unity": 0.7436,
+   "tris": 106,
+   "shells": 3,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.92297,
+   "internal_cut_area_unity": 0.19232,
+   "frame_notch_area_unity": 0.08439,
+   "cut_materials": [
+    "brique",
+    "wall"
+   ],
+   "touches_bottom": false,
+   "touches_top": true,
+   "touches_side": [],
+   "anchors": {
+    "bottom": false,
+    "top": true,
+    "side_pos": false,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 9,
+     "shared_cut_area_unity": 0.31458
+    },
+    {
+     "chunk": 11,
+     "shared_cut_area_unity": 0.41609
+    },
+    {
+     "chunk": 13,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 15,
+     "shared_cut_area_unity": 0.04219
+    }
+   ],
+   "hull_volume_unity": 0.2956015,
+   "hull_tris": 52,
+   "hull_excess_frac": 0.2748,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.08482,
+   "hull_void_bounds_unity": null,
+   "source_cells": [
+    7,
+    9
+   ],
+   "source_parts": [
+    1,
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 11,
+   "name": "PK_Wall_Window_Small_Chunk_11",
+   "kind": "masonry",
+   "pane": null,
+   "materials": [
+    "brique",
+    "wall"
+   ],
+   "centroid": [
+    0.73061,
+    -0.00047,
+    1.78876
+   ],
+   "centroid_unity": [
+    -1.09591,
+    2.68313,
+    0.00071
+   ],
+   "bounds": {
+    "min": [
+     0.18763,
+     -0.14547,
+     1.5266
+    ],
+    "max": [
+     1.03614,
+     0.14265,
+     2.04146
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -1.5542,
+     2.2899,
+     -0.21397
+    ],
+    "max": [
+     -0.28144,
+     3.06219,
+     0.21821
+    ]
+   },
+   "volume": 0.0953337,
+   "volume_unity": 0.3217512,
+   "mass_share": 0.099902,
+   "min_width": 0.5149,
+   "min_width_unity": 0.7723,
+   "tris": 140,
+   "shells": 2,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.79311,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.02112,
+   "cut_materials": [
+    "brique",
+    "wall"
+   ],
+   "touches_bottom": false,
+   "touches_top": true,
+   "touches_side": [
+    "side_ux_neg"
+   ],
+   "anchors": {
+    "bottom": false,
+    "top": true,
+    "side_pos": false,
+    "side_neg": true
+   },
+   "neighbors": [
+    {
+     "chunk": 8,
+     "shared_cut_area_unity": 0.37727
+    },
+    {
+     "chunk": 10,
+     "shared_cut_area_unity": 0.41609
+    },
+    {
+     "chunk": 14,
+     "shared_cut_area_unity": 0.00205
+    },
+    {
+     "chunk": 15,
+     "shared_cut_area_unity": 0.00853
+    }
+   ],
+   "hull_volume_unity": 0.278612,
+   "hull_tris": 64,
+   "hull_excess_frac": -0.1341,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.00023,
+   "hull_void_bounds_unity": null,
+   "source_cells": [
+    10
+   ],
+   "source_parts": [
+    1,
+    3
+   ],
+   "detached_kept_whole": false,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 12,
+   "name": "PK_Wall_Window_Small_Chunk_12",
+   "kind": "frame",
+   "pane": null,
+   "materials": [
+    "wood"
+   ],
+   "centroid": [
+    -0.00716,
+    0.04946,
+    0.93255
+   ],
+   "centroid_unity": [
+    0.01074,
+    1.39883,
+    -0.07419
+   ],
+   "bounds": {
+    "min": [
+     -0.29066,
+     0.01187,
+     0.92252
+    ],
+    "max": [
+     0.28372,
+     0.08765,
+     0.94286
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.42558,
+     1.38377,
+     -0.13147
+    ],
+    "max": [
+     0.43598,
+     1.41429,
+     -0.01781
+    ]
+   },
+   "volume": 0.0008125,
+   "volume_unity": 0.0027423,
+   "mass_share": 0.000851,
+   "min_width": 0.0379,
+   "min_width_unity": 0.0568,
+   "tris": 44,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": false,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 3,
+     "shared_cut_area_unity": 0.03802
+    },
+    {
+     "chunk": 5,
+     "shared_cut_area_unity": 0.00276
+    },
+    {
+     "chunk": 13,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 14,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 0.0027705,
+   "hull_tris": 44,
+   "hull_excess_frac": 0.0103,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    7
+   ],
+   "detached_kept_whole": true,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 13,
+   "name": "PK_Wall_Window_Small_Chunk_13",
+   "kind": "frame",
+   "pane": null,
+   "materials": [
+    "wood"
+   ],
+   "centroid": [
+    -0.3,
+    0.04974,
+    1.22625
+   ],
+   "centroid_unity": [
+    0.45,
+    1.83937,
+    -0.07461
+   ],
+   "bounds": {
+    "min": [
+     -0.31021,
+     0.01304,
+     0.92158
+    ],
+    "max": [
+     -0.28911,
+     0.088,
+     1.52981
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     0.43366,
+     1.38237,
+     -0.13201
+    ],
+    "max": [
+     0.46532,
+     2.29471,
+     -0.01957
+    ]
+   },
+   "volume": 0.0008526,
+   "volume_unity": 0.0028774,
+   "mass_share": 0.000893,
+   "min_width": 0.0257,
+   "min_width_unity": 0.0385,
+   "tris": 44,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": false,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 5,
+     "shared_cut_area_unity": 0.00762
+    },
+    {
+     "chunk": 7,
+     "shared_cut_area_unity": 0.04598
+    },
+    {
+     "chunk": 9,
+     "shared_cut_area_unity": 0.00386
+    },
+    {
+     "chunk": 10,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 12,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 15,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 0.0029377,
+   "hull_tris": 44,
+   "hull_excess_frac": 0.021,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    4
+   ],
+   "detached_kept_whole": true,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 14,
+   "name": "PK_Wall_Window_Small_Chunk_14",
+   "kind": "frame",
+   "pane": null,
+   "materials": [
+    "wood"
+   ],
+   "centroid": [
+    0.29289,
+    0.04921,
+    1.22754
+   ],
+   "centroid_unity": [
+    -0.43933,
+    1.84131,
+    -0.07382
+   ],
+   "bounds": {
+    "min": [
+     0.28232,
+     0.01176,
+     0.92165
+    ],
+    "max": [
+     0.30303,
+     0.08738,
+     1.52954
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.45455,
+     1.38248,
+     -0.13106
+    ],
+    "max": [
+     -0.42347,
+     2.29431,
+     -0.01764
+    ]
+   },
+   "volume": 0.000867,
+   "volume_unity": 0.0029262,
+   "mass_share": 0.000909,
+   "min_width": 0.0269,
+   "min_width_unity": 0.0403,
+   "tris": 44,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": false,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 3,
+     "shared_cut_area_unity": 0.00125
+    },
+    {
+     "chunk": 6,
+     "shared_cut_area_unity": 0.02855
+    },
+    {
+     "chunk": 8,
+     "shared_cut_area_unity": 0.02636
+    },
+    {
+     "chunk": 11,
+     "shared_cut_area_unity": 0.00205
+    },
+    {
+     "chunk": 12,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 15,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 0.0029625,
+   "hull_tris": 44,
+   "hull_excess_frac": 0.0124,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    5
+   ],
+   "detached_kept_whole": true,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  },
+  {
+   "index": 15,
+   "name": "PK_Wall_Window_Small_Chunk_15",
+   "kind": "frame",
+   "pane": null,
+   "materials": [
+    "wood"
+   ],
+   "centroid": [
+    -0.00084,
+    0.04934,
+    1.51929
+   ],
+   "centroid_unity": [
+    0.00126,
+    2.27894,
+    -0.07401
+   ],
+   "bounds": {
+    "min": [
+     -0.29099,
+     0.01153,
+     1.50932
+    ],
+    "max": [
+     0.28376,
+     0.08667,
+     1.52983
+    ]
+   },
+   "bounds_unity": {
+    "min": [
+     -0.42564,
+     2.26399,
+     -0.13
+    ],
+    "max": [
+     0.43649,
+     2.29474,
+     -0.01729
+    ]
+   },
+   "volume": 0.0008079,
+   "volume_unity": 0.0027266,
+   "mass_share": 0.000847,
+   "min_width": 0.0374,
+   "min_width_unity": 0.0562,
+   "tris": 44,
+   "shells": 1,
+   "manifold": true,
+   "degenerate_tris": 0,
+   "nonmanifold_edges": 0,
+   "nonmanifold_before_cleanup": 0,
+   "nonmanifold_where": [],
+   "four_face_edges": 0,
+   "open_comps": [],
+   "cut_area_unity": 0.0,
+   "internal_cut_area_unity": 0.0,
+   "frame_notch_area_unity": 0.0,
+   "cut_materials": [],
+   "touches_bottom": false,
+   "touches_top": false,
+   "touches_side": [],
+   "anchors": {
+    "bottom": false,
+    "top": false,
+    "side_pos": false,
+    "side_neg": false
+   },
+   "neighbors": [
+    {
+     "chunk": 9,
+     "shared_cut_area_unity": 0.00082
+    },
+    {
+     "chunk": 10,
+     "shared_cut_area_unity": 0.04219
+    },
+    {
+     "chunk": 11,
+     "shared_cut_area_unity": 0.00853
+    },
+    {
+     "chunk": 13,
+     "shared_cut_area_unity": 0.0
+    },
+    {
+     "chunk": 14,
+     "shared_cut_area_unity": 0.0
+    }
+   ],
+   "hull_volume_unity": 0.00275,
+   "hull_tris": 44,
+   "hull_excess_frac": 0.0086,
+   "hull_void_area_unity": 0.0,
+   "hull_overlap_area_unity": 0.0,
+   "hull_void_bounds_unity": null,
+   "source_cells": [],
+   "source_parts": [
+    6
+   ],
+   "detached_kept_whole": true,
+   "floating": false,
+   "gap_to_nearest_unity": null,
+   "nearest_chunk": null
+  }
+ ],
+ "adjacency": [
+  {
+   "a": 0,
+   "b": 1,
+   "shared_cut_area_unity": 0.19869,
+   "kind": "cut_face"
+  },
+  {
+   "a": 0,
+   "b": 4,
+   "shared_cut_area_unity": 0.2721,
+   "kind": "cut_face"
+  },
+  {
+   "a": 1,
+   "b": 2,
+   "shared_cut_area_unity": 0.20305,
+   "kind": "cut_face"
+  },
+  {
+   "a": 1,
+   "b": 3,
+   "shared_cut_area_unity": 0.31284,
+   "kind": "cut_face"
+  },
+  {
+   "a": 1,
+   "b": 4,
+   "shared_cut_area_unity": 0.02039,
+   "kind": "cut_face"
+  },
+  {
+   "a": 1,
+   "b": 5,
+   "shared_cut_area_unity": 0.03566,
+   "kind": "cut_face"
+  },
+  {
+   "a": 2,
+   "b": 3,
+   "shared_cut_area_unity": 0.21839,
+   "kind": "cut_face"
+  },
+  {
+   "a": 2,
+   "b": 6,
+   "shared_cut_area_unity": 0.3218,
+   "kind": "cut_face"
+  },
+  {
+   "a": 3,
+   "b": 5,
+   "shared_cut_area_unity": 0.34497,
+   "kind": "cut_face"
+  },
+  {
+   "a": 3,
+   "b": 6,
+   "shared_cut_area_unity": 0.23061,
+   "kind": "cut_face"
+  },
+  {
+   "a": 3,
+   "b": 12,
+   "shared_cut_area_unity": 0.03802,
+   "kind": "cut_face"
+  },
+  {
+   "a": 3,
+   "b": 14,
+   "shared_cut_area_unity": 0.00125,
+   "kind": "cut_face"
+  },
+  {
+   "a": 4,
+   "b": 5,
+   "shared_cut_area_unity": 0.47108,
+   "kind": "cut_face"
+  },
+  {
+   "a": 5,
+   "b": 7,
+   "shared_cut_area_unity": 0.24013,
+   "kind": "cut_face"
+  },
+  {
+   "a": 5,
+   "b": 9,
+   "shared_cut_area_unity": 0.17741,
+   "kind": "cut_face"
+  },
+  {
+   "a": 5,
+   "b": 12,
+   "shared_cut_area_unity": 0.00276,
+   "kind": "cut_face"
+  },
+  {
+   "a": 5,
+   "b": 13,
+   "shared_cut_area_unity": 0.00762,
+   "kind": "cut_face"
+  },
+  {
+   "a": 6,
+   "b": 8,
+   "shared_cut_area_unity": 0.38752,
+   "kind": "cut_face"
+  },
+  {
+   "a": 6,
+   "b": 14,
+   "shared_cut_area_unity": 0.02855,
+   "kind": "cut_face"
+  },
+  {
+   "a": 7,
+   "b": 9,
+   "shared_cut_area_unity": 0.24421,
+   "kind": "cut_face"
+  },
+  {
+   "a": 7,
+   "b": 13,
+   "shared_cut_area_unity": 0.04598,
+   "kind": "cut_face"
+  },
+  {
+   "a": 8,
+   "b": 11,
+   "shared_cut_area_unity": 0.37727,
+   "kind": "cut_face"
+  },
+  {
+   "a": 8,
+   "b": 14,
+   "shared_cut_area_unity": 0.02636,
+   "kind": "cut_face"
+  },
+  {
+   "a": 9,
+   "b": 10,
+   "shared_cut_area_unity": 0.31458,
+   "kind": "cut_face"
+  },
+  {
+   "a": 9,
+   "b": 13,
+   "shared_cut_area_unity": 0.00386,
+   "kind": "cut_face"
+  },
+  {
+   "a": 9,
+   "b": 15,
+   "shared_cut_area_unity": 0.00082,
+   "kind": "cut_face"
+  },
+  {
+   "a": 10,
+   "b": 11,
+   "shared_cut_area_unity": 0.41609,
+   "kind": "cut_face"
+  },
+  {
+   "a": 10,
+   "b": 13,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 10,
+   "b": 15,
+   "shared_cut_area_unity": 0.04219,
+   "kind": "cut_face"
+  },
+  {
+   "a": 11,
+   "b": 14,
+   "shared_cut_area_unity": 0.00205,
+   "kind": "cut_face"
+  },
+  {
+   "a": 11,
+   "b": 15,
+   "shared_cut_area_unity": 0.00853,
+   "kind": "cut_face"
+  },
+  {
+   "a": 12,
+   "b": 13,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 12,
+   "b": 14,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 13,
+   "b": 15,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  },
+  {
+   "a": 14,
+   "b": 15,
+   "shared_cut_area_unity": 0.0,
+   "kind": "touch"
+  }
+ ],
+ "validation": {
+  "all_manifold": true,
+  "nonmanifold_chunks": [],
+  "intact_volume": 0.954614,
+  "intact_volume_note": "closed non-glass parts after the embedded wood is taken out of the masonry (the union of masonry and wood); raw sum of parts before that: 0.955002",
+  "intact_volume_raw_parts": 0.955002,
+  "frame_overlap_removed": 0.000389,
+  "island_slivers_dropped_volume": 0.0,
+  "chunk_volume": 0.954273,
+  "volume_error_pct": -0.0357,
+  "volume_within_3pct": true,
+  "masonry_count": 12,
+  "masonry_count_range": [
+   8,
+   15
+  ],
+  "masonry_count_in_range": true,
+  "frame_count": 4,
+  "min_size_rule": {
+   "min_caliper_width_masonry": 0.12,
+   "min_caliper_width_masonry_unity": 0.18,
+   "min_vol_frac_of_masonry_mean": 0.2,
+   "frames": "kept whole: exempt (reported in per_kind.frame)"
+  },
+  "chunks_under_size_floor": [],
+  "per_kind": {
+   "masonry": {
+    "count": 12,
+    "mean_volume": 0.079244,
+    "min_volume": 0.02286,
+    "min_volume_frac_of_mean": 0.288,
+    "min_width": 0.2861,
+    "min_width_unity": 0.4292,
+    "tris_min": 14,
+    "tris_max": 240,
+    "tris_total": 1124,
+    "hull_tris_max": 80
+   },
+   "frame": {
+    "count": 4,
+    "mean_volume": 0.000835,
+    "min_volume": 0.000808,
+    "min_volume_frac_of_mean": 0.968,
+    "min_width": 0.0257,
+    "min_width_unity": 0.0385,
+    "tris_min": 44,
+    "tris_max": 44,
+    "tris_total": 176,
+    "hull_tris_max": 44
+   }
+  },
+  "intact_tris": 898,
+  "chunk_tris_total": 1300,
+  "degenerate_tris": 0,
+  "adjacency_connected": true,
+  "adjacency_edges": 35,
+  "floating_chunks": [],
+  "glass_parts_excluded": 0,
+  "cut_face_materials": [
+   "brique",
+   "wall"
+  ],
+  "hull_void_max_unity": 0.00054,
+  "hull_void_limit_unity": 0.002,
+  "hull_void_ok": true,
+  "open_source_parts": [],
+  "holes_fill_fallback_faces": 0,
+  "cap_failures_first_try": 0,
+  "clip_retries": 0,
+  "clip_retry_failed": 0,
+  "coplanar_caps_pushed": 30,
+  "internal_cut_area_total": 0.09622,
+  "ok": true
+ },
+ "timings_s": {
+  "build_chunks": 0.106,
+  "adjacency": 0.004,
+  "export_fbx": 0.018,
+  "render": 0.405
+ }
+}

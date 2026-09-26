@@ -1,0 +1,454 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d22c29c6c85a8547aadddc6c082721a, type: 3}
+  m_Name: DestructibleModules
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.DestructibleModuleCatalog
+  entries:
+  - module: PK_Wall_Plain
+    kind: 0
+    material: 7
+    health: 1400
+    chunkHealth: 500
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: 4293e7c1f533be0d56999a0816aaa17e, type: 3}
+      graph: {fileID: 4900000, guid: 524e1b0268131894781ccec8b3790688, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: c63eae809ebefbdac8a3c5fff12d62ed, type: 3}
+      graph: {fileID: 4900000, guid: f3def6ae12e2a034586899a2a554e884, type: 3}
+  - module: PK_Wall_Window_Small
+    kind: 0
+    material: 7
+    health: 1400
+    chunkHealth: 500
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: d531c8baffa0cf6d7965704ac429f8d3, type: 3}
+      graph: {fileID: 4900000, guid: 09109b78c786c6a488ab725e874375e6, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: a11de3c089e32961e55d86180696516d, type: 3}
+      graph: {fileID: 4900000, guid: 07b455d06ede7df47a58c57959cf9611, type: 3}
+  - module: PK_Wall_Window_Big
+    kind: 0
+    material: 7
+    health: 1400
+    chunkHealth: 500
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: ef698c20c385e3a71137ba3f6d7c29c8, type: 3}
+      graph: {fileID: 4900000, guid: 39d1803c0eb030e4b8d7b3d75819bbd8, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: 9761c699fbfc48ed8cdc114d9849c662, type: 3}
+      graph: {fileID: 4900000, guid: 4c4b8d4f5b876db48ad01996a1ff079c, type: 3}
+  - module: PK_Wall_Door
+    kind: 0
+    material: 7
+    health: 1400
+    chunkHealth: 500
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: cf79bb7d036496eaab10f65b6d6d0ef7, type: 3}
+      graph: {fileID: 4900000, guid: 56514d50fdf7c0b47b7cdc0dc0650d47, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: fa1962fc0d32ab763f24576fb6e06677, type: 3}
+      graph: {fileID: 4900000, guid: 1defcda36846c66469e0fea482136af2, type: 3}
+  - module: PKX_Wall_Garage
+    kind: 0
+    material: 7
+    health: 1400
+    chunkHealth: 500
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: 0b5f409188d3ee5762172c502deffd6c, type: 3}
+      graph: {fileID: 4900000, guid: a3bb5b032416de34a8a89b5980986ef9, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: 8a6f196d6bc62656411043a9bd6c9967, type: 3}
+      graph: {fileID: 4900000, guid: c92c3c1cc5ca2cd438b4a37382146bfc, type: 3}
+  - module: PK_Wall_Interior
+    kind: 0
+    material: 7
+    health: 650
+    chunkHealth: 350
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: 1bfbccea7a1c2fee7dcb9bb2abf4be4e, type: 3}
+      graph: {fileID: 4900000, guid: cf1b923c5b242b64f9d7fb167d5445bd, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: 1c7f42115608f3dd6caaeb9b5650c0df, type: 3}
+      graph: {fileID: 4900000, guid: 98bc099f3d800d2419f6fbbbd38bea48, type: 3}
+  - module: PKX_Wall_Int_Door
+    kind: 0
+    material: 7
+    health: 650
+    chunkHealth: 350
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: 8c9d097305b8f0010ba11a1f1e63491d, type: 3}
+      graph: {fileID: 4900000, guid: 598c7d37d0af9904da290458c58e57f5, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: f6286fc4e43f92a0adff55aa4ebc1400, type: 3}
+      graph: {fileID: 4900000, guid: 6c706d92ebfe6ad469d10804177f1584, type: 3}
+  - module: PKX_Wall_Int_Arch
+    kind: 0
+    material: 7
+    health: 650
+    chunkHealth: 350
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: b76e3c9cfc026b331276179fd6e75e57, type: 3}
+      graph: {fileID: 4900000, guid: e384765696bafa5438356f5ba16ab2d8, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: ac384a1c8dd83eeace4476ff1f94162c, type: 3}
+      graph: {fileID: 4900000, guid: 3eda9e5da474cca4bad0d861b657f3fc, type: 3}
+  - module: PKX_Wall_Cellar
+    kind: 2
+    material: 6
+    health: 2600
+    chunkHealth: 0
+    stateCap: 1
+    anchor: 1
+    inSolidGroup: 0
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: 22913dd6b315577e4d8cc26c41c73577, type: 3}
+      graph: {fileID: 4900000, guid: 684ad6d65c71e2c49b5f4642265b4545, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: b22f344f33d7d8cfd1bc0a6f2dc20845, type: 3}
+      graph: {fileID: 4900000, guid: d13de522dafc53246be2e9051ee11ed2, type: 3}
+  - module: PKX_Gable_4m
+    kind: 0
+    material: 3
+    health: 900
+    chunkHealth: 400
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 1
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: 1544f06ef9f65486d46413a14f729dea, type: 3}
+      graph: {fileID: 4900000, guid: 8f12b269672d9fc4ba94f7f4989fd391, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: 00661e60893e14459013496d88e46a6d, type: 3}
+      graph: {fileID: 4900000, guid: a4a74a7a7d541304ea908fef4604707e, type: 3}
+  - module: PKX_Gable_4m_Window
+    kind: 0
+    material: 3
+    health: 900
+    chunkHealth: 400
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 1
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: 7eda24478fe22b849b91de1020afce2d, type: 3}
+      graph: {fileID: 4900000, guid: 21c4908eb1d7158468947df07068eabf, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: 7c39d20d5ecd5a1d91f15538a730b116, type: 3}
+      graph: {fileID: 4900000, guid: dba0011b5b3457f438f89e0d7bd158f4, type: 3}
+  - module: PKX_Corner_Quoin
+    kind: 0
+    material: 6
+    health: 1200
+    chunkHealth: 500
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: 7b2f95606a8560fb898c3fdf9916d1c7, type: 3}
+      graph: {fileID: 4900000, guid: 7c40b88f5bc465d43a43c697110cfd40, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: 76dda571388b42dbc147dbf8f52f89d2, type: 3}
+      graph: {fileID: 4900000, guid: 8bb3d2a97661fd64283fe2e16d434ef9, type: 3}
+  - module: PK_Wall_Corner
+    kind: 0
+    material: 6
+    health: 1200
+    chunkHealth: 500
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Chimney_Stack
+    kind: 0
+    material: 6
+    health: 1500
+    chunkHealth: 600
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants:
+    - prefab: {fileID: 919132149155446097, guid: e38a8c91408c68a5acf5a1b4a2b645c0, type: 3}
+      graph: {fileID: 4900000, guid: da04b921d0ab80e4093706ab842bac3e, type: 3}
+    - prefab: {fileID: 919132149155446097, guid: 8c50896c593a720f8c927c21a1141c7c, type: 3}
+      graph: {fileID: 4900000, guid: 70a36184bbc07344894faece0391cb22, type: 3}
+  - module: PKX_Chimney_Cap
+    kind: 1
+    material: 6
+    health: 1500
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Fireplace
+    kind: 1
+    material: 6
+    health: 900
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Fence_2m
+    kind: 1
+    material: 3
+    health: 140
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Fence_Post
+    kind: 1
+    material: 3
+    health: 120
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Fence_Gate
+    kind: 1
+    material: 3
+    health: 140
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Railing_2m
+    kind: 1
+    material: 3
+    health: 170
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Railing_Post
+    kind: 1
+    material: 3
+    health: 150
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PK_Post_T
+    kind: 1
+    material: 3
+    health: 320
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PK_Pillar_Brick
+    kind: 1
+    material: 6
+    health: 900
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PK_Veranda_Panel_Wide
+    kind: 1
+    material: 3
+    health: 260
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PK_Veranda_Panel_Narrow
+    kind: 1
+    material: 3
+    health: 260
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PK_Veranda_Glass_Wall
+    kind: 1
+    material: 3
+    health: 260
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Veranda_Cheek
+    kind: 1
+    material: 3
+    health: 260
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Veranda_Lintel
+    kind: 1
+    material: 3
+    health: 260
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PK_Door_Leaf
+    kind: 1
+    material: 3
+    health: 220
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Door_Leaf_Int
+    kind: 1
+    material: 3
+    health: 220
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Veranda_Door_Leaf
+    kind: 1
+    material: 3
+    health: 220
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Garage_Door_Leaf
+    kind: 1
+    material: 3
+    health: 400
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 0
+    variants: []
+  - module: PK_Roof_8
+    kind: 3
+    material: 3
+    health: 0
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 1
+    variants: []
+  - module: PK_Roof_11
+    kind: 3
+    material: 3
+    health: 0
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 1
+    variants: []
+  - module: PK_Roof_12
+    kind: 3
+    material: 3
+    health: 0
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 1
+    variants: []
+  - module: PK_Veranda_Roof
+    kind: 3
+    material: 0
+    health: 0
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 1
+    variants: []
+  - module: PK_Veranda_Glass_Flat
+    kind: 3
+    material: 0
+    health: 0
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 1
+    variants: []
+  - module: PK_Floor_Upper_B
+    kind: 4
+    material: 3
+    health: 0
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 1
+    variants: []
+  - module: PK_Floor_Stone
+    kind: 4
+    material: 6
+    health: 0
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 0
+    inSolidGroup: 1
+    variants: []
+  - module: PK_Stairs_Wood
+    kind: 5
+    material: 3
+    health: 0
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 1
+    variants: []
+  - module: PK_Stairs_Stone
+    kind: 5
+    material: 6
+    health: 0
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 1
+    variants: []
+  - module: PKX_Plinth_Stone
+    kind: 6
+    material: 6
+    health: 0
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 0
+    variants: []
+  - module: PKX_Step_Stone
+    kind: 6
+    material: 6
+    health: 0
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 0
+    variants: []

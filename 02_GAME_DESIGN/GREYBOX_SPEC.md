@@ -31,6 +31,8 @@ Rotating it is possible as of 2026-09-17 (system 5). Before that the problem had
 ## Out of scope (do NOT build yet)
 Theft / extra-value scoring, NPCs / owner, cameras / alarms, fire / consequences, destruction / fragmentation, progression / upgrades, multiple maps, real assets, menus, save, and networking. All deferred until the core feel is validated (risk R2).
 
+**Exception, 2026-09-25, Pierre's decision (`../decisions/ADR-008-everything-breaks.md`):** destruction and fragmentation are built in the grandmother's house, together with cellar grenades, four pockets and an action key for doors and windows. Tutorial_01 is untouched and still asks only the carry question.
+
 ## Success criteria (go / no-go)
 After ~30-60 minutes: does moving the furniture already create little stories and problem-solving ("how do we get the sofa out"), and is there an urge to do it faster or better? If yes, add co-op next. If the carry / load feel is bad, fix the grab before anything else.
 
@@ -38,6 +40,7 @@ After ~30-60 minutes: does moving the furniture already create little stories an
 Unity editor (6000.6.0f1): menu **The Movers > Create Greybox Scene**, then press Play. Or: create an empty scene, add an empty GameObject, add the `GreyboxBootstrap` component, press Play.
 The grandmother's house: open `Assets/_Movers/Scenes/Map01_PierreKit_House.unity` and press Play. Same controls, twelve items on the contract, the truck is at the driveway gate.
 Controls: WASD move, Shift sprint, Ctrl crouch, Space jump, mouse look, LMB grab/drop, RMB throw, E deliver (when all loaded), Esc frees the cursor.
+In the grandmother's house only (ADR-008): E also opens and closes the door, window or garage door under the crosshair, and that comes first, so E delivers only when you are not looking at one. Keys 1 to 4 are pockets: press one to put what you hold away or take it out. You start with the cigarette in pocket 1 and the beer in pocket 2. The grenades are on a crate in the cellar: hold RMB to pull the pin, let go to throw. Everything breaks except floors, roofs and stairs.
 While carrying: scroll to push the object out or pull it in. Hold R and the mouse turns it instead of your head, scroll rolls it. Look is suspended while R is held, so the mouse belongs to the object. One wheel, two jobs, split by whether R is down.
 The cigarette and the beer are on the ground by the truck: grab them like anything else. Holding one, hold RMB to smoke it or F to drink it, and tap RMB to throw it away. On anything else RMB still throws the instant you press it.
 
@@ -48,7 +51,7 @@ The concept meeting of 2026-09-16 specified a **larger greybox** than Tutorial_0
 
 Do not build this until that divergence is settled.
 
-**Status 2026-09-25:** on Pierre's explicit request, the map itself exists and is playable: `Assets/_Movers/Scenes/Map01_PierreKit_House.unity`, ten rooms, garage, cellar, garden, about 100 inert objects, the truck and the starting items, all on the Tutorial_01 systems. What depends on the verb stays unbuilt: the grandmother is a static placeholder with no patrol, and there is no theft ledger, no cat, no fish and no window entry.
+**Status 2026-09-25:** on Pierre's explicit request, the map itself exists and is playable: `Assets/_Movers/Scenes/Map01_PierreKit_House.unity`, ten rooms, garage, cellar, garden, about 100 inert objects, the truck and the starting items, all on the Tutorial_01 systems. What depends on the verb stays unbuilt: the grandmother is a static placeholder with no patrol, and there is no theft ledger, no cat, no fish and no window entry. Later the same day, also at Pierre's request: destruction, grenades, pockets and opening doors and windows (ADR-008), and the grandmother became her own modelled body with an idle loop, still with no behaviour. Breaking a window now works physically, but it costs nothing yet as an entry.
 
 - **Map:** the grandmother's house, 10 rooms. Entrance, kitchen, living room, bedroom, attic, garage, cellar, garden, bathroom, hallway. Handcrafted, no procedural generation.
 - **Garage over barn.** Delegated to the agent at the meeting and decided: it is attached, so no second building shell and no long outdoor traversal; it faces the truck, so it is the natural loading path; it justifies bulky heavy objects that exercise the physics hardest; and its door is a large openable or breakable surface, which gives a second entry route with no extra art.
@@ -57,7 +60,7 @@ Do not build this until that divergence is settled.
 - **One NPC, the grandmother.** A single scripted interaction: she hands over the keys and a tutorial box opens. She states one house rule out loud, for example asking you to be careful with her cat, to plant the idea without enforcing it in code. Movement is **A\* pathfinding on a fixed patrol**, which is a standard algorithm and not AI. She walks, she does not evaluate.
 - **Two entries.** Take the keys, or break a window. Breaking the window works and costs money. That is the first choice the game asks.
 - **Theft ledger.** Any non-contract object reaching the truck pays extra. Detection stays hard-coded conditions only.
-- **Starting inventory,** deliberately lean and absurd: a beer and a cigarette, usable at any time, useful for nothing. **Both of them are useful for something** as of 2026-09-17 (ADR-005, ADR-006), and as of 2026-09-20 neither of them is an inventory at all (ADR-007): they are two objects on the ground by the truck, picked up with the same grab as a chair, and thrown away when you are done. The sentence is spent: there is no third item, and nothing here is a slot.
+- **Starting inventory,** deliberately lean and absurd: a beer and a cigarette, usable at any time, useful for nothing. **Both of them are useful for something** as of 2026-09-17 (ADR-005, ADR-006), and as of 2026-09-20 neither of them is an inventory at all (ADR-007): they are two objects on the ground by the truck, picked up with the same grab as a chair, and thrown away when you are done. The sentence is spent: there is no third item, and nothing here is a slot. **Amended 2026-09-25 for the grandmother's house (ADR-008):** there is a third item, the cellar grenade, and four pockets on the number keys. A pocket holds the object itself, not a copy, so ADR-007's point survives.
 - **Truck:** a static hollow box, not drivable. The real vehicle comes in V1.
 - **Multiplayer:** 4 players maximum, host is a player, no backend.
 

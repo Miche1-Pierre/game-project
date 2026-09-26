@@ -2,25 +2,29 @@ using UnityEngine;
 
 namespace Movers
 {
-    // A bottle of beer lying in the world. Pick it up like anything else, hold the drink key
-    // while you are carrying it, and throw it when you are done with it: it breaks.
+    // A bottle of beer lying in the world. Pick it up like anything else, hold the alt button
+    // (F, Y on a pad) while you are carrying it, and throw it when you are done with it: it
+    // breaks.
     //
     // The right button keeps its ordinary meaning here, so UsesHoldButton is false. There is
-    // nothing to hold it for: the beer has its own key, and a bottle that needed a long press
-    // to throw would be a rule with one user.
+    // nothing to hold it for: the beer has its own button, and a bottle that needed a long
+    // press to throw would be a rule with one user.
     //
-    // The drink key is F, which PlayerEquip also uses. They do not collide: PlayerEquip acts on
-    // what is in your hands and gives up immediately when that is not a wearable, so F on a
-    // bottle reaches this and nothing else. Keep it that way if either one gains a case.
+    // The alt button also wears things. PlayerEquip owns it and decides: a wearable in your
+    // hands is put on, anything else that uses the alt button (this) gets OnAltHold while the
+    // button is held. The bottle never reads a key itself, so it drinks for whoever holds it.
     //
     // What being drunk does lives in Drunkenness, on the player. This is only the source.
     public class BeerItem : HeldUsable
     {
         public override bool UsesHoldButton => false;
+        public override bool UsesAltButton => true;
 
         [Header("Drinking")]
-        public KeyCode drinkKey = KeyCode.F;
         public float drinkSeconds = 4f;       // of holding, to empty it
+        // One PlayerDrinking event per mouthful, not per frame: the grandmother hears a swallow,
+        // not a stream. The first one lands the moment the bottle tips.
+        public float swallowSeconds = 0.6f;
         public float fullBottleDrunk = 1f;
         [Range(0f, 1f)] public float fill = 1f;
 
@@ -40,6 +44,7 @@ namespace Movers
         Material glass;
         Drunkenness drunk;
         bool broken;
+        float untilSwallow;
 
         public bool IsEmpty => fill <= 0.001f;
         public bool IsDrinking { get; private set; }
@@ -63,16 +68,36 @@ namespace Movers
             base.OnReleased(thrown);
         }
 
+        // Called every frame the alt button is held with this in the hands.
+        public override void OnAltHold(float dt)
+        {
+            bool was = IsDrinking;
+            IsDrinking = IsHeld && !IsEmpty;
+            if (!IsDrinking) return;
+            if (!was) untilSwallow = 0f;
+
+            untilSwallow -= dt;
+            if (untilSwallow <= 0f)
+            {
+                untilSwallow = Mathf.Max(0.1f, swallowSeconds);
+                WorldEvents.Raise(WorldEventType.PlayerDrinking, transform.position, HolderActor, 0f, 0f, 0, this);
+            }
+            Drink(dt);
+        }
+
+        public override void OnAltRelease()
+        {
+            IsDrinking = false;
+        }
+
         void Update()
         {
-            IsDrinking = IsHeld && !IsEmpty && Input.GetKey(drinkKey);
-            if (IsDrinking) Drink(Time.deltaTime);
             if (glass != null) glass.color = Color.Lerp(Empty, Full, fill);
         }
 
-        // The swallow itself, kept apart from the key that asks for it so the scripted test can
-        // drink without a keyboard, and so an empty bottle refuses in the one place that cannot
-        // be bypassed. Returns how much went down, 1 being the whole bottle.
+        // The swallow itself, kept apart from the button that asks for it so the scripted test
+        // can drink without a keyboard, and so an empty bottle refuses in the one place that
+        // cannot be bypassed. Returns how much went down, 1 being the whole bottle.
         public float Drink(float seconds)
         {
             if (drinkSeconds <= 0.01f || IsEmpty) return 0f;
@@ -138,6 +163,9 @@ namespace Movers
             // flag marks an item grey and keeps it, and a bottle that survives its own
             // smash reads worse than one that simply goes.
             mo.fragile = false;
+            // The crew's own: it fits in a pocket, and taking it home is not theft.
+            mo.pocketable = true;
+            mo.ownedByGrandma = false;
             rb.mass = Mathf.Max(0.1f, mo.weight);
 
             item.Build();
