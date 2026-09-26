@@ -6,9 +6,14 @@ zero animations, and the one pose this game needs is "holding something in front
 you". That pose is not in a generic locomotion library either. Authoring it costs a
 minute here and nothing afterwards.
 
+It also authors the pose the body holds when it carries nothing (--pose relaxed). Until
+2026-09-25 the crew had the carry pose only, so a player with empty hands stood with his
+arms out in front of him, and a bathrobe on that body could not be judged as a garment.
+
 Run headless, no GUI and no MCP addon needed:
 
     blender --background --python tools/blender/author_carry_clip.py
+    blender --background --python tools/blender/author_carry_clip.py -- --pose relaxed
 
 Arguments go after a bare `--`:
 
@@ -32,6 +37,7 @@ from mathutils import Matrix
 ROOT = r"C:\dev\game-project\UnityProject\Assets"
 DEFAULT_SRC = os.path.join(ROOT, r"Floreswa\Models\male01_1.fbx")
 DEFAULT_OUT = os.path.join(ROOT, r"_Movers\Generated\Characters\Anim_Carry_Idle.fbx")
+DEFAULT_RELAXED_OUT = os.path.join(ROOT, r"_Movers\Generated\Characters\Anim_Relaxed_Idle.fbx")
 
 FPS = 24
 LAST_FRAME = 48          # 2 seconds. Frame 49 repeats frame 1 so the clip loops.
@@ -44,10 +50,14 @@ KEYED = ["upper_arm.L", "forearm.L", "upper_arm.R", "forearm.R", "spine.002"]
 def parse_args():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     p = argparse.ArgumentParser(prog="author_carry_clip")
+    p.add_argument("--pose", choices=("carry", "relaxed"), default="carry")
     p.add_argument("--src", default=DEFAULT_SRC)
-    p.add_argument("--out", default=DEFAULT_OUT)
+    p.add_argument("--out", default=None)
     p.add_argument("--preview", default=None, help="write a PNG of the pose here")
-    return p.parse_args(argv)
+    args = p.parse_args(argv)
+    if args.out is None:
+        args.out = DEFAULT_OUT if args.pose == "carry" else DEFAULT_RELAXED_OUT
+    return args
 
 
 def import_source(path):
@@ -87,19 +97,53 @@ def point_bone(arm, name, target_dir):
     bpy.context.view_layer.update()
 
 
+def outward(arm, side, right):
+    """The direction away from the body on this side, read off where the shoulder is.
+
+    On this rig `right` is the character's own right, so the first version, which pushed the
+    left arm along +right, moved both arms inward: the carry pose had its elbows 12 cm inside
+    the shoulder line and the forearms ran through the chest, so on a bathrobe the hands came
+    out of the front of the robe (team review, 2026-09-25). Reading the side off the bones
+    works whatever the sign convention of the pack.
+    """
+    mid = arm.pose.bones["spine"].head
+    shoulder = arm.pose.bones["upper_arm." + side].head
+    return right if (shoulder - mid).dot(right) > 0.0 else -right
+
+
 def carry_pose(arm, axes, lift=0.0):
-    """Upper arms down and forward, forearms level, as if holding a crate.
+    """Upper arms down, forward and out, forearms level and closing in, as if holding a crate.
 
     `lift` is the breath: 0 at rest, 1 at the top of the cycle. It moves the arms a few
     centimetres rather than bobbing the whole body, because a mover under load does not
     bounce.
     """
     up, fwd, right = axes
-    for side, s in (("L", 1.0), ("R", -1.0)):
+    for side in ("L", "R"):
+        out = outward(arm, side, right)
         point_bone(arm, "upper_arm." + side,
-                   -up * (0.74 - lift * 0.10) + fwd * (0.58 + lift * 0.06) + right * (0.30 * s))
+                   -up * (0.74 - lift * 0.10) + fwd * (0.58 + lift * 0.06) + out * 0.30)
         point_bone(arm, "forearm." + side,
-                   fwd * 0.95 + up * (0.18 + lift * 0.10) + right * (-0.12 * s))
+                   fwd * 0.95 + up * (0.18 + lift * 0.10) - out * 0.12)
+
+
+def relaxed_pose(arm, axes, lift=0.0):
+    """Arms hanging at the sides, elbows soft, the pose of a body with nothing in its hands.
+
+    The upper arm leaves the body at about 16 degrees. Closer, the hands vanish into the
+    bathrobe's skirt, which is wider than the hips; that robe is the reason this pose was
+    written. `lift` is the same breath as in carry_pose, a slight swing forward.
+    """
+    up, fwd, right = axes
+    for side in ("L", "R"):
+        out = outward(arm, side, right)
+        point_bone(arm, "upper_arm." + side,
+                   -up * 0.96 + out * 0.28 + fwd * (0.04 + lift * 0.02))
+        point_bone(arm, "forearm." + side,
+                   -up * 0.95 + out * 0.20 + fwd * (0.22 + lift * 0.03))
+
+
+POSES = {"carry": ("Carry_Idle", carry_pose), "relaxed": ("Relaxed_Idle", relaxed_pose)}
 
 
 def all_fcurves(action):
@@ -118,9 +162,10 @@ def all_fcurves(action):
     return out
 
 
-def build_action(arm, axes):
+def build_action(arm, axes, pose="carry"):
+    name, pose_fn = POSES[pose]
     arm.animation_data_create()
-    action = bpy.data.actions.new("Carry_Idle")
+    action = bpy.data.actions.new(name)
     arm.animation_data.action = action
     for pb in arm.pose.bones:
         pb.rotation_mode = "QUATERNION"
@@ -134,7 +179,7 @@ def build_action(arm, axes):
         scene.frame_set(frame)
         bpy.ops.pose.select_all(action="SELECT")
         bpy.ops.pose.transforms_clear()
-        carry_pose(arm, axes, lift)
+        pose_fn(arm, axes, lift)
 
         chest = arm.pose.bones["spine.002"]
         chest.rotation_quaternion = (
@@ -190,6 +235,10 @@ def export(path):
     asks for and this script does not do.
     """
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    # The pose is keyed in Pose mode, and select_all refuses to run there. render_preview
+    # used to leave Object mode behind it, so an export without --preview failed.
+    if bpy.context.object is not None and bpy.context.object.mode != "OBJECT":
+        bpy.ops.object.mode_set(mode="OBJECT")
     bpy.ops.object.select_all(action="SELECT")
     try:
         bpy.ops.export_scene.fbx(
@@ -212,7 +261,7 @@ def main():
     bpy.ops.object.mode_set(mode="POSE")
 
     axes = rig_axes(arm)
-    action = build_action(arm, axes)
+    action = build_action(arm, axes, args.pose)
 
     if args.preview:
         render_preview(arm, axes, args.preview)
@@ -221,7 +270,8 @@ def main():
     print("exported {}: action '{}', {} curves, {} bytes".format(
         args.out, action.name, len(all_fcurves(action)), os.path.getsize(args.out)))
     print("NOTE: Blender names the FBX take after the scene, not after the action. "
-          "Rename the clip to Carry_Idle in Unity and tick Loop Time.")
+          "Rename the clip to {} in Unity and tick Loop Time "
+          "(MoversCrewPoseCLI.Setup does it for the relaxed clip).".format(action.name))
 
 
 if __name__ == "__main__":
