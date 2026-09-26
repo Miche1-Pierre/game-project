@@ -1,5 +1,4 @@
 using System.IO;
-using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -14,10 +13,10 @@ namespace Movers.EditorTools
     // Do NOT pass -quit: the editor must stay alive long enough to play. This script exits
     // by itself when the run is over.
     //
-    // PlayerController and PlayerGrab both read Input directly, and batch mode has no input,
-    // so the player is driven from here: the controller is disabled and the CharacterController
-    // is moved by hand, while the real grab code is invoked through reflection so the captured
-    // behaviour is the game's, not a reimplementation of it.
+    // Batch mode has no keyboard, so the player is driven from here: the controller is disabled
+    // and the CharacterController is moved by hand, while the grab is the game's own public
+    // PlayerGrab.TryGrab (the ray under the crosshair, then Hold), so the captured behaviour is
+    // the game's, not a reimplementation of it.
     public static class MoversPlaytestCLI
     {
         const string ScenePath = "Assets/_Movers/Scenes/Tutorial_01.unity";
@@ -27,7 +26,6 @@ namespace Movers.EditorTools
         static CharacterController cc;
         static Transform player, cam;
         static PlayerGrab grab;
-        static MethodInfo tryGrab;
         static int shotIndex;
         static string phase = "";
         static System.DateTime startedAt;
@@ -77,7 +75,9 @@ namespace Movers.EditorTools
 
             if (player == null)
             {
-                var p = GameObject.Find("Player");
+                // P1 by the roster once the crew has woken up, by name before that.
+                var first = CrewRoster.Get(0);
+                var p = first != null ? first.gameObject : GameObject.Find("Player");
                 if (p == null) return;
                 player = p.transform;
                 cc = p.GetComponent<CharacterController>();
@@ -86,8 +86,6 @@ namespace Movers.EditorTools
 
                 var pc = p.GetComponent<PlayerController>();
                 if (pc != null) pc.enabled = false;          // no input in batch mode
-                tryGrab = typeof(PlayerGrab).GetMethod("TryGrab",
-                          BindingFlags.NonPublic | BindingFlags.Instance);
 
                 t0 = Time.realtimeSinceStartup;
                 Debug.Log("[Playtest] player found, driving it by hand");
@@ -124,10 +122,10 @@ namespace Movers.EditorTools
             // 4.0 s : grab it with the game's own code
             if (t < 4.2f)
             {
-                if (tryGrab != null && grab != null && shotIndex == 2)
+                if (grab != null && shotIndex == 2)
                 {
-                    tryGrab.Invoke(grab, null);
-                    Debug.Log("[Playtest] TryGrab invoked");
+                    bool got = grab.TryGrab();
+                    Debug.Log("[Playtest] TryGrab " + (got ? "took " + grab.Held.name : "found nothing to take"));
                     Shot("03_grabbed.png");
                 }
                 Fall();

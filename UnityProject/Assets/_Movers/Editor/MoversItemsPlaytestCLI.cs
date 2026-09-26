@@ -101,7 +101,10 @@ namespace Movers.EditorTools
 
         static void Setup()
         {
-            player = Object.FindFirstObjectByType<PlayerController>();
+            // P1 by the roster: with two players on the map, "the first PlayerController" is
+            // whichever the engine lists first.
+            var first = CrewRoster.Get(0);
+            player = first != null ? first.Controller : Object.FindFirstObjectByType<PlayerController>();
             if (player == null) return;
 
             // Set once, not on every retry below, or the wait never expires.
@@ -144,6 +147,7 @@ namespace Movers.EditorTools
             Check(beer.GetComponent<MovableObject>() != null, "the beer is one too");
             Check(cig.UsesHoldButton, "the cigarette answers to a held right button");
             Check(beer.UsesHoldButton == false, "the beer leaves the right button alone, it has its own key");
+            Check(beer.UsesAltButton, "the beer drinks on the alt button (F), dispatched by PlayerEquip");
 
             shippedSober = drunk.soberSeconds;
             drunk.soberSeconds = TestSoberSeconds;
