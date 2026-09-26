@@ -3,13 +3,15 @@ using UnityEngine;
 
 namespace Movers
 {
-    // Wearing what you just stole. Goes on the player, next to PlayerGrab.
+    // The alt button (F, Y on a pad): wearing what you just stole, or drinking what you carry.
+    // Goes on the player, next to PlayerGrab.
     //
-    // One key, two jobs, split by whether your hands are full, which is the same trick the
-    // right button already plays between throwing and the cigarette, and the wheel plays
-    // between roll and reach:
-    //   hands full  -> put on what you are holding, if it is something you can wear
-    //   hands empty -> take off the last thing you put on, and drop it at your feet
+    // One button, split by what is in your hands, which is the same trick the right button
+    // already plays between throwing and the cigarette, and the wheel plays between roll and
+    // reach:
+    //   holding a wearable        -> press: put it on
+    //   holding an alt-use item   -> hold: use it (the beer drinks while the button is down)
+    //   hands empty               -> press: take off the last thing you put on, drop it at your feet
     //
     // No inventory, no menu, no UI. An equippable is an ordinary object of the house that you
     // picked up with the grab that already existed (05_ART/CHARACTERS.md).
@@ -19,42 +21,71 @@ namespace Movers
         public PlayerGrab grab;
         public CrewEquip body;
 
-        [Header("Input")]
-        public KeyCode equipKey = KeyCode.F;
-
         // The order things went on, so taking off is last on first off. CrewEquip knows what is
-        // worn, it does not know in which order, and order is what an undo key needs.
+        // worn, it does not know in which order, and order is what an undo button needs.
         readonly List<EquipSlot> order = new List<EquipSlot>();
+
+        CrewInput input;
+        // The item being used with the alt button right now, told when that stops.
+        HeldUsable altInUse;
+        // Looked up when the hands change, not every frame.
+        MovableObject lastHeld;
+        HeldUsable heldUsable;
+        EquipItem heldWearable;
 
         void Awake()
         {
+            input = CrewSetup.InputOf(gameObject);
             if (grab == null) grab = GetComponent<PlayerGrab>();
             if (body == null) body = GetComponentInChildren<CrewEquip>();
 
-            if (grab == null || body == null)
+            // No body (the tutorial's bare capsule) means nothing can be worn; the beer still
+            // drinks, so the component stays on.
+            if (grab == null)
             {
-                Debug.LogWarning("[PlayerEquip] no PlayerGrab or no CrewEquip under " + name + ", nothing can be worn.");
+                Debug.LogWarning("[PlayerEquip] no PlayerGrab on " + name + ", nothing can be worn or drunk.");
                 enabled = false;
             }
         }
 
         void Update()
         {
-            if (!Input.GetKeyDown(equipKey)) return;
-
             var held = grab.Held;
-            if (held != null) Wear(held);
-            else TakeOffLast();
+            if (!ReferenceEquals(held, lastHeld))
+            {
+                lastHeld = held;
+                heldUsable = held != null ? held.GetComponent<HeldUsable>() : null;
+                heldWearable = held != null ? held.GetComponent<EquipItem>() : null;
+            }
+
+            // Held, not pressed: a bottle picked up with the button already down drinks at
+            // once, as it always did.
+            HeldUsable alt = held != null && heldWearable == null && heldUsable != null && heldUsable.UsesAltButton
+                             && input.Held(CrewButton.Alt) ? heldUsable : null;
+            if (!ReferenceEquals(alt, altInUse))
+            {
+                if (altInUse != null) altInUse.OnAltRelease();
+                altInUse = alt;
+            }
+            if (alt != null) alt.OnAltHold(Time.deltaTime);
+
+            if (!input.Down(CrewButton.Alt) || body == null) return;
+            if (held == null) TakeOffLast();
+            else if (heldWearable != null) Wear(held, heldWearable);
         }
 
-        void Wear(MovableObject held)
+        void OnDisable()
         {
-            var item = held.GetComponent<EquipItem>();
-            if (item == null) return;   // most things in a house are not clothes
+            if (altInUse != null) altInUse.OnAltRelease();
+            altInUse = null;
+        }
 
+        void Wear(MovableObject held, EquipItem item)
+        {
             // Let go first, cleanly: Release restores the damping the carry had saved, so the
-            // object does not come back later with the carry values baked into it.
-            grab.Release(false);
+            // object does not come back later with the carry values baked into it. Silent: it
+            // is not dropped, it goes on the body.
+            grab.Release(false, false);
 
             if (!body.Equip(item)) return;
 

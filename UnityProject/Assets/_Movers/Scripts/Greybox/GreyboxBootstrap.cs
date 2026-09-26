@@ -15,6 +15,13 @@ namespace Movers
         {
             // If the scene was pre-built in the editor, do not rebuild at Play.
             if (transform.childCount == 0) Build();
+
+            // One player, full screen, on the keyboard: the tutorial asks only the carry
+            // question. A scene saved before the crew components existed gets them here, since
+            // Unity does not add them to an object that was saved without them.
+            var pc = GetComponentInChildren<PlayerController>(true);
+            if (pc != null) CrewSetup.Ensure(pc.gameObject);
+            if (CrewSpawner.Active == null) CrewSpawner.CreateDefault();
         }
 
 #if UNITY_EDITOR
@@ -181,6 +188,8 @@ namespace Movers
             // whether or not they smoke: the cloud you have to walk through is someone else's.
             camGO.AddComponent<SmokeVision>();
 
+            // Input first: every player component asks for it when it wakes up.
+            p.AddComponent<CrewInput>();
             var pc = p.AddComponent<PlayerController>();
             pc.cam = camGO.transform;
             var pg = p.AddComponent<PlayerGrab>();
@@ -190,6 +199,10 @@ namespace Movers
             // that causes it does not: it is an object by the truck, like everything else you
             // can pick up (ADR-007).
             p.AddComponent<Drunkenness>();
+            // P1 of a crew of one: the roster entry other systems find the player by, the
+            // crosshair, the alt button that drinks the beer and the action button that
+            // delivers at the truck.
+            CrewSetup.Ensure(p);
         }
 
         // The starting inventory is a place, not a slot: the crew leaves its smokes and its

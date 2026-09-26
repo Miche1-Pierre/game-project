@@ -7,7 +7,9 @@ namespace Movers
     // This sits on a camera, not on the world, and that is the whole point: the cloud is
     // shared, the blindness is not. Whoever walks into the puff loses their view, including
     // the player who lit the cigarette. When there are four players, four cameras each carry
-    // one of these and each one answers for its own head position, with no extra code.
+    // one of these and each one answers for its own head position, with no extra code, and
+    // each paints only its own camera's part of the screen: P1 in the smoke does not blind
+    // P2's half of a split screen.
     //
     // Drawn with OnGUI, like GameHUD, for the same reason: zero package dependencies, no
     // Canvas, no post-processing stack. Built-in RP fog would have been the other option and
@@ -47,10 +49,16 @@ namespace Movers
         public int guiDepth = 5;
 
         float shown;
+        Camera view;
 
         public float Density => shown;
 
         Transform Eyes => eyes != null ? eyes : transform;
+
+        void Awake()
+        {
+            view = GetComponent<Camera>();
+        }
 
         void Update()
         {
@@ -64,8 +72,15 @@ namespace Movers
             if (Event.current.type != EventType.Repaint) return;
             if (shown <= cutoff) return;
 
+            Rect area;
+            if (view != null)
+            {
+                if (!CrewView.TryGetRect(view, out area)) return;   // this view is not on screen
+            }
+            else area = new Rect(0f, 0f, Screen.width, Screen.height);
+
             GUI.depth = guiDepth;
-            DrawSmoke(new Rect(0f, 0f, Screen.width, Screen.height), shown, Time.time);
+            DrawSmoke(area, shown, Time.time);
         }
 
         // The four layers, in one place, so the offline preview tool (MoversSmokeCLI) paints

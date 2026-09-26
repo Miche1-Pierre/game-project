@@ -4,11 +4,14 @@ namespace Movers
 {
     // A real mirror, on the glass of grandmother's wall mirror.
     //
-    // Why it exists: the game is first person, so you never see your own outfit, and there is
-    // no second player yet. Something stolen and worn is visible to nobody. A mirror is the
-    // cheapest way to give a solo test the reaction the greybox exists to measure, and the
-    // house already owns the prop (SM_Mirror_Wall, GrandmaKit). You steal her dressing gown,
-    // you go and look at yourself in her glass.
+    // Why it exists: the game is first person, so you never see your own outfit (your own camera
+    // does not even draw your body, FirstPersonBody). Something stolen and worn is visible only
+    // to the other player. A mirror is the cheapest way to give a solo test the reaction the
+    // greybox exists to measure, and the house already owns the prop (SM_Mirror_Wall,
+    // GrandmaKit). You steal her dressing gown, you go and look at yourself in her glass.
+    //
+    // In split screen each camera that sees the mirror renders the reflection again just
+    // before it draws the glass, so each player sees their own reflection (at twice the cost).
     //
     // Standard planar reflection for the Built-in pipeline: a second camera placed at the
     // mirror image of the rendering camera, with an oblique near plane on the mirror plane so
@@ -97,6 +100,9 @@ namespace Movers
             reflectionCam.CopyFrom(src);
             reflectionCam.enabled = false;
             reflectionCam.targetTexture = rt;
+            // CopyFrom brings the source's viewport too. In split screen that is half the
+            // screen, and the reflection would render into half the texture.
+            reflectionCam.rect = new Rect(0f, 0f, 1f, 1f);
 
             if (glass == null)
             {
