@@ -2,7 +2,132 @@
 
 _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSINESS, MARKETING._
 
+## 2026-09-26
+
+### The grandmother's house becomes a systemic vertical slice (ADR-009)
+
+- **DESIGN, Pierre's decision, ADR-009:**
+  - The verb is steal under watch: the moving contract is the cover, and the grandmother's things that are not on the list are the prize.
+  - Two local players share a split screen.
+  - The grandmother lives in the house on her own, with patience that runs out.
+  - Walls break structurally, and the truck drives.
+  - Architecture and file ownership are in `03_TECHNICAL/SLICE_ARCHITECTURE.md`.
+- **TECH, shared contracts:**
+  - One event bus: `WorldEvents`, one struct and one list of facts.
+  - A reference-free `DamageEvent`.
+  - Per-player input, `CrewInput`: the legacy Input Manager stays behind it, and the keyboard reproduces the validated carry numbers exactly.
+  - A crew roster, a read-only `Session`, debug keys registered through `DebugCommands` and listed with F12, and HUD regions per viewport.
+  - `MovableObject` gains a physical profile: can carry, push, throw, be loaded or be pocketed, and whether it belongs to the grandmother.
+- **DESIGN, the players:**
+  - P1 plays on keyboard and mouse, P2 on a gamepad.
+  - F1 hands the keyboard to the other player, and F2 switches between split, solo P1 and solo P2.
+  - Holding is exclusive: two players cannot share one object.
+  - Objects too heavy to lift are dragged along the floor.
+  - Pockets take small valuables.
+  - The crew bodies stand on the floor and walk, run and crouch, and carrying raises only the arms.
+- **DESIGN, the grandmother:**
+  - **Movement and routine:** she moves on a NavMesh built at Play from the colliders, with no package, and opens doors herself. She keeps a routine at 11 activity spots: rocking chair, reading, tea, cooking, plants, the fireplace (she lights a real fire), TV, the veranda.
+  - **Senses:** she sees in a 110 degree, 14 m cone and hears world events through walls.
+  - **Intro:** she hands over the keys during the intro.
+  - **Theft and patience:** she witnesses thefts, and a patience table decides her reactions and confrontations.
+  - **Softened the same evening** at Pierre's request ("a bit deaf, not too hard"):
+    - she hears at 60 % of the range, and costs are about half;
+    - she loses at most 20 points per 10 s;
+    - at zero she gives a 25 s last warning, and she calls the police only if something else happens during it.
+- **DESIGN, the run:**
+  - The session goes Intro, then contract, then settlement.
+  - The front door is locked until she hands over the keys; breaking in also starts the contract, and costs.
+  - Delivery happens at the truck.
+  - An itemised settlement pays contract items, bills destroyed ones, pays unseen theft and confiscates witnessed theft with a fine.
+  - Ten small valuables are hidden in the house.
+  - F5 reloads the run.
+- **DESIGN, destruction:**
+  - 13 wall types are pre-fractured in Blender, from Pierre's own meshes, 8 to 15 chunks each, two variants.
+  - A wall swaps to its chunks the first time it is hurt. Damage lands per chunk by distance, cover and material.
+  - A support graph drops what nothing holds up: a second grenade brings down what the first one weakened.
+  - Roofs fall as whole sections when their walls are gone. The foundation stops at Damaged. Floors and stairs never break.
+  - Glass cracks before it breaks.
+  - Debug keys: F3 overlay, F9 grenade, Shift+F9 explosion, F10 damage, F11 reset.
+- **DESIGN, the truck:** it can be driven (E at the cab door) with arcade handling. The cargo stays physical in the box, the ramp stows while driving, and it has a capacity and weight.
+- **CONTENT, the kit:**
+  - `tools/blender/export_pierrekit.py` fixes the normals of Pierre's kit at export: 86 inside-out parts become 0. That fixes the ridge tiles that vanished from above, the gutters, and the window-sized holes in the 32 plain and interior walls.
+  - Every window gets two real sashes (frame plus glass) that swing outward without clipping.
+  - `assets.blend` is never written.
+- **CONTENT, animation:** 22 humanoid clips on the crew rig (`tools/blender/author_clips.py`), shared by the crew and the grandmother. Her skirt is re-weighted for sitting.
+- **CONTENT, the scene:**
+  - The wine bottles are put back on their shelf, and the slippers lie flat.
+  - The crew body now faces its camera: it was modelled facing -Z.
+  - Pierre's imported "Target Indicators" package keeps its runtime. Its Samples need TextMeshPro, uGUI and the Input System, and are moved out of the project.
+- **TESTING, in Play by script, in the shared editor:**
+  - **Pass counts by block:**
+    - game loop: 39 checks;
+    - grandmother: 33;
+    - players: 16;
+    - truck: 17;
+    - doors and windows: 20;
+    - destruction: 65 of 66;
+    - final regression: 30.
+  - **Console:** 0 errors.
+  - **Seven game bugs were found and fixed on the way:**
+    - plinths counted as windows;
+    - unreadable meshes in her NavMesh;
+    - she dropped every walk after a wall broke;
+    - she looped on the garage door;
+    - grenades counted as hers;
+    - dragged crates tipped over;
+    - her arms were frozen by an animator layer.
+- **MEASURED, the blast:** it took 27 ms warm, with 150 debris pieces at about 0.13 ms each, plus a one-off 40 to 55 ms on the first blast. The per-frame debris budget is now 90, for about 12 ms.
+- **OPEN, for Pierre:**
+  - The blast push throws light props upstairs.
+  - The bathroom mirror and other hand placements (A4 items 3 and 4).
+  - Eye height: 1.62 against the spec's 1.60.
+  - The truck can leave the map.
+  - Skirt clipping on the chair.
+  - A 3 to 5 mm light slit round shut sashes.
+- **NOT DONE YET:** the presentation wave Pierre asked for the same day. It is being built in staging:
+  - a cozy low-poly UI on LumaFlow, with key hints for every object;
+  - a title screen with the truck on a road, and the running-and-falling loader;
+  - target indicators;
+  - first-person smoking and drinking with body animations;
+  - synthesised audio.
+
 ## 2026-09-25
+
+### Everything in the house breaks (ADR-008)
+
+- **DESIGN, Pierre's decision, recorded in ADR-008:** the grandmother's house now breaks: walls, gables, chimneys, fences, railings, posts, veranda panels, door leaves, window glass and every movable object. Floors, roofs and stairs stay solid, and the reason is in `04_PRODUCTION/REJECTED.md`. It amends the greybox spec's out-of-scope line for this map only (Tutorial_01 is untouched), and the "no inventory" half of ADR-007.
+- **DESIGN:** one health model, `Breakable`, eight materials. A hit hurts only above the material's speed threshold, and past it the damage grows with the square of the extra speed, scaled by the other body's weight. What you carry is cushioned by your arms. At half health an object is broken (half pay, as before), and at zero it shatters into physical debris and switches off. This replaces the `breakThreshold` impulse test flagged in the entry below.
+- **DESIGN:** a smashed required object leaves the checklist, so it no longer blocks delivery, and the client bills its full value ("Smashed" on the HUD). Money can go negative.
+- **DESIGN:** a crate of six grenades in the cellar, no refill. Hold RMB to pull the pin (3.5 s fuse), let go to throw. The blast has a 6.5 m radius and damages the nearest things first, so a wall that gives way lets the blast through. It pushes objects, knocks the crew back and adds concussion to the drunkenness meter. It lights any grenade in the open within 5.2 m a fraction of a second later. Walls give way only to a grenade within about 0.6 m, and cellar walls survive one grenade. Debris is capped at 450 pieces.
+- **DESIGN:** four pockets on keys 1 to 4. A pocket holds the object itself, switched off, so a lit grenade keeps counting in there and goes off in your trousers. Only usables fit (cigarette, beer, grenade). The crew starts with the smoke in 1 and the beer in 2, and the van still lays out spares.
+- **DESIGN:** the action key. E opens and closes 14 doors, 21 windows (two casements each, opening outwards) and the up-and-over garage door. The verb shows under the crosshair. E is also DELIVER: the action claims the key first (`InputClaims`), so opening the front door beside the truck never delivers by accident.
+- **CONTENT:** the house is raised 0.30 m on its plinth, with a stone step at each of the four entrances. The step mesh's top is uneven, so each step has an invisible flat slab at 0.15 m, and all four entrances pass both ways. The veranda stands on a plinth base with a floor. A ceiling closes the well over the cellar stair, where the roof used to show. The garage, garden and street stay at ground level.
+- **CONTENT:** the grandmother's car stands on the driveway in front of the garage, nose to the garage door, as Pierre asked. It has a rigidbody and is not breakable.
+- **CONTENT:** three door leaves continue the extension kit (interior door, garage door, veranda door), which brings it to 22 pieces. The grandmother is her own model now: `SM_Grandma`, Humanoid, 1.58 m, with a 3.5 s idle loop, looking out of the veranda. Still no behaviour.
+- **TECH:** 21 new scripts in `Core`, `Destruction`, `Effects`, `Interaction` and `Items`. Five existing ones are extended: `MovableObject`, `ContractManager`, `GameHUD`, `PlayerController` and `PlayerGrab`. `HouseDestruction` does all the setup at Play, so the kit and the scene stay as built. It cuts every window's glass submesh into its own panes and tags structure by kit module name.
+- **TECH, two traps:** static batching merges meshes and would stop the glass from being cut into panes, so the house is not static-batched. A Humanoid avatar copied from another rig fails with "Parent for 'spine' differs" unless its skeleton list is left empty and only the bone mapping is kept.
+- **TESTING, in Play, by script, not by a person:**
+  - **Pass:** doors and windows open outwards and close again; a thrown 1 kg object hurts a pane; a blast removes a door leaf and leaves the frame unusable; a blast breaks all six panes of a window and leaves its wall standing; a blast 0.3 m from a wall destroys it.
+  - **Pass:** an object smashed in the hands frees them and lifts every carry penalty; a live grenade goes off in a pocket and leaves the other pockets intact; a live grenade in the hands goes off and leaves nothing held.
+  - **Pass:** a blast beside the crate lights all six grenades, and none goes off in the same frame. The console showed zero errors.
+- **TESTING, two faults found and fixed in that run:**
+  - The chain reaction ignored cover. A blast on the ground floor lit the cellar crate through the floor, and nobody watching could have read why the cellar exploded. A floor, a wall or a shut door now keeps the pin in, and loose things don't. Retested both ways.
+  - A blast gathers its targets into a fixed buffer, and during the crate chain fresh debris filled it, so colliders were dropped in no particular order, walls included. The buffer now grows.
+- **TESTING, a near miss worth remembering:** the pocket test first reported PASS without having done anything. The tool refuses reflection, so the step that pockets the grenade never ran, and the check that followed only saw empty pockets. It was caught because the first half of the test had errored, and it was redone through `SendMessage`. A pass is only worth something if the setup visibly happened.
+- **MEASURED:**
+  - **Hitch:** a grenade against a window wall spends 117 ms in its one frame.
+  - **Debris:** it peaks at 1792 pieces and falls back under the 450 cap within seconds.
+  - **Frame rate:** 57 fps at rest, running unfocused in the editor, and above 100 after the chain cleared.
+- **OPEN, for Pierre (listed in ADR-008):**
+  - Every fragility number.
+  - How close a grenade must be to breach a wall.
+  - That a blast behind a floor still does 35 %: a grenade upstairs broke the cellar crate below without lighting it.
+  - Gables that break under a roof that stays in the air.
+  - Whether a slammed door should break things.
+- **NOT DONE:**
+  - The car cannot break.
+  - Tutorial_01 has not been run in Play since the five shared scripts changed. It compiles, but Pierre was working in the editor at the time.
+  - Nothing here is committed.
 
 ### The house becomes a playable greybox
 
