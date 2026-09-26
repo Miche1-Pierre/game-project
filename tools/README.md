@@ -28,6 +28,61 @@ Two manual steps remain in Unity. Blender names the FBX take after the scene, so
 the clip to `Carry_Idle` and tick Loop Time. And set the avatar to **Create From This
 Model**, not Copy From Other Avatar: the reason is in the script's `export` docstring.
 
+The same script writes the pose of a body with empty hands, arms down, into
+`Anim_Relaxed_Idle.fbx`. The Unity side of that clip is automated, see "Give the crew its two
+poses" below.
+
+    blender --background --python-exit-code 1 --python tools/blender/author_carry_clip.py -- --pose relaxed
+
+## Headless runs, three rules learned the hard way
+
+1. **Pass `--python-exit-code 1` to Blender.** Without it `blender -b` exits 0 when the script
+   raises, so a generator that refuses to export (the bathrobe's checks do exactly that) looks
+   like a success to whatever called it.
+2. **Compile Unity on its own before any `-executeMethod`.** A compile error keeps batchmode
+   busy for more than ten minutes before it exits. `Unity.exe -batchmode -quit -projectPath
+   ... -logFile compile.log` takes about 35 s here; grep the log for `error CS`.
+3. **Nothing in batchmode while the editor is open on the project.** The editor holds the
+   project lock. Use the Unity MCP instead, or close the editor.
+
+## Check a model the way Unity imports it (Unity, no clicking)
+
+What the game actually gets from a file Blender wrote: importer settings, triangles per
+submesh, bounds, shaders (the magenta error shader fails the run), and for a skinned piece,
+its bones and bind poses against the body's, plus the joint fit `CrewEquip` uses. Exits 0 when
+clean, 2 otherwise, no `-quit` needed:
+
+    Unity.exe -batchmode -projectPath C:\dev\game-project\UnityProject \
+      -executeMethod Movers.EditorTools.MoversInspectCLI.ReportAsset \
+      -asset Assets/_Project/Art/Crew/SM_Crew_Chest_Bathrobe.fbx \
+      -body Assets/Floreswa/Models/male01_1.fbx -logFile inspect.log
+
+## Wear a piece in the house (Unity, no clicking)
+
+Opens `Map01_PierreKit_House`, puts the piece on the player's crew body through
+`CrewEquip.Equip` (the call the F key makes), and shoots it at rest and carrying, at 3 m and at
+8 m, then from the player's eyes in the bathroom mirror. Fails on a CrewEquip warning, an
+error, or any edge of the piece stretched past 2.5 times its bind length. Play mode, never
+saves a scene; images go to `Assets/_Movers/Generated/review/`, gitignored. Do NOT pass
+`-quit`:
+
+    Unity.exe -batchmode -screen-width 1920 -screen-height 1080 \
+      -projectPath C:\dev\game-project\UnityProject \
+      -executeMethod Movers.EditorTools.MoversWearCLI.Run \
+      -piece Assets/_Project/Art/Crew/SM_Crew_Chest_Bathrobe.fbx -slot Chest -logFile wear.log
+
+Not covered: the F key itself, which is input. The mirror shot shows an empty pane in
+batchmode; whether the mirror reflects in the editor is unverified.
+
+## Give the crew its two poses (Unity, no clicking)
+
+Imports `Anim_Relaxed_Idle.fbx` with the carry clip's own settings, makes it the default
+state of `AC_Crew` with the carry pose on the `Carrying` bool, and puts `CrewPose` on the four
+crew prefabs. Idempotent: a second run changes no file. No scene is touched. No `-quit`:
+
+    Unity.exe -batchmode -projectPath C:\dev\game-project\UnityProject \
+      -executeMethod Movers.EditorTools.MoversCrewPoseCLI.Setup -logFile pose.log
+
 ## Drive the Blender MCP bridge
 
 The addon will not start from a cold command line without the online flag, and the error
