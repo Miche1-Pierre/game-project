@@ -28,6 +28,7 @@ public static class BuildGreybox
     // message-size checks), at UnityProject/Build/Movers.exe (gitignored). Run from the open
     // editor, outside Play: it never quits the editor, and it refuses rather than build a
     // scene with unsaved changes, since the id digest would then refuse the build anyway.
+    [MenuItem("The Movers/Build Online Game (Windows)")]
     public static void NetClient()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode)
