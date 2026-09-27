@@ -130,11 +130,59 @@ namespace Movers
             piece.pinned = true;
             var manager = DebrisManager.Instance;
             if (manager != null) manager.Register(piece, float.PositiveInfinity);
+            // Online: the client drops its copy, and the pose goes on the transform stream.
+            if (Net.IsHost) StructureSync.RoofFell(this);
 
             StructureGraph.Current?.MarkRemoved(GraphNode, cause.instigator);
             ImpactAudio.Play(ImpactAudio.Kind.Crunch, b.center, 1f, cause.instigator);
             DestructionFX.Dust(b.center, b.extents.magnitude);
             return Mass;
+        }
+
+        // Online client (Structure RoofFell): the same slab, on a kinematic body that follows the
+        // host's pose from the transform stream. No DebrisPiece and no debris registration: it
+        // crushes nothing here, the host's roof does. Its glass has its own records.
+        public void NetFall(bool silent)
+        {
+            if (HasFallen) return;
+            HasFallen = true;
+            Bounds b = WorldBounds();
+
+            switchedOff.Clear();
+            var cols = GetComponentsInChildren<Collider>(false);
+            for (int i = 0; i < cols.Length; i++)
+            {
+                if (cols[i] == null || !cols[i].enabled) continue;
+                cols[i].enabled = false;
+                switchedOff.Add(cols[i]);
+            }
+
+            // Kinematic before any collider goes on: a moving body may not carry the kit's
+            // non-convex meshes, and this one never simulates.
+            body = gameObject.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            body.interpolation = RigidbodyInterpolation.None;
+            body.mass = Mass;
+
+            Mesh shape = SlabFor(GetComponent<MeshFilter>());
+            if (shape != null)
+            {
+                slab = gameObject.AddComponent<MeshCollider>();
+                slab.sharedMesh = shape;
+                slab.convex = true;
+            }
+            else
+            {
+                var box = gameObject.AddComponent<BoxCollider>();
+                var mf = GetComponent<MeshFilter>();
+                if (mf != null && mf.sharedMesh != null)
+                {
+                    box.center = mf.sharedMesh.bounds.center;
+                    box.size = mf.sharedMesh.bounds.size;
+                }
+            }
+
+            if (!silent) DestructionFX.Dust(b.center, b.extents.magnitude);
         }
 
         // The debug reset: back where it was built, static again, its own colliders back.
