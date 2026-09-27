@@ -415,7 +415,7 @@ namespace Movers
             for (int i = 0; i < crew.Count; i++)
             {
                 CrewMember m = crew[i];
-                if (m != null && m.Input != null && m.Input.Source is KeyboardMouseSource) return m;
+                if (m != null && m.Input != null && (m.Input.Source is KeyboardMouseSource || m.Input.Source is LocalDevicesSource)) return m;
             }
             return CrewRoster.Get(0);
         }

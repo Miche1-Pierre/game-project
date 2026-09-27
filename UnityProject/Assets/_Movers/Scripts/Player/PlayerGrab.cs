@@ -160,6 +160,15 @@ namespace Movers
 
         void Update()
         {
+            // Online client: the host decides what is in the hands (Items Flags). The ray stays
+            // for the Drag prompt, on the local player only (9.5).
+            if (!Net.HasAuthority)
+            {
+                lookedAt = held == null && Net.IsLocal(member) ? LookedAtMovable() : null;
+                ReplicaUpdate();
+                return;
+            }
+
             DropIfGone();
             WatchSource();
 
@@ -176,13 +185,57 @@ namespace Movers
 
             // carrying or dragging something heavy slows you down and flattens your jump
             if (controller != null)
+                CarryMultipliers(held, dragging, dragWalkMultiplier, out controller.speedMultiplier, out controller.jumpMultiplier);
+        }
+
+        // What the load does to the walk and the jump. One place, shared by the carry and the
+        // online client's replica, so the client never walks at full speed with a fridge.
+        public static void CarryMultipliers(MovableObject held, bool dragging, float dragWalkMultiplier,
+                                            out float speed, out float jump)
+        {
+            float carry = held == null ? 1f : Mathf.Clamp(1f - held.weight / 120f, 0.35f, 1f);
+            speed = dragging ? Mathf.Min(carry, dragWalkMultiplier) : carry;
+            jump = held == null
+                ? 1f
+                : Mathf.Clamp(1f - held.weight / 90f, 0.25f, 1f);
+        }
+
+        // ---- online client replica (NETCODE_SLICE 9.5) ----
+
+        // The hands as the host has them: no physics, no events, only what the view and the
+        // walk read. The look goes to the object with the same rule as the carry.
+        void ReplicaUpdate()
+        {
+            // A replica held object the host broke (Props Destroyed) goes before its Flags record.
+            if (held != null && (!held.gameObject.activeInHierarchy || held.destroyed)) ClearReplica();
+            rotating = held != null && !dragging && holdOrientation && input.Held(CrewButton.Rotate);
+            if (controller != null)
             {
-                float carry = held == null ? 1f : Mathf.Clamp(1f - held.weight / 120f, 0.35f, 1f);
-                controller.speedMultiplier = dragging ? Mathf.Min(carry, dragWalkMultiplier) : carry;
-                controller.jumpMultiplier = held == null
-                    ? 1f
-                    : Mathf.Clamp(1f - held.weight / 90f, 0.25f, 1f);
+                controller.lookLocked = rotating;
+                CarryMultipliers(held, dragging, dragWalkMultiplier, out controller.speedMultiplier, out controller.jumpMultiplier);
             }
+        }
+
+        // Items Flags on the client: this player holds mo (or drags it). Sets the fields the
+        // view reads and nothing else: no damping, no usable callbacks, no event.
+        public void SetReplicaHeld(MovableObject mo, bool drag)
+        {
+            if (mo == null) { ClearReplica(); return; }
+            if (held != null && held != mo && held.holder == this) held.holder = null;
+            held = mo;
+            dragging = drag;
+            heldUsable = mo.GetComponent<HeldUsable>();
+            mo.holder = this;
+        }
+
+        public void ClearReplica()
+        {
+            if (held != null && held.holder == this) held.holder = null;
+            held = null;
+            heldUsable = null;
+            dragging = false;
+            rotating = false;
+            if (controller != null) controller.lookLocked = false;
         }
 
         // The keyboard moved to the other player (F1) in the middle of a hold. The new source
@@ -357,6 +410,7 @@ namespace Movers
         // not really there any more. An object too heavy to lift is taken as a drag.
         public bool Hold(MovableObject mo)
         {
+            if (!Net.HasAuthority) return false;   // online client: the host holds, Items Flags tell
             DropIfGone();
             if (!ReferenceEquals(held, null)) return false;
             if (mo == null || !mo.gameObject.activeInHierarchy || !CanTake(mo)) return false;
@@ -418,6 +472,7 @@ namespace Movers
         // pocket or onto the body, and those have their own events.
         public void Release(bool thrown, bool announce)
         {
+            if (!Net.HasAuthority) return;   // online client: the host lets go, Items Flags tell
             // ReferenceEquals, not ==: an object destroyed in our hands compares equal to null
             // and would otherwise leave its usable and our damping bookkeeping stranded here.
             if (ReferenceEquals(held, null)) return;
@@ -500,6 +555,7 @@ namespace Movers
 
         void OnDisable()
         {
+            if (!Net.HasAuthority) { ClearReplica(); return; }
             // Never strand the camera in rotate mode, nor an object with a carrier who is gone
             // (the truck seat switches the grab off). Silent: this also runs while the scene
             // unloads, when the listeners of an event may already be half torn down.
@@ -509,6 +565,7 @@ namespace Movers
 
         void FixedUpdate()
         {
+            if (!Net.HasAuthority) return;   // the client's replicas are kinematic: nothing to drive
             DropIfGone();
             if (held == null) return;
             held.lastHandledTime = Time.time;   // still in someone's hands: whatever it hits is theirs

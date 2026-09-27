@@ -49,8 +49,11 @@ namespace Movers
                 wasGrounded = true;
                 return;
             }
-            Vector3 v = body.velocity;
-            bool grounded = body.isGrounded;
+            // A body this machine does not drive (online: the other player) never calls Move, so
+            // its capsule has no velocity: the replicated values are read instead.
+            bool driven = controller == null || Net.Drives(member);
+            Vector3 v = driven ? body.velocity : controller.Velocity;
+            bool grounded = driven ? body.isGrounded : controller.Grounded;
             if (!grounded)
             {
                 if (wasGrounded) { airborneSince = Time.time; fallSpeed = 0f; }

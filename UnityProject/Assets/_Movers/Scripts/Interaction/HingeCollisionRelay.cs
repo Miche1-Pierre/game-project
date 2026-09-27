@@ -29,6 +29,8 @@ namespace Movers
 
         void OnCollisionEnter(Collision c)
         {
+            // Online, damage is the host's: the client's glass and breakables replicate.
+            if (!Net.HasAuthority) return;
             if (c.contactCount == 0) return;
             ContactPoint contact = c.GetContact(0);
             Collider hit = contact.thisCollider;

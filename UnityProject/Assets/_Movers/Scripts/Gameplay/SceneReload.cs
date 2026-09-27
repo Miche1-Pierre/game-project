@@ -12,6 +12,13 @@ namespace Movers
 
         public static void Reload()
         {
+            // Online (NETCODE_SLICE 3.6): the host reloads both machines through one funnel; the
+            // client never reloads on its own (its E reaches the host as input).
+            if (Net.IsOnline)
+            {
+                if (Net.IsHost) NetSession.ReloadForBoth();
+                return;
+            }
             // F5 and E on the end screen can land on the same frame.
             if (requestedFrame == Time.frameCount) return;
             requestedFrame = Time.frameCount;

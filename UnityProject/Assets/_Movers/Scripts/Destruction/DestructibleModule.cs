@@ -166,6 +166,7 @@ namespace Movers
         // A hit on the intact wall's own collider.
         void OnCollisionEnter(Collision c)
         {
+            if (!Net.HasAuthority) return;   // online, walls break on the host (Structure records)
             if (!enabled || IsFractured || IsGone || !Armed()) return;
             if (!ImpactDamage.TryMeasure(c, Material, ReferenceMass, ImpactDamage.Plain, transform.position, null, out DamageEvent e))
                 return;
@@ -176,6 +177,7 @@ namespace Movers
         // A hit on one chunk, passed on by its ChunkCollisionRelay.
         internal void OnChunkCollision(int index, Collision c)
         {
+            if (!Net.HasAuthority) return;
             if (!enabled || IsGone || index < 0 || index >= chunks.Count || !chunks[index].Attached || !Armed()) return;
             if (!ImpactDamage.TryMeasure(c, Material, ReferenceMass, ImpactDamage.Plain, chunks[index].Bounds.center, null,
                                          out DamageEvent e))
@@ -304,6 +306,8 @@ namespace Movers
                   : r <= table.chunkDamagedAt ? DestructionState.Damaged : DestructionState.Intact;
             if (s == c.State) return;
             c.State = s;
+            // Only once broken up: the looks set inside Fracture follow from its record.
+            if (Net.IsHost && IsFractured) StructureSync.ChunkLook(this, c.Index, s);
             Tint(c.Renderer, s == DestructionState.Fractured ? FracturedTint : s == DestructionState.Damaged ? DamagedTint : 1f);
             if (s == DestructionState.Fractured && c.Node >= 0) StructureGraph.Current?.MarkWeakened(c.Node, instigator);
         }
@@ -323,7 +327,7 @@ namespace Movers
             Vector3 v = fell
                 ? Vector3.down * 0.5f + Random.insideUnitSphere * 0.3f
                 : Vector3.ClampMagnitude(e.ImpulseVector / Mathf.Max(1f, c.Mass), 8f) + e.direction * 0.5f;
-            Detach(c, v, e.instigator);
+            Detach(c, v, e.instigator, fell);
 
             DestructionFX.Dust(b.center, b.extents.magnitude);
             ImpactAudio.Play(DestructionMaterialTable.Get(Material).sound, b.center, fell ? 0.6f : 0.8f, e.instigator);
@@ -333,15 +337,22 @@ namespace Movers
 
         // The chunk object becomes a rigidbody of debris, or simply vanishes in its dust when
         // the frame's debris budget is spent.
-        void Detach(DestructibleChunk c, Vector3 velocity, int instigator)
+        // Online, each exit tells the client, with the velocities the host gave it (fell: it came
+        // down for lack of support, rather than broken off).
+        void Detach(DestructibleChunk c, Vector3 velocity, int instigator, bool fell)
         {
-            if (c.Transform == null) return;
+            if (c.Transform == null)
+            {
+                if (Net.IsHost) StructureSync.ChunkDetached(this, c.Index, fell, true, velocity, Vector3.zero);
+                return;
+            }
             GameObject go = c.Transform.gameObject;
             if (go.TryGetComponent(out ChunkCollisionRelay relay)) relay.owner = null;
             var manager = DebrisManager.Instance;
             if (manager == null || !manager.TryReserve(1, out _))
             {
                 go.SetActive(false);
+                if (Net.IsHost) StructureSync.ChunkDetached(this, c.Index, fell, true, velocity, Vector3.zero);
                 return;
             }
             // A dynamic body needs a convex collider (see MakeCollider).
@@ -357,6 +368,7 @@ namespace Movers
             piece.instigator = instigator;
             piece.material = Material;
             manager.Register(piece, DestructionMaterialTable.Current.structureDebrisLifetime);
+            if (Net.IsHost) StructureSync.ChunkDetached(this, c.Index, fell, false, velocity, rb.angularVelocity);
         }
 
         // Panes, casements and door leaves hang in the wall. Once no chunk touches one, it
@@ -475,6 +487,7 @@ namespace Movers
             if (Spec != null && s > Spec.stateCap) s = Spec.stateCap;
             if (s == State) return 0f;
             State = s;
+            if (Net.IsHost) StructureSync.ModuleState(this, s);
             Vector3 at = intactBounds.center;
             float kg = 0f;
             if (s == DestructionState.Destroyed)
@@ -626,6 +639,7 @@ namespace Movers
             if (body != null) body.enabled = false;
             if (bodyCollider != null) bodyCollider.enabled = false;
             IsFractured = true;
+            if (Net.IsHost) StructureSync.ModuleFractured(this, left);
             FracturedCount++;
             panes = GetComponentsInChildren<GlassPane>(true);
             leaves = GetComponentsInChildren<Breakable>(true);
@@ -782,6 +796,7 @@ namespace Movers
             float kg = 0f;
             for (int i = 0; i < chunks.Count; i++) kg += chunks[i].Mass;
             State = DestructionState.Destroyed;
+            if (Net.IsHost) StructureSync.ModuleState(this, State);
             FallRemaining(cause.instigator);   // the collapse queue reports the fall itself
             Vector3 at = intactBounds.center;
             try { StateChanged?.Invoke(this, State); }
@@ -802,6 +817,149 @@ namespace Movers
             if (part < 0 || part >= chunks.Count) return name + " (" + ModuleName + ")";
             var c = chunks[part];
             return name + " chunk " + part + " (" + c.Health.ToString("0") + "/" + c.MaxHealth.ToString("0") + ", " + c.State + ")";
+        }
+
+        // ---- online client (NETCODE_SLICE 11.4) ----
+        //
+        // The host's structure records, applied as bookkeeping and picture only: no graph (it is
+        // not installed on the client), no Refresh, no events, no damage. Sounds come from the
+        // host's own Props Sound records. Silent is the join snapshot: no dust, no debris.
+
+        // The wall breaks up into its chunks, with the host's share of health left, so every
+        // chunk starts with the host's look.
+        public void NetFracture(float healthLeft01)
+        {
+            if (IsFractured || !HasChunkSet) return;
+            health = Mathf.Clamp01(healthLeft01) * MaxHealth;
+            Fracture(false);
+        }
+
+        // One chunk out of the wall: a body with the host's velocities, or gone in its dust.
+        // The window frames with nothing left around them drop here too, as on the host; the
+        // panes and door leaves have their own records.
+        public void NetDetach(int index, bool fell, bool vanished, Vector3 velocity, Vector3 angular, bool silent)
+        {
+            if (!IsFractured || index < 0 || index >= chunks.Count) return;
+            var c = chunks[index];
+            if (!c.Attached) return;
+            Bounds b = c.Bounds;
+            c.Attached = false;
+            attached--;
+            if (fell) fallenCount++;
+            else removedCount++;
+            if (c.Collider != null) byCollider.Remove(c.Collider);
+
+            if (c.Transform != null)
+            {
+                GameObject go = c.Transform.gameObject;
+                if (go.TryGetComponent(out ChunkCollisionRelay relay)) relay.owner = null;
+                var manager = silent || vanished ? null : DebrisManager.Instance;
+                if (manager == null) go.SetActive(false);
+                else
+                {
+                    if (go.TryGetComponent(out MeshCollider mc) && !mc.convex) mc.convex = true;
+                    var rb = go.AddComponent<Rigidbody>();
+                    rb.mass = c.Mass;
+                    rb.interpolation = RigidbodyInterpolation.Interpolate;
+                    rb.maxDepenetrationVelocity = 3f;
+                    rb.linearVelocity = velocity;
+                    rb.angularVelocity = angular;
+                    var piece = go.AddComponent<DebrisPiece>();
+                    piece.Init(rb, null);
+                    piece.material = Material;
+                    manager.Register(piece, DestructionMaterialTable.Current.structureDebrisLifetime);
+                }
+            }
+            if (!silent)
+            {
+                DestructionFX.Dust(b.center, b.extents.magnitude);
+                DebrisManager.WakeInBounds(b);
+            }
+            NetDropLooseFixtures(silent);
+        }
+
+        // DropFixture's picture, for the client: the frame's own panes break here first (the
+        // host breaks them too, and their records then find them broken), then the frame falls.
+        void NetDropLooseFixtures(bool silent)
+        {
+            for (int i = 0; i < fixtures.Count; i++)
+            {
+                var r = fixtures[i];
+                if (r == null || !r.gameObject.activeInHierarchy) continue;
+                if (HeldByChunks(r.bounds)) continue;
+                Bounds b = r.bounds;
+                if (!silent)
+                {
+                    var fall = new DamageEvent(b.center, Vector3.down, 0f, 0f, 0f, DamageType.Fall, Actors.World);
+                    GlassPane[] own = r.GetComponentsInChildren<GlassPane>(false);
+                    for (int k = 0; k < own.Length; k++)
+                        if (own[k] != null && !own[k].IsBroken) own[k].NetApply(DestructionState.Destroyed, fall, false);
+                    if (r.enabled)
+                    {
+                        var wood = DestructionMaterialTable.Get(BreakMaterial.Wood);
+                        float kg = Mathf.Clamp(b.size.x * b.size.y * b.size.z * wood.density * FixtureFill, 2f, 60f);
+                        single.Clear();
+                        single.Add(r);
+                        MeshShatter.Shatter(single, FixturePieces, kg, Vector3.zero, b.center, Vector3.down,
+                                            DestructionMaterialTable.Current.propDebrisLifetime, Actors.World);
+                        single.Clear();
+                    }
+                }
+                droppedFixtures.Add(r.gameObject);
+                r.gameObject.SetActive(false);
+            }
+        }
+
+        public void NetChunkLook(int index, DestructionState s)
+        {
+            if (!IsFractured || index < 0 || index >= chunks.Count) return;
+            var c = chunks[index];
+            if (c.State == s) return;
+            c.State = s;
+            Tint(c.Renderer, s == DestructionState.Fractured ? FracturedTint : s == DestructionState.Damaged ? DamagedTint : 1f);
+        }
+
+        public void NetState(DestructionState s) { State = s; }
+
+        // The join snapshot of a fractured wall: its chunks, their looks, which are gone (hidden,
+        // no debris) and which frames dropped. Chunks past the 16th are left as they are.
+        public void NetApplySnapshot(float healthLeft01, DestructionState state, ushort attachedMask, uint looks, byte fixturesMask)
+        {
+            NetFracture(healthLeft01);
+            if (IsFractured)
+            {
+                for (int i = 0; i < chunks.Count && i < SnapshotChunks; i++)
+                {
+                    NetChunkLook(i, (DestructionState)((looks >> (i * 2)) & 3u));
+                    if ((attachedMask & (1 << i)) == 0) NetDetach(i, false, true, Vector3.zero, Vector3.zero, true);
+                }
+                for (int k = 0; k < fixtures.Count && k < SnapshotFixtures; k++)
+                {
+                    var r = fixtures[k];
+                    if ((fixturesMask & (1 << k)) == 0 || r == null || !r.gameObject.activeSelf) continue;
+                    droppedFixtures.Add(r.gameObject);
+                    r.gameObject.SetActive(false);
+                }
+            }
+            State = state;
+        }
+
+        const int SnapshotChunks = 16, SnapshotFixtures = 8;
+
+        // Host: what NetApplySnapshot needs, for a fractured wall.
+        internal void NetSnapshot(out float healthLeft01, out ushort attachedMask, out uint looks, out byte fixturesMask)
+        {
+            healthLeft01 = Mathf.Clamp01(health / MaxHealth);
+            attachedMask = 0;
+            looks = 0u;
+            for (int i = 0; i < chunks.Count && i < SnapshotChunks; i++)
+            {
+                if (chunks[i].Attached) attachedMask |= (ushort)(1 << i);
+                looks |= ((uint)chunks[i].State & 3u) << (i * 2);
+            }
+            fixturesMask = 0;
+            for (int k = 0; k < fixtures.Count && k < SnapshotFixtures; k++)
+                if (fixtures[k] != null && droppedFixtures.Contains(fixtures[k].gameObject)) fixturesMask |= (byte)(1 << k);
         }
 
         // ---- debug and tests ----

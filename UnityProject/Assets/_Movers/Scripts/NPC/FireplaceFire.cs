@@ -43,6 +43,7 @@ namespace Movers
         float seed;
 
         public bool IsLit => litUntil > Time.time;
+        public float SecondsLeft => IsLit ? litUntil - Time.time : 0f;
 
         public void Ignite()
         {
@@ -52,6 +53,13 @@ namespace Movers
             if (glow != null) glow.enabled = true;
             BuildSmoke();
             if (smoke != null && !smoke.isPlaying) smoke.Play(true);
+        }
+
+        // Online client (GrandmaSync Fire): lit as on the host, with the host's time left.
+        public void Ignite(float secondsLeft)
+        {
+            Ignite();
+            litUntil = Time.time + Mathf.Max(0f, secondsLeft);
         }
 
         public void Extinguish()

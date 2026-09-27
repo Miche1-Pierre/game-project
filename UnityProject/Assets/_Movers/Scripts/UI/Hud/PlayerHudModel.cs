@@ -71,7 +71,7 @@ namespace Movers
         {
             if (member == null) return;
             var src = Source;
-            Device.Value = src is GamepadSource ? 1 : src == null || src is NullInputSource ? 2 : 0;
+            Device.Value = LocalDevicesSource.IsPad(src) ? 1 : src == null || src is NullInputSource ? 2 : 0;
 
             // Pause with the controls sheet open closes the sheet first, rather than opening a
             // menu over it.
@@ -101,7 +101,7 @@ namespace Movers
         void UpdatePockets(ICrewInputSource src)
         {
             var p = member.Pockets;
-            var view = new PocketView { active = -1, pad = src is GamepadSource };
+            var view = new PocketView { active = -1, pad = LocalDevicesSource.IsPad(src) };
             if (p != null && p.isActiveAndEnabled)
             {
                 view.s0 = p.GetItem(0);

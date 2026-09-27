@@ -115,6 +115,7 @@ namespace Movers
                 InLastWarning = false;
                 LastLossTime = Time.time;
                 if (Actors.IsPlayer(instigator) && instigator < blame.Length) blame[instigator] += cost;
+                if (Net.IsHost) GrandmaSync.SendMood(this);
                 WorldEvents.Raise(WorldEventType.GrandmaMoodChanged, transform.position, instigator, 0f, Patience);
                 ReachedZero?.Invoke();
                 return 0f;
@@ -135,6 +136,7 @@ namespace Movers
             LastLossTime = Time.time;
             if (Actors.IsPlayer(instigator) && instigator < blame.Length) blame[instigator] += lost;
 
+            if (Net.IsHost) GrandmaSync.SendMood(this);
             WorldEvents.Raise(WorldEventType.GrandmaMoodChanged, transform.position, instigator, 0f, Patience);
             if (Patience <= 0f)
             {
@@ -168,9 +170,18 @@ namespace Movers
             return best;
         }
 
+        // Online client (GrandmaSync Mood): the host's patience and warning, no events.
+        public void ApplyReplica(float patience, bool inLastWarning)
+        {
+            if (patience < Patience) LastLossTime = Time.time;
+            if (inLastWarning && !InLastWarning) warningUntil = Time.time + Costs.lastWarningSeconds;
+            Patience = Mathf.Clamp(patience, 0f, 100f);
+            InLastWarning = inLastWarning;
+        }
+
         void Update()
         {
-            if (Frozen) return;
+            if (Frozen || !Net.HasAuthority) return;
             var c = Costs;
             if (InLastWarning)
             {
@@ -179,6 +190,7 @@ namespace Movers
                 InLastWarning = false;
                 Patience = Mathf.Clamp(c.lastWarningRecover, 1f, 100f);
                 LastLossTime = Time.time;
+                if (Net.IsHost) GrandmaSync.SendMood(this);
                 WorldEvents.Raise(WorldEventType.GrandmaMoodChanged, transform.position, Actors.World, 0f, Patience);
                 WarningSurvived?.Invoke();
                 return;
@@ -195,6 +207,7 @@ namespace Movers
             nextRecovery += Mathf.Max(0.5f, c.recoveryInterval);
 
             Patience = Mathf.Min(c.recoveryCap, Patience + c.recoveryAmount);
+            if (Net.IsHost) GrandmaSync.SendMood(this);
             WorldEvents.Raise(WorldEventType.GrandmaMoodChanged, transform.position, Actors.World, 0f, Patience);
         }
     }

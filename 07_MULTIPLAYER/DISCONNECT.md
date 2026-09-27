@@ -10,3 +10,5 @@ _Handling drops and rejoins gracefully._
 
 ## Rule
 Disconnect handling is part of a stable multiplayer build (M3). Test it (`../11_TESTING/MULTIPLAYER_TESTS.md`).
+
+**Update 2026-09-27 (ADR-011):** decided for the slice. A client that drops or leaves: the host continues, P2 releases what it held (and the truck seat, if driving) and stays as an idle body under gravity. The host that drops or leaves: the run ends and the client returns to the title with a message. No rejoin and no host migration. Tested in the loopback run. See `NETCODE_SLICE.md` sections 3.5 and 16.

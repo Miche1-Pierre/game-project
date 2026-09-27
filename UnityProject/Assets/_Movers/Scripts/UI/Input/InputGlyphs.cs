@@ -44,8 +44,8 @@ namespace Movers
     // strings are cached: nothing here allocates.
     public static class InputGlyphs
     {
-        public static bool IsPad(ICrewInputSource source) => source is GamepadSource;
-        public static bool IsPad(CrewInput input) => input != null && input.Source is GamepadSource;
+        public static bool IsPad(ICrewInputSource source) => LocalDevicesSource.IsPad(source);
+        public static bool IsPad(CrewInput input) => input != null && IsPad(input.Source);
 
         static readonly KeyboardMouseSource DefaultKeys = new KeyboardMouseSource();
 
@@ -53,8 +53,8 @@ namespace Movers
 
         public static Glyph For(ICrewInputSource source, CrewButton b)
         {
-            if (source is GamepadSource) return Pad(b);
-            return Keyboard(source as KeyboardMouseSource ?? DefaultKeys, b);
+            if (IsPad(source)) return Pad(b);
+            return Keyboard(source as KeyboardMouseSource ?? (source as LocalDevicesSource)?.Keyboard ?? DefaultKeys, b);
         }
 
         // A device's key without a player: the cards shared by the whole crew name both.
@@ -111,24 +111,24 @@ namespace Movers
 
         // Walking: the left stick, or the keys.
         public static Glyph Move(ICrewInputSource source) =>
-            source is GamepadSource ? PadGlyph(UiSprites.PadLS, "LS") : new Glyph(GlyphKind.WideKey, "WASD", UiSprites.KeyWide);
+            IsPad(source) ? PadGlyph(UiSprites.PadLS, "LS") : new Glyph(GlyphKind.WideKey, "WASD", UiSprites.KeyWide);
 
         // Looking: the right stick, or the mouse.
         public static Glyph Look(ICrewInputSource source) =>
-            source is GamepadSource ? PadGlyph(UiSprites.PadRS, "RS") : new Glyph(GlyphKind.WideKey, Loc.T("key.mouse"), UiSprites.KeyWide);
+            IsPad(source) ? PadGlyph(UiSprites.PadRS, "RS") : new Glyph(GlyphKind.WideKey, Loc.T("key.mouse"), UiSprites.KeyWide);
 
         // The pad's roll while rotating is the d-pad left/right; the keyboard's is the wheel.
         public static Glyph Roll(ICrewInputSource source) =>
-            source is GamepadSource ? PadGlyph(UiSprites.PadDpadLeft, "<>") : Wheel;
+            IsPad(source) ? PadGlyph(UiSprites.PadDpadLeft, "<>") : Wheel;
 
         // Reach on a pad is LT held plus the right stick: the LT glyph carries it.
         public static Glyph ReachStick(ICrewInputSource source) =>
-            source is GamepadSource ? PadGlyph(UiSprites.PadRS, "RS") : default;
+            IsPad(source) ? PadGlyph(UiSprites.PadRS, "RS") : default;
 
         // The controls sheet's own toggle: Tab on the keyboard, Back/View on a pad. Not a
         // CrewButton (that list is a frozen contract): read by HudKeys directly.
         public static Glyph ControlsToggle(ICrewInputSource source) =>
-            source is GamepadSource ? new Glyph(GlyphKind.WideKey, Loc.T("key.back"), UiSprites.KeyWide) : new Glyph(GlyphKind.WideKey, Loc.T("key.tab"), UiSprites.KeyWide);
+            IsPad(source) ? new Glyph(GlyphKind.WideKey, Loc.T("key.back"), UiSprites.KeyWide) : new Glyph(GlyphKind.WideKey, Loc.T("key.tab"), UiSprites.KeyWide);
 
         public static Glyph PocketSlot(ICrewInputSource source, int slot)
         {

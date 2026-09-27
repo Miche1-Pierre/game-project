@@ -86,7 +86,66 @@ namespace Movers
 
         // Metres per second from the last Move, for the animation driver. Zero while the capsule
         // is switched off (the truck seat does that): it would otherwise keep the last walk.
-        public Vector3 Velocity => cc != null && cc.enabled ? cc.velocity : Vector3.zero;
+        // A puppet (online, a body the other machine drives) has no Move of its own: it reports
+        // the velocity that came with its pose.
+        public Vector3 Velocity => IsNetPuppet ? netVelocity : (cc != null && cc.enabled ? cc.velocity : Vector3.zero);
+
+        // Online co-op (NETCODE_SLICE 9.3, 9.4). A puppet reads the values that came with its
+        // pose; offline and driven bodies read their own.
+        public bool Grounded => IsNetPuppet ? netGrounded : cc != null && cc.isGrounded;
+        public bool NetThrowHeld => IsNetPuppet ? netThrowHeld : input != null && input.Held(CrewButton.Throw);
+
+        // Online, a body the other machine drives: posed by NetPlayerDriver, never moved here.
+        // Always false offline.
+        bool IsNetPuppet => Net.IsOnline && !Net.Drives(Member);
+        CrewMember Member => member != null ? member : (member = GetComponent<CrewMember>());
+        CrewMember member;
+        Vector3 netVelocity;
+        bool netGrounded, netThrowHeld;
+
+        // The pose the driving machine sent (9.3). The transform only: the capsule is never
+        // switched off and on (that would rebuild its shape, lose its ignore pairs and re-fire
+        // every collision enter), and nothing calls Move. The stance follows the sent height,
+        // around the same fixed feet UpdateStance keeps.
+        public void ApplyNetPose(in NetPose pose)
+        {
+            transform.SetPositionAndRotation(pose.position, Quaternion.Euler(0f, pose.yaw, 0f));
+            if (cam != null) cam.localRotation = pose.camLocalRotation;
+            float x = pose.camLocalRotation.eulerAngles.x;
+            pitch = Mathf.Clamp(x > 180f ? x - 360f : x, -85f, 85f);
+            crouching = pose.crouching;
+            if (cc != null && pose.height > 0.1f && !Mathf.Approximately(cc.height, pose.height))
+            {
+                cc.height = pose.height;
+                cc.center = new Vector3(standCenter.x, feetOffset + cc.height * 0.5f, standCenter.z);
+                if (cam != null)
+                {
+                    var p = cam.localPosition;
+                    p.y = feetOffset + (cc.height - headTopGap);
+                    cam.localPosition = p;
+                }
+            }
+            netVelocity = pose.velocity;
+            netGrounded = pose.grounded;
+            netThrowHeld = pose.throwHeld;
+        }
+
+        // This body's pose as the net sends it (9.2, 9.4): sampled by NetPlayerDriver in its
+        // LateUpdate, before any render-only offset.
+        public NetPose NetPoseNow()
+        {
+            return new NetPose
+            {
+                position = transform.position,
+                yaw = transform.eulerAngles.y,
+                camLocalRotation = cam != null ? cam.localRotation : Quaternion.identity,
+                height = cc != null ? cc.height : 0f,
+                crouching = crouching,
+                grounded = cc != null && cc.isGrounded,
+                throwHeld = input != null && input.Held(CrewButton.Throw),
+                velocity = cc != null && cc.enabled ? cc.velocity : Vector3.zero,
+            };
+        }
 
         public CrewInput Input => input;
 
@@ -119,6 +178,10 @@ namespace Movers
 
         void Update()
         {
+            // Online, a body the other machine drives is posed by NetPlayerDriver. The component
+            // stays enabled: Explosion, CrewAnimator and VehicleSeat test isActiveAndEnabled.
+            if (Net.IsOnline && !Net.Drives(Member)) return;
+
             // look (suspended while PlayerGrab is using the look to turn a held object)
             if (!lookLocked)
             {
@@ -189,6 +252,8 @@ namespace Movers
             // A NaN or an infinity from any caller would put the player's position at NaN, and
             // nothing brings him back from there. Ignore the shove instead.
             if (!IsFinite(velocityChange.x) || !IsFinite(velocityChange.y) || !IsFinite(velocityChange.z)) return;
+            // Online, the host does not move a body the client drives: the shove goes to it (9.6).
+            if (Net.IsHost && !Net.Drives(Member)) { PlayerSync.SendImpulse(Member.index, velocityChange); return; }
 
             knockback += new Vector3(velocityChange.x, 0f, velocityChange.z);
             knockback = Vector3.ClampMagnitude(knockback, maxKnockbackSpeed);

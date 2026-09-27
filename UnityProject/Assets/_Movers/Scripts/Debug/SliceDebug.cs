@@ -22,6 +22,11 @@ namespace Movers
             {
                 var c = list[i];
                 if (c.shift != shift || !Input.GetKeyDown(c.key)) continue;
+                if (!AllowedOnline(c.key, c.shift))
+                {
+                    DebugCommands.Toast("Désactivé en ligne");
+                    break;
+                }
                 try
                 {
                     c.run();
@@ -30,6 +35,31 @@ namespace Movers
                 catch (System.Exception e) { Debug.LogException(e); }
                 break;   // one command per key press; the list may have changed
             }
+        }
+
+        // Online, one policy by key (NETCODE_SLICE 10); every registration stays as it is.
+        // The client only reads (F7, F3, Shift+F3, F4) or touches its own screen (Shift+F2,
+        // Shift+F8). The host keeps everything except what swaps or moves players (F1, Shift+F1,
+        // F2) and the destruction reset (F11). F12, the key list, is not a command.
+        static bool AllowedOnline(KeyCode key, bool shift)
+        {
+            if (!Net.IsOnline) return true;
+            if (Net.IsClient)
+            {
+                switch (key)
+                {
+                    case KeyCode.F7: return !shift;
+                    case KeyCode.F3: return true;
+                    case KeyCode.F4: return !shift;
+                    case KeyCode.F2: return shift;
+                    case KeyCode.F8: return shift;
+                    default: return false;
+                }
+            }
+            if (key == KeyCode.F1) return false;
+            if (key == KeyCode.F2) return shift;
+            if (key == KeyCode.F11) return false;
+            return true;
         }
 
         void OnGUI()

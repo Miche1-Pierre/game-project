@@ -87,6 +87,7 @@ namespace Movers
 
         void OnCollisionEnter(Collision c)
         {
+            if (!Net.HasAuthority) return;   // online client: the host decides breakage
             // With destruction in the scene, Breakable owns breakage: it weighs the hit, marks
             // the object broken at half health and shatters it at zero. This older rule stays
             // for scenes without it (Tutorial_01), where a fragile object just turns grey.

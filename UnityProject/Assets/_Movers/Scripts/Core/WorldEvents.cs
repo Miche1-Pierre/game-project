@@ -150,6 +150,7 @@ namespace Movers
                 Debug.LogWarning("WorldEvents: nesting deeper than 16, dropped " + e.type);
                 return;
             }
+            if (Net.IsOnline) WorldEventRelay.OnRaised(e);   // online co-op: forward in raise order (NETCODE_SLICE 8)
             if (dirty)
             {
                 snapshot = listeners.ToArray();

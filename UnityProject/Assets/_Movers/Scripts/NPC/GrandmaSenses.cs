@@ -102,6 +102,7 @@ namespace Movers
 
         void Update()
         {
+            if (!Net.HasAuthority) return;   // online client: the host perceives for her
             if (asleep) { lastLookTime = -1f; return; }
             if (Time.time >= nextLook)
             {
@@ -216,7 +217,7 @@ namespace Movers
 
         void OnWorldEvent(WorldEvent e)
         {
-            if (asleep || !isActiveAndEnabled || e.instigator == Actors.Grandma) return;
+            if (!Net.HasAuthority || asleep || !isActiveAndEnabled || e.instigator == Actors.Grandma) return;
             MovableObject item = e.Item;
             switch (e.type)
             {
@@ -358,7 +359,7 @@ namespace Movers
 
         void FixedUpdate()
         {
-            if (asleep) return;
+            if (!Net.HasAuthority || asleep) return;
             FeelPlayers();
             FeelHits();
         }

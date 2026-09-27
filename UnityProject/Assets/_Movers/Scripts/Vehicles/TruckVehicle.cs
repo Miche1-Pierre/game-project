@@ -82,7 +82,12 @@ namespace Movers
         public int DriverActor => Driver != null ? Driver.index : Actors.World;
         public Rigidbody Body => rb;
         public float ForwardSpeed { get; private set; }     // m/s along the cab direction, negative in reverse
-        public float SpeedKmh => rb != null ? rb.linearVelocity.magnitude * 3.6f : 0f;
+        public float SpeedKmh => Velocity.magnitude * 3.6f;
+        // Online co-op (NETCODE_SLICE 11.7): on the client the body is kinematic and these are
+        // the host's values (TruckSync State); elsewhere the simulation's.
+        public Vector3 Velocity => !Net.HasAuthority ? replicaVelocity : rb != null ? rb.linearVelocity : Vector3.zero;
+        public float Pedal => pedalNow;          // -1..1, the pedal of the last physics step
+        public bool Handbrake => handbrakeNow;
         public float SteerAngle { get; private set; }
         // Driving off with the ramp down would drag a 5 m plank along the road.
         public bool CanDrive => ramp == null || ramp.IsStowed;
@@ -108,6 +113,9 @@ namespace Movers
         bool handbrakeGrip;
         float nextNoiseTime;
         bool wheelsReady;
+        float pedalNow;
+        bool handbrakeNow;
+        Vector3 replicaVelocity;
 
         void Awake()
         {
@@ -235,7 +243,7 @@ namespace Movers
             Driver = member;
             if (rb != null) rb.WakeUp();
             // The ramp goes up at once. It comes back down when the truck is empty and still (FixedUpdate).
-            if (member != null && ramp != null) ramp.Stow();
+            if (member != null && ramp != null && Net.HasAuthority) ramp.Stow();   // the client's ramp follows TruckSync
         }
 
         // A teleport, for the fall guard and the tests. Loose cargo stays where it was: it is not
@@ -249,10 +257,23 @@ namespace Movers
             transform.SetPositionAndRotation(position, rotation);
             SteerAngle = 0f;
             rb.WakeUp();
+            NetTransforms.Snap(gameObject);   // online host: the next sample teleports
+        }
+
+        // Online client: the host's driving state, for the wheels, the sound and the HUD.
+        public void ApplyReplica(float forwardSpeed, float steer, float pedal, bool handbrake, Vector3 velocity)
+        {
+            if (Net.HasAuthority) return;
+            ForwardSpeed = forwardSpeed;
+            SteerAngle = steer;
+            pedalNow = Mathf.Clamp(pedal, -1f, 1f);
+            handbrakeNow = handbrake;
+            replicaVelocity = velocity;
         }
 
         void FixedUpdate()
         {
+            if (!Net.HasAuthority) return;   // the client's truck is kinematic, posed by the host
             if (rb.position.y < fallResetY)
             {
                 PlaceAt(spawnPosition, spawnRotation);
@@ -271,6 +292,8 @@ namespace Movers
                 move = Driver.Input.Move;
                 handbrake = Driver.Input.Held(CrewButton.Jump);
             }
+            pedalNow = move.y;
+            handbrakeNow = handbrake;
 
             // A body that went to sleep while parked does not wake for wheel torque on its own.
             if (driving && (Mathf.Abs(move.y) > 0.05f || Mathf.Abs(move.x) > 0.05f) && rb.IsSleeping()) rb.WakeUp();
@@ -366,6 +389,7 @@ namespace Movers
         // ImpactAudio.Play overload with an instigator.
         void OnCollisionEnter(Collision c)
         {
+            if (!Net.HasAuthority) return;
             if (c.contactCount == 0 || Time.time < nextNoiseTime) return;
             float speed = c.relativeVelocity.magnitude;
             if (speed < crashNoiseSpeed) return;

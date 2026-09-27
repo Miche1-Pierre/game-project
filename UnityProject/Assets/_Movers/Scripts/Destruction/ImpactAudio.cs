@@ -81,6 +81,22 @@ namespace Movers
         // were not cleaned up when closing the scene").
         static void OnQuitting() { quitting = true; }
 
+        // Online client: the host's sounds arrive here (Props Sound, and the Boom of an
+        // ExplosionFx), and only here: the client's own Play calls are ignored, so every sound
+        // is heard once (NETCODE_SLICE 8). No LoudNoise: the host raised it, and forwarded it.
+        public static void PlayFromNet(Kind kind, Vector3 position, float volume)
+        {
+            if (!Application.isPlaying || quitting) return;
+            int k = (int)kind;
+            if (k < 0 || k >= KindCount) return;
+            if (float.IsNaN(volume)) return;
+            float sum = position.x + position.y + position.z;
+            if (float.IsNaN(sum) || float.IsInfinity(sum)) return;
+            volume = Mathf.Clamp01(volume);
+            if (volume <= 0f) return;
+            Voice(kind, position, volume, false);
+        }
+
         // Play one sound at a point in the world. volume is 0..1 on top of the clip's own level.
         public static void Play(Kind kind, Vector3 position, float volume = 1f)
         {
@@ -90,6 +106,7 @@ namespace Movers
         // The same, with who made the noise (see Actors), for the LoudNoise it raises.
         public static void Play(Kind kind, Vector3 position, float volume, int instigator)
         {
+            if (Net.IsClient) return;   // the host's sound arrives through PlayFromNet
             if (!Application.isPlaying || quitting) return;   // never litter an edited scene with voices
             int k = (int)kind;
             if (k < 0 || k >= KindCount) return;
@@ -103,13 +120,21 @@ namespace Movers
 
             // The noise is a fact even when the voice below is rate limited away.
             RaiseNoise(k, position, volume, instigator);
+            Voice(kind, position, volume, true);
+        }
 
+        // The voice itself, rate limited. forward: an online host passes the sound on to the
+        // client (Props Sound), except the Boom, which the client plays from the ExplosionFx.
+        static void Voice(Kind kind, Vector3 position, float volume, bool forward)
+        {
+            int k = (int)kind;
             // Unscaled: a paused game must not keep the window shut forever. The slot holding
             // the oldest of the last six plays: if that one is still inside the window, this
             // would be the seventh.
             float now = Time.unscaledTime;
             int slot = k * MaxPerWindow + oldest[k];
             if (now - recent[slot] < Window) return;
+            if (forward && Net.IsHost && kind != Kind.Boom) PropsSync.Sound(kind, position, volume);
 
             AudioClip clip = Clip(kind);
             if (clip == null) return;
@@ -138,6 +163,7 @@ namespace Movers
 
         static void RaiseNoise(int k, Vector3 position, float volume, int instigator)
         {
+            if (!Net.HasAuthority) return;   // the grandmother's hearing runs on the host only
             float loud = Loudness[k] * volume;
             if (loud < QuietestNoise) return;
             float now = Time.time;

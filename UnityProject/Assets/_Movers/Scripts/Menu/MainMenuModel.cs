@@ -3,19 +3,27 @@ using UnityEngine;
 
 namespace Movers
 {
-    public enum MenuPage { Title, Options, Controls }
+    public enum MenuPage { Title, Options, Controls, Online, Hosting, Joining }
 
     // What the title screen shows: the page, the selected row, the device the hints are drawn
     // for, whether a gamepad is plugged in. The view rebuilds when Version changes and only
     // then; the model changes on a key, a click, or once a second for the pad check.
     public sealed class MainMenuModel
     {
-        public enum TitleRow { Solo, Duo, Options, Controls, Quit }
-        public const int TitleRows = 5;
+        public enum TitleRow { Solo, Duo, Online, Options, Controls, Quit }
+        public const int TitleRows = 6;
 
         // Same rows, same order as the in-game options (HudPauseMenu.OptionRow).
         public enum OptionRow { Master, Music, Sfx, Voice, Ambience, Ui, Sensitivity, InvertY, Language, Layout, Hints, Back }
         public const int OptionRows = 12;
+
+        // The online pages (NETCODE_SLICE 3.3). Direct host is last: a development build option.
+        public enum OnlineRow { Host, Join, Back, HostDirect }
+        public static int OnlineRows => Debug.isDebugBuild ? 4 : 3;
+        public enum HostRow { Copy, Start, Cancel }
+        public const int HostRows = 3;
+        public enum JoinRow { Field, Paste, Connect, Back }
+        public const int JoinRows = 4;
 
         public readonly State<int> Version = new State<int>(0);
 
@@ -31,7 +39,35 @@ namespace Movers
         // One fill per volume row, owned here so a rebuild keeps the same tape.
         public readonly UiFill[] VolumeFills = { new UiFill(), new UiFill(), new UiFill(), new UiFill(), new UiFill(), new UiFill() };
 
-        public int RowCount => Page == MenuPage.Title ? TitleRows : Page == MenuPage.Options ? OptionRows : 1;
+        // ---- online ----
+
+        // The join page's field: its text and its focus live here, so a rebuild keeps both.
+        public readonly State<string> Code = new State<string>("");
+        public readonly FocusNode CodeFocus = new FocusNode();
+        // NetSession as last shown (polled by MainMenu; the getters never create a session).
+        public NetStatus NetStatus { get; private set; }
+        public NetError NetError { get; private set; }
+        public string JoinCode { get; private set; }
+        public bool PeerConnected { get; private set; }
+        public bool Copied { get; private set; }
+        // A Loc key shown once on the title page (NetSession.TakeMenuMessage: "the host left").
+        public string Message { get; private set; }
+
+        public int RowCount
+        {
+            get
+            {
+                switch (Page)
+                {
+                    case MenuPage.Title: return TitleRows;
+                    case MenuPage.Options: return OptionRows;
+                    case MenuPage.Online: return OnlineRows;
+                    case MenuPage.Hosting: return HostRows;
+                    case MenuPage.Joining: return JoinRows;
+                    default: return 1;
+                }
+            }
+        }
 
         public void Touch() => Version.Value++;
 
@@ -40,6 +76,8 @@ namespace Movers
             Page = page;
             Selected = Mathf.Clamp(select, 0, RowCount - 1);
             if (page == MenuPage.Controls) ControlsTab = Device;
+            if (page != MenuPage.Title) Message = null;
+            Copied = false;
             Touch();
         }
 
@@ -92,6 +130,32 @@ namespace Movers
         public void Leave()
         {
             Leaving = true;
+            Touch();
+        }
+
+        // ---- online ----
+
+        public void SetNet(NetStatus status, NetError error, string joinCode, bool peerConnected)
+        {
+            if (status == NetStatus && error == NetError && joinCode == JoinCode && peerConnected == PeerConnected) return;
+            NetStatus = status;
+            NetError = error;
+            JoinCode = joinCode;
+            PeerConnected = peerConnected;
+            Touch();
+        }
+
+        public void SetCopied()
+        {
+            if (Copied) return;
+            Copied = true;
+            Touch();
+        }
+
+        public void SetMessage(string locKey)
+        {
+            if (Message == locKey) return;
+            Message = locKey;
             Touch();
         }
     }

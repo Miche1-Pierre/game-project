@@ -42,6 +42,8 @@ namespace Movers
         public bool IsDeployed => state == State.Deployed;
         public bool IsStowed => state == State.Stowed;
         public bool IsMoving => state == State.Stowing || state == State.Deploying;
+        public byte NetState => (byte)state;     // TruckSync Ramp
+        bool replicaDeployed;                    // client: the host's ramp is down, finish coming down
 
         const float SwingEnd = 0.4f;        // first swing up level, then drop, then slide in
         const float DropEnd = 0.55f;
@@ -88,11 +90,49 @@ namespace Movers
             {
                 t = Mathf.MoveTowards(t, 0f, Time.deltaTime / Mathf.Max(0.05f, duration));
                 Apply();
-                if (t <= 0f && LandingClear())
+                // Only the host looks at the ground; the client lands when the host did.
+                if (t <= 0f && (Net.HasAuthority ? LandingClear() : replicaDeployed))
                 {
                     state = State.Deployed;
                     SetColliders(true);
                 }
+            }
+        }
+
+        // Online client: the host's state (TruckSync Ramp). Moves animate as on the host; an end
+        // state snaps, unless the matching move is already under way here. snap: the join
+        // snapshot, silent.
+        public void ApplyReplica(byte netState, bool snap)
+        {
+            if (Net.HasAuthority) return;
+            var s = (State)netState;
+            replicaDeployed = false;
+            switch (s)
+            {
+                case State.Stowing:
+                    if (state == State.Stowed) return;
+                    state = State.Stowing;
+                    SetColliders(false);
+                    break;
+                case State.Deploying:
+                    if (state == State.Deployed) return;
+                    state = State.Deploying;
+                    SetColliders(false);
+                    break;
+                case State.Stowed:
+                    if (state == State.Stowing && !snap) return;   // lands on its own at t = 1
+                    t = 1f;
+                    Apply();
+                    state = State.Stowed;
+                    SetColliders(false);
+                    break;
+                case State.Deployed:
+                    if (state == State.Deploying && !snap) { replicaDeployed = true; return; }
+                    t = 0f;
+                    Apply();
+                    state = State.Deployed;
+                    SetColliders(true);
+                    break;
             }
         }
 

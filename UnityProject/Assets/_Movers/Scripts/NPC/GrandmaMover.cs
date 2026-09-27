@@ -150,6 +150,10 @@ namespace Movers
         Rigidbody pushBody;
         Vector3 pushDirection;
 
+        // Online client: where the stream put her last frame, for her walking speed.
+        Vector3 replicaLast;
+        bool replicaHasLast;
+
         public NavMeshBaker Baker => baker;
         public bool Ready => agent != null;
         public MoveStatus Status => status;
@@ -246,6 +250,9 @@ namespace Movers
 
         void Start()
         {
+            // Online client: no NavMesh bake and no agent. The host walks her; her root comes
+            // in on the transform stream.
+            if (!Net.HasAuthority) return;
             baker.bounds = new Bounds(navBoundsCenter, navBoundsSize);
             NavMeshBuildSettings s = NavMesh.GetSettingsByID(0);
             s.agentRadius = radius;
@@ -406,9 +413,20 @@ namespace Movers
             sliding = false;
             body.enabled = false;
             transform.SetPositionAndRotation(position, RotationFacing(facing));
+            NetTransforms.Snap(gameObject);   // host: the next sample jumps; no-op offline
             horizontal = Vector3.zero;
             verticalSpeed = 0f;
             BodyOn();
+        }
+
+        // Online client (GrandmaSync Flags): her body as the host has it. Off while she slides
+        // or sits; seated, the stand-in capsule keeps her solid and talkable.
+        public void SetReplicaCollisions(bool on, bool seated)
+        {
+            if (on) { if (!body.enabled) BodyOn(); return; }
+            body.enabled = false;
+            if (seated) SetSeatedBody(null);
+            else if (seatedBody != null) seatedBody.enabled = false;
         }
 
         void BodyOn()
@@ -471,6 +489,7 @@ namespace Movers
         void Update()
         {
             float dt = Time.deltaTime;
+            if (!Net.HasAuthority) { TickReplica(dt); return; }
             baker.Tick();
             TickRebuilds();
             TickDetours();
@@ -509,6 +528,20 @@ namespace Movers
 
             TickCloseBehind();
             if (status == MoveStatus.Moving) CheckProgress(dt, wanted);
+        }
+
+        // Online client: her speed from the streamed motion (the walk blend reads it). Never a
+        // body Move: the stream owns her position. Zero while her body is off, as on the host.
+        void TickReplica(float dt)
+        {
+            Vector3 p = transform.position;
+            Vector3 d = p - replicaLast;
+            d.y = 0f;
+            bool jump = !replicaHasLast || d.sqrMagnitude > 1f;   // a teleport, not a walk
+            replicaLast = p;
+            replicaHasLast = true;
+            if (jump || dt <= 0f || !body.enabled) { CurrentSpeed = 0f; return; }
+            CurrentSpeed = d.magnitude / dt;
         }
 
         void FixedUpdate()
@@ -786,6 +819,7 @@ namespace Movers
 
         void OnWorldEvent(WorldEvent e)
         {
+            if (!Net.HasAuthority) return;   // no NavMesh on the client
             switch (e.type)
             {
                 case WorldEventType.StructureDamaged:

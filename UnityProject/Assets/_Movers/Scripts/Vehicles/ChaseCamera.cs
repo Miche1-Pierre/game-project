@@ -67,6 +67,8 @@ namespace Movers
                 if (c.transform.IsChildOf(truck)) continue;              // the truck, its ramp, its driver
                 var body = c.attachedRigidbody;
                 if (body != null && !body.isKinematic) continue;         // loose objects never push the view
+                // Online client: loose objects are kinematic replicas; registered bodies count as loose.
+                if (body != null && NetIds.IdOf(body.gameObject) != 0) continue;
                 if (hits[i].distance < reach) reach = hits[i].distance;
             }
 

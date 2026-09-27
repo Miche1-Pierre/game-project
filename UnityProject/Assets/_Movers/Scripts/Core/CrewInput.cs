@@ -57,6 +57,9 @@ namespace Movers
         public float Scroll => Muted ? 0f : frame.scroll;
         public float RollDelta => Muted ? 0f : frame.rollDelta;
 
+        // This poll's frame, unmuted: what the online client sends to the host (NETCODE_SLICE 9.2).
+        public CrewInputFrame RawFrame => frame;
+
         public bool Held(CrewButton b) => !Muted && (frame.held & Bit(b)) != 0;
         public bool Down(CrewButton b) => !Muted && (down & Bit(b)) != 0;
         public bool Up(CrewButton b) => !Muted && (up & Bit(b)) != 0;
@@ -88,6 +91,13 @@ namespace Movers
         }
 
         bool ignoreNextHeld;
+
+        // Takes the next poll's held bits as the baseline, so no Down or Up fires from a gap in
+        // the input (the online pause, 9.2). The same path as SetSource, without the swap.
+        public void ResyncHeld()
+        {
+            ignoreNextHeld = true;
+        }
 
         static uint Bit(CrewButton b) => 1u << (int)b;
 
