@@ -54,7 +54,8 @@ namespace Movers
         // session that begins with the intro (Session.State == Intro when this Start runs).
         public bool lockedAtStart = false;
 
-        // The live state. Set at Start from lockedAtStart and the session, then by keys.
+        // The live state. Set at Start from lockedAtStart and the session, then by keys. The
+        // online client writes it straight from the host (DoorSync), never through Unlock / Lock.
         [System.NonSerialized] public bool locked;
 
         HingedPanel panel;
@@ -94,6 +95,7 @@ namespace Movers
 
         void OnWorldEvent(WorldEvent e)
         {
+            if (!Net.HasAuthority) return;   // online, the host unlocks and DoorSync replicates it
             if (keyId != HouseKey) return;
             switch (e.type)
             {
@@ -119,7 +121,7 @@ namespace Movers
 
         public void Unlock(int instigator)
         {
-            if (!locked) return;
+            if (!Net.HasAuthority || !locked) return;
             locked = false;
             Vector3 at = EventPoint();
             ImpactAudio.Play(ImpactAudio.Kind.Pin, at, LatchVolume, instigator);
@@ -130,7 +132,7 @@ namespace Movers
         // and ImpactAudio turns that into a LoudNoise for anyone listening.
         public void Lock(int instigator)
         {
-            if (locked) return;
+            if (!Net.HasAuthority || locked) return;
             locked = true;
             ImpactAudio.Play(ImpactAudio.Kind.Pin, EventPoint(), LatchVolume, instigator);
         }

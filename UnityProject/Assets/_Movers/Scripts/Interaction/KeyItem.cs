@@ -48,6 +48,7 @@ namespace Movers
         // its Target is this frame's.
         void Update()
         {
+            if (!Net.HasAuthority) return;   // online, the host turns keys from the client's input
             CrewMember who = HeldBy();
             if (who == null || who.Input == null || who.Interact == null) return;
             CrewInput input = who.Input;
@@ -168,6 +169,7 @@ namespace Movers
         void Place(Vector3 position, Quaternion rotation)
         {
             transform.SetPositionAndRotation(position, rotation);
+            NetTransforms.Snap(gameObject);   // host: the client's copy jumps there too
             Rigidbody rb = item.rb != null ? item.rb : GetComponent<Rigidbody>();
             if (rb == null) return;
             rb.position = position;
