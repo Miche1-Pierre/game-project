@@ -53,6 +53,7 @@ namespace Movers
             if (reflectionCam != null && src == reflectionCam) return;
 
             EnsureResources(src);
+            if (glass == null) { enabled = false; return; }   // no usable shader in this build
 
             Vector3 normal = flipNormal ? -transform.forward : transform.forward;
             Vector3 pos = transform.position + normal * planeOffset;
@@ -108,7 +109,12 @@ namespace Movers
             {
                 // The greybox answer to "which shader shows a render texture in Built-in RP".
                 // A mirror is not lit, it shows what the other camera saw.
-                glass = new Material(Shader.Find("Unlit/Texture")) { name = "MAT_Mirror_" + name };
+                // A player build only has Unlit/Texture when some material references it, so fall
+                // back on Sprites/Default (always included) rather than throw every frame.
+                var shader = Shader.Find("Unlit/Texture");
+                if (shader == null) shader = Shader.Find("Sprites/Default");
+                if (shader == null) return;
+                glass = new Material(shader) { name = "MAT_Mirror_" + name };
 
                 // Only the glass slot is replaced. Assigning renderer.material would overwrite
                 // slot 0, which on the kit prop is the gilt frame, and the mirror would come
