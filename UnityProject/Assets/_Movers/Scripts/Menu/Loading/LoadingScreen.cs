@@ -93,6 +93,9 @@ namespace Movers
             model.toGame = target == SceneFlow.GameScene;
             model.players = SceneFlow.RequestedPlayers;
             model.padConnected = GamepadSource.FirstConnected() > 0;
+            model.online = Net.IsOnline;
+            model.localMember = Net.LocalMember;
+            if (model.online) NetText.Ensure();
 
             if (stage == null)
             {
@@ -185,6 +188,13 @@ namespace Movers
                     break;
                 case Step.Finishing:
                     SetAlpha(1f);
+                    // Online, the client's house stays behind the screen until the host's
+                    // snapshot is applied (NETCODE_SLICE 3.3); NetSession gives up after 20 s.
+                    if (Net.IsClient && !Net.PeerReady && Target == SceneFlow.GameScene)
+                    {
+                        stepTime = 0f;
+                        break;
+                    }
                     bool standing = stage == null || stage.Runner == null || stage.Runner.IsRunning;
                     if ((shown >= 0.999f && standing) || stepTime >= maxGetUpWait)
                     {
