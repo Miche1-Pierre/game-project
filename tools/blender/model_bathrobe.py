@@ -55,21 +55,32 @@ the body (measure_torso, fit_rings), and check_enclosure refuses to export if an
 the robe is meant to cover ends up outside it. Every real fault of this lot so far was found
 by a number and none by a render.
 
-Run:
+The body import, the materials, the export preset and the review renders are shared with the
+other asset scripts, in movers_blender.py.
 
-    blender --background --python tools/blender/model_bathrobe.py
+Run, from the repository root:
+
+    blender -b --factory-startup --python-exit-code 1 --python tools/blender/model_bathrobe.py
+
+--python-exit-code 1 matters: the checks refuse the export by raising, and without it Blender
+exits 0 anyway. To try a change without touching a tracked file, import this module, point
+OUT, BLEND and PREVIEW at a scratch folder and call main(): it reads them at call time.
 """
 
 import bpy
 import bmesh
 import math
 import os
+import sys
 from mathutils import Vector, kdtree
 
-SRC = r"C:\dev\game-project\UnityProject\Assets\Floreswa\Models\male01_1.fbx"
-OUT = r"C:\dev\game-project\UnityProject\Assets\_Project\Art\Crew"
-BLEND = r"C:\dev\game-project\_ArtSource\Crew_Bathrobe.blend"
-PREVIEW = r"C:\dev\game-project\_ArtSource\preview_bathrobe.png"
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import movers_blender as mb  # noqa: E402
+
+SRC = mb.BODY_FBX
+OUT = mb.repo_path("UnityProject", "Assets", "_Project", "Art", "Crew")
+BLEND = mb.repo_path("_ArtSource", "Crew_Bathrobe.blend")
+PREVIEW = mb.repo_path("_ArtSource", "preview_bathrobe.png")   # its folder gets the four views
 
 NAME = "SM_Crew_Chest_Bathrobe"
 
@@ -152,29 +163,6 @@ MIN_CLEARANCE = 0.008   # metres, in the body's frame. Under this the skin fight
 
 
 # --------------------------------------------------------------------------- body
-
-
-def import_body():
-    bpy.ops.wm.read_homefile(use_empty=True)
-    try:
-        bpy.ops.wm.fbx_import(filepath=SRC)
-    except Exception:
-        bpy.ops.import_scene.fbx(filepath=SRC)
-    mesh = next(o for o in bpy.data.objects if o.type == "MESH")
-    arm = next(o for o in bpy.data.objects if o.type == "ARMATURE")
-    return mesh, arm
-
-
-def material(name, colour):
-    m = bpy.data.materials.new(name)
-    m.use_nodes = True
-    b = m.node_tree.nodes.get("Principled BSDF")
-    if b:
-        b.inputs["Base Color"].default_value = colour
-        if "Roughness" in b.inputs:
-            b.inputs["Roughness"].default_value = 0.92
-    m.diffuse_color = colour
-    return m
 
 
 def dominant_group(body):
@@ -896,63 +884,13 @@ def check_weights(robe):
 # ------------------------------------------------------------------------ output
 
 
-def export(objs, path):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    bpy.ops.object.select_all(action="DESELECT")
-    for o in objs:
-        o.select_set(True)
-    bpy.context.view_layer.objects.active = objs[0]
-    # Skinned, so bake_space_transform stays OFF: it is the documented way to wreck an
-    # armature. The axis conversion lands on the imported root and CrewEquip composes with
-    # it rather than overwriting it (05_ART/CHARACTERS.md).
-    bpy.ops.export_scene.fbx(
-        filepath=path, use_selection=True,
-        global_scale=1.0, apply_unit_scale=True,
-        apply_scale_options="FBX_SCALE_ALL",
-        bake_space_transform=False,
-        add_leaf_bones=False, bake_anim=False,
-        axis_forward="-Z", axis_up="Y",
-    )
-
-
-def render_turnaround(folder):
-    scene = bpy.context.scene
-    scene.render.engine = "BLENDER_WORKBENCH"
-    scene.render.resolution_x, scene.render.resolution_y = 760, 1080
-    scene.display.shading.light = "STUDIO"
-    scene.display.shading.color_type = "MATERIAL"
-    # Cull back faces as Unity will: a face pointing the wrong way disappears here too,
-    # rather than being drawn by Workbench and found later in the editor.
-    scene.display.shading.show_backface_culling = True
-    scene.world = bpy.data.worlds.new("W")
-    scene.world.color = (0.93, 0.93, 0.94)
-
-    target = Vector((0.0, 0.0, 1.45))
-    cam_data = bpy.data.cameras.new("C")
-    cam = bpy.data.objects.new("C", cam_data)
-    scene.collection.objects.link(cam)
-    cam_data.lens = 56
-    scene.camera = cam
-
-    # The front of the character is +Y in world space: the imported object carries a
-    # rotation, so the local -Y where the face sits comes out the other way round.
-    os.makedirs(folder, exist_ok=True)
-    for name, deg in (("1_front", 90.0), ("2_three_quarter", 140.0),
-                      ("3_side", 180.0), ("4_back", 270.0)):
-        a = math.radians(deg)
-        cam.location = target + Vector((math.cos(a) * 3.6, math.sin(a) * 3.6, 0.30))
-        cam.rotation_euler = (target - cam.location).to_track_quat("-Z", "Y").to_euler()
-        scene.render.filepath = os.path.join(folder, "bathrobe_" + name + ".png")
-        bpy.ops.render.render(write_still=True)
-        print("RENDERED " + scene.render.filepath)
-
-
 def main():
-    body, arm = import_body()
+    body, arm = mb.import_body(SRC)
     FITTED[:] = fit_rings(body)
     for z, hx, hy, cy in FITTED:
         print(f"RING z={z:.3f} hx={hx:.3f} hy={hy:.3f} cy={cy:+.3f}")
-    robe = build(body, arm, material("robe_pink", PINK), material("robe_trim", TRIM))
+    robe = build(body, arm, mb.material("robe_pink", PINK, roughness=0.92),
+                 mb.material("robe_trim", TRIM, roughness=0.92))
     mod = transfer_weights(robe, body)
     if mod.object is None:
         mod.object = arm
@@ -973,8 +911,13 @@ def main():
     print(f"MEASURE shading smooth below {SMOOTH_ANGLE} deg, "
           f"{n_sharp} of {len(robe.data.edges)} edges sharp")
 
-    render_turnaround(os.path.dirname(PREVIEW))
-    export([robe, arm], os.path.join(OUT, NAME + ".fbx"))
+    # The four views next to PREVIEW, the silhouettes and the 8 m view in its review/ folder.
+    # 3.6 BU is the framing the robe has always been judged at.
+    mb.render_turnaround(os.path.dirname(PREVIEW), "bathrobe", piece=robe, body=body,
+                         family_name="garments", distance=3.6)
+    # Skinned: bake_space_transform stays off, the axis conversion lands on the imported root
+    # and CrewEquip composes with it (05_ART/CHARACTERS.md, profile.json export_presets).
+    mb.export_skinned([robe, arm], os.path.join(OUT, NAME + ".fbx"))
 
     os.makedirs(os.path.dirname(BLEND), exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=BLEND)

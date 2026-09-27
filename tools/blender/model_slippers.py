@@ -16,11 +16,16 @@ Two decisions are baked in here and both are measured, not taste:
 The origin of each slipper is moved to its foot bone head, so CrewEquip can place it with an
 offset of zero and the numbers in the builder stay readable.
 
-Run:
+The body import, the material, the export preset and the review renders are shared with the
+other asset scripts, in movers_blender.py.
 
-    blender --background --python tools/blender/model_slippers.py
+Run, from the repository root:
 
-Optional, after a bare --:  --out <folder>  --preview <png>  --blend <path>
+    blender -b --factory-startup --python-exit-code 1 --python tools/blender/model_slippers.py
+
+Optional, after a bare --:  --out <folder>  --preview <png>  --blend <path>. Pointing all three
+at a scratch folder tries a change without touching a tracked file. The review renders go to a
+review/ folder next to the preview, which is gitignored.
 """
 
 import bpy
@@ -30,10 +35,13 @@ import os
 import sys
 from mathutils import Vector
 
-SRC = r"C:\dev\game-project\UnityProject\Assets\Floreswa\Models\male01_1.fbx"
-OUT = r"C:\dev\game-project\UnityProject\Assets\_Project\Art\Crew"
-BLEND = r"C:\dev\game-project\_ArtSource\Crew_Outfit.blend"
-PREVIEW = r"C:\dev\game-project\_ArtSource\preview_slippers.png"
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import movers_blender as mb  # noqa: E402
+
+SRC = mb.BODY_FBX
+OUT = mb.repo_path("UnityProject", "Assets", "_Project", "Art", "Crew")
+BLEND = mb.repo_path("_ArtSource", "Crew_Outfit.blend")
+PREVIEW = mb.repo_path("_ArtSource", "preview_slippers.png")
 
 # Measured off the shoes submesh of male01_1, left foot, rig units (character is 2.588 tall).
 BOOT = {"min": Vector((0.2206, -0.3048, 0.0)), "max": Vector((0.3592, 0.0726, 0.1532))}
@@ -62,29 +70,6 @@ def parse_args():
         elif a == "--blend" and i + 1 < len(argv):
             blend = argv[i + 1]
     return out, preview, blend
-
-
-def import_body():
-    bpy.ops.wm.read_homefile(use_empty=True)
-    try:
-        bpy.ops.wm.fbx_import(filepath=SRC)
-    except Exception:
-        bpy.ops.import_scene.fbx(filepath=SRC)
-    mesh = next(o for o in bpy.data.objects if o.type == "MESH")
-    arm = next(o for o in bpy.data.objects if o.type == "ARMATURE")
-    return mesh, arm
-
-
-def pink_material():
-    m = bpy.data.materials.new("slipper_pink")
-    m.use_nodes = True
-    bsdf = m.node_tree.nodes.get("Principled BSDF")
-    if bsdf:
-        bsdf.inputs["Base Color"].default_value = PINK
-        if "Roughness" in bsdf.inputs:
-            bsdf.inputs["Roughness"].default_value = 0.9
-    m.diffuse_color = PINK
-    return m
 
 
 def build_slipper(name, mat):
@@ -190,51 +175,43 @@ def set_origin(obj, point):
 
 
 def export(obj, path):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    bpy.ops.object.select_all(action="DESELECT")
-    obj.select_set(True)
-    bpy.context.view_layer.objects.active = obj
-    # bake_space_transform=True, and the nuance matters. 05_ART/CHARACTERS.md says to leave it
-    # off, and that rule is about SKINNED pieces, where it is known to wreck armatures. These
-    # are rigid props, and with it off the Blender to Unity axis conversion is not baked into
-    # the mesh: it goes into the imported root rotation instead, the mesh arrives with the foot
-    # running along Y, and anything that sets a world rotation on the root lays the slipper on
-    # its back. On is what the static kit already does.
+    # The rigid preset (profile.json export_presets), and the nuance matters.
+    # bake_space_transform is ON: 05_ART/CHARACTERS.md says to leave it off, and that rule is
+    # about SKINNED pieces, where it is known to wreck armatures. These are rigid props, and
+    # with it off the Blender to Unity axis conversion is not baked into the mesh: it goes into
+    # the imported root rotation instead, the mesh arrives with the foot running along Y, and
+    # anything that sets a world rotation on the root lays the slipper on its back. On is what
+    # the static kit already does.
     #
     # apply_unit_scale=True matters and cost a round trip to find. author_carry_clip.py passes
     # False and says the unit flags change nothing, which is true for an animation because a
     # humanoid clip retargets through the avatar and never carries a scale. For a mesh it is
     # not true: the values go out in metres inside a file whose header declares centimetres,
     # Unity applies its own 0.01, and the slipper arrives 1 mm long. Measured, not reasoned.
-    try:
-        bpy.ops.export_scene.fbx(
-            filepath=path, use_selection=True,
-            global_scale=1.0, apply_unit_scale=True,
-            apply_scale_options="FBX_SCALE_ALL",
-            bake_space_transform=True,
-            add_leaf_bones=False, bake_anim=False,
-            axis_forward="-Z", axis_up="Y",
-        )
-    except Exception:
-        bpy.ops.wm.fbx_export(filepath=path, export_selected_objects=True)
+    #
+    # There is no fallback to wm.fbx_export any more: it writes centimetres, so a failed export
+    # now stops the run instead of writing a slipper 100 times off.
+    mb.export_rigid([obj], path)
 
 
 def render_preview(path, arm):
-    """A flat-shaded look at the right foot, to check the slipper covers the boot."""
-    scene = bpy.context.scene
-    scene.render.engine = "BLENDER_WORKBENCH"
+    """A close look at the left slipper on its boot, to check it covers the boot. Colours as
+    Unity shows them, back faces culled (movers_blender.review_scene).
+
+    Aimed in the armature's frame: the imported rig is turned 180 degrees about Z, and a
+    camera placed with body-local numbers looks at the other foot.
+    """
+    scene = mb.review_scene()
     scene.render.resolution_x, scene.render.resolution_y = 1000, 700
     scene.render.film_transparent = False
-    scene.display.shading.light = "STUDIO"
-    scene.display.shading.color_type = "MATERIAL"
 
     foot = arm.data.bones["foot.L"].head_local
-    target = Vector((foot.x, foot.y - 0.10, 0.09))
+    target = arm.matrix_world @ Vector((foot.x, foot.y - 0.10, 0.09))
 
     cam_data = bpy.data.cameras.new("PreviewCam")
     cam = bpy.data.objects.new("PreviewCam", cam_data)
     bpy.context.scene.collection.objects.link(cam)
-    cam.location = target + Vector((0.55, -0.62, 0.34))
+    cam.location = target + arm.matrix_world.to_3x3() @ Vector((0.55, -0.62, 0.34))
     direction = target - cam.location
     cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
     cam_data.lens = 70
@@ -247,9 +224,9 @@ def render_preview(path, arm):
 
 def main():
     out, preview, blend = parse_args()
-    body, arm = import_body()
+    body, arm = mb.import_body(SRC)
 
-    mat = pink_material()
+    mat = mb.material("slipper_pink", PINK, roughness=0.9)
     left = build_slipper("SM_Crew_Feet_Slipper_L", mat)
     right = mirror_to_right(left, "SM_Crew_Feet_Slipper_R")
 
@@ -257,13 +234,31 @@ def main():
     print(f"SLIPPER_TRIS {tris}")
     print("SLIPPER_BOUNDS " + " ".join(f"{v:.4f}" for v in left.dimensions))
 
-    render_preview(preview, arm)
-
     set_origin(left, arm.data.bones["foot.L"].head_local)
     set_origin(right, arm.data.bones["foot.R"].head_local)
 
     export(left, os.path.join(out, "SM_Crew_Feet_Slipper_L.fbx"))
     export(right, os.path.join(out, "SM_Crew_Feet_Slipper_R.fbx"))
+
+    # Rendered after the export on purpose: a review gives the scene a world, and the FBX
+    # exporter copies a world's colour into every material's AmbientColor.
+    #
+    # The slippers are built in the body's local frame, and the imported rig stands turned
+    # 180 degrees about Z, so on their own they sit on the other foot, back to front: every
+    # preview before 2026-09-27 showed the right boot's toe through the left slipper.
+    # Parented to the armature for the renders they sit on their boots, and they are put back
+    # afterwards, so the .blend is saved as before.
+    for s in (left, right):
+        s.parent = arm
+    render_preview(preview, arm)
+    # The whole body, as other players see it: four views, the silhouettes, the 8 m view.
+    # Framed head to foot: the robe's framing (1.45 BU, 3.6 BU) stops above the ankles.
+    review = os.path.join(os.path.dirname(preview), "review")
+    mb.render_turnaround(review, "slippers", piece=[left, right], body=body,
+                         family_name="garments", target=(0.0, 0.0, 1.30), distance=4.4,
+                         review_folder=review)
+    for s in (left, right):
+        s.parent = None
 
     os.makedirs(os.path.dirname(blend), exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=blend)
