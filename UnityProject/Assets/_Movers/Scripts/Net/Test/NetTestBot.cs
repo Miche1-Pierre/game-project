@@ -202,6 +202,7 @@ namespace Movers
         {
             if (finished) return;
             WatchHandshake();
+            if (isHost) LogRemoteGrab();
             if (!isHost && NetIds.Ready && !pilot.Bind(Net.ClientMember) && !reportedFight)
             {
                 reportedFight = true;
@@ -501,11 +502,28 @@ namespace Movers
             approach.y = NetTestTargets.BoundsOf(chair.gameObject).min.y;
             yield return StartCoroutine(Walk(approach, "the chair"));
 
+            // The first approach can leave something between the eye and the chair (an open
+            // sash): then the pilot goes round the chair a quarter turn at a time.
             int presses = 0;
-            while (!HeldByMe(chair) && presses < 3 && T < StagesDeadline)
+            for (int side = 0; side < 4 && !HeldByMe(chair) && presses < 3 && T < StagesDeadline; side++)
             {
+                if (side > 0)
+                {
+                    Vector3 around = Quaternion.Euler(0f, 90f * side, 0f) * (approach - chair.transform.position);
+                    Vector3 next = chair.transform.position + around;
+                    next.y = approach.y;
+                    pilot.TeleportTo(next);
+                    yield return null;
+                }
+                yield return StartCoroutine(Aim(() => NetTestTargets.BoundsOf(chair.gameObject).center));
+                if (!RayHits(pilot.Member, chair))
+                {
+                    if (pilot.Member != null) Info("client: the chair is hidden from here, " + AimLine(pilot.Member));
+                    continue;
+                }
                 presses++;
                 yield return StartCoroutine(AimAndPress(() => NetTestTargets.BoundsOf(chair.gameObject).center, CrewButton.Grab));
+                if (pilot.Member != null) Info("client: Grab pressed, " + AimLine(pilot.Member));
                 float until = Now + 2f;
                 while (!HeldByMe(chair) && Now < until) yield return null;
             }
@@ -532,6 +550,20 @@ namespace Movers
             Vector3 pickup = pilot.Member != null ? pilot.Member.Position : tg.chairStart;
             yield return StartCoroutine(Walk(tg.paneStand, "the window pane"));
             if (pilot.Member != null) Info("carried the chair " + F(Flat(pilot.Member.Position - pickup).magnitude) + " m");
+
+            // The carry trails the walk: face the pane and let the chair swing round in front
+            // before the throw (3 s at most), or the throw leaves from wherever it lags.
+            float settle = Now + 3f;
+            while (Now < settle && HeldByMe(chair) && pilot.Member != null)
+            {
+                pilot.Aim(pane.WorldBounds.center, out _);
+                var cam = pilot.Member.Grab != null ? pilot.Member.Grab.cam : null;
+                if (cam != null && Vector3.Dot(chair.transform.position - cam.position, cam.forward) > 1f
+                    && Vector3.Cross(cam.forward, chair.transform.position - cam.position).magnitude < 0.8f) break;
+                yield return null;
+            }
+            pilot.Stop();
+            if (pilot.Member != null) Info("chair before the throw at " + V(chair.transform.position) + ", " + AimLine(pilot.Member));
 
             yield return StartCoroutine(AimAndPress(() => pane.WorldBounds.center, CrewButton.Throw));
             float wait = Now + 3f;
@@ -643,6 +675,33 @@ namespace Movers
             pilot.Stop();
         }
 
+        // Turns until the crosshair holds on the point (3 s at most), no press.
+        IEnumerator Aim(Func<Vector3> point)
+        {
+            float until = Now + 3f, steadySince = -1f;
+            while (Now < until && pilot.Member != null)
+            {
+                if (pilot.Aim(point(), out _) < 2f)
+                {
+                    if (steadySince < 0f) steadySince = Now;
+                    if (Now - steadySince >= 0.25f) break;
+                }
+                else steadySince = -1f;
+                yield return null;
+            }
+            pilot.Stop();
+        }
+
+        // The grab ray from this member's eye reaches mo first (PlayerGrab's range and layers).
+        static bool RayHits(CrewMember m, MovableObject mo)
+        {
+            var cam = m != null && m.Grab != null ? m.Grab.cam : null;
+            if (cam == null || mo == null) return false;
+            if (!Physics.Raycast(cam.position, cam.forward, out RaycastHit h, m.Grab.grabRange,
+                                 Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) return false;
+            return h.collider.GetComponentInParent<MovableObject>() == mo;
+        }
+
         // Turns until the crosshair holds on the point, then one press. The look then stays
         // still for a few frames, so the host's playout aims with the same camera.
         IEnumerator AimAndPress(Func<Vector3> point, CrewButton button)
@@ -663,6 +722,36 @@ namespace Movers
             pilot.source.Press(button);
             float hold = Now + 0.2f;
             while (Now < hold) yield return null;
+        }
+
+        // Host: what P2's Grab press saw, so a failed chair stage says whether the press, the
+        // aim or the grab refused it.
+        void LogRemoteGrab()
+        {
+            var p2 = CrewRoster.Get(Net.ClientMember);
+            if (p2 == null || p2.Input == null || p2.Grab == null) return;
+            var nowHeld = p2.Grab.Held;
+            if (nowHeld != p2LastHeld)
+            {
+                if (p2LastHeld != null && p2LastHeld.rb != null)
+                    Info("host: P2 let go of " + p2LastHeld.name + " at " + V(p2LastHeld.transform.position) + " speed " + F(p2LastHeld.rb.linearVelocity.magnitude));
+                p2LastHeld = nowHeld;
+            }
+            if (p2.Input.Down(CrewButton.Grab))
+                Info("host: P2 Grab down, " + AimLine(p2) + ", holding " + (nowHeld != null ? nowHeld.name : "nothing"));
+            if (p2.Input.Down(CrewButton.Throw))
+                Info("host: P2 Throw down, " + AimLine(p2) + ", holding " + (nowHeld != null ? nowHeld.name : "nothing"));
+        }
+        MovableObject p2LastHeld;
+
+        internal static string AimLine(CrewMember m)
+        {
+            var cam = m.Grab != null ? m.Grab.cam : null;
+            if (cam == null) return "no grab camera";
+            string hit = "nothing";
+            if (Physics.Raycast(cam.position, cam.forward, out RaycastHit h, 6f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                hit = h.collider.name + " at " + F(h.distance) + " m";
+            return "cam " + V(cam.position) + " fwd " + V(cam.forward) + " ray " + hit;
         }
 
         void FinalChecks()
