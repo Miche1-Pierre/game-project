@@ -122,7 +122,7 @@ namespace Movers
             // look (suspended while PlayerGrab is using the look to turn a held object)
             if (!lookLocked)
             {
-                Vector2 look = input.LookDelta;
+                Vector2 look = GameSettings.ApplyLook(input.LookDelta);   // the player's sensitivity and invert Y
                 float mx = look.x * mouseSensitivity;
                 float my = look.y * mouseSensitivity;
                 transform.Rotate(0f, mx, 0f);

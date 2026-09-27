@@ -30,6 +30,7 @@ namespace Movers
 
         void OnGUI()
         {
+            if (!HudMode.UseLegacy) return;   // the LumaFlow HUD (HudRoot) draws this now
             if (mood == null || Event.current.type != EventType.Repaint) return;
             var crew = CrewRoster.All;
             bool any = false;

@@ -214,7 +214,7 @@ namespace Movers
         void LateUpdate()
         {
             if (!occupied || driver == null || driverCam == null || vehicle == null || vehicle.Body == null) return;
-            Vector2 look = driver.Input != null ? driver.Input.LookDelta : Vector2.zero;
+            Vector2 look = driver.Input != null ? GameSettings.ApplyLook(driver.Input.LookDelta) : Vector2.zero;   // the player's sensitivity and invert Y
             chase.Tick(driverCam, truckRoot, vehicle.Body.linearVelocity, look, Time.deltaTime);
         }
 
@@ -384,6 +384,10 @@ namespace Movers
 
         // ---- The driver's HUD (bottom centre of his view; his PlayerInteract prompt is off) ----
 
+        // The notice while it shows ("No room to get out here"), else null. Read by the
+        // LumaFlow HUD (UICORE), which draws the driver's hints instead of OnGUI.
+        public string ActiveNotice => Time.time < noticeUntil ? notice : null;
+
         void Notice(string text)
         {
             notice = text;
@@ -393,6 +397,7 @@ namespace Movers
 
         void OnGUI()
         {
+            if (!HudMode.UseLegacy) return;   // the LumaFlow HUD (HudRoot) draws this now
             if (!occupied || driver == null || vehicle == null) return;
             if (Event.current.type != EventType.Repaint) return;
             RefreshText();

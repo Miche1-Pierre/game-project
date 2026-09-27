@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0cdaaaba0e1941478c12393ac77e960, type: 3}
+  m_Name: IndicatorTuning
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.IndicatorTuning
+  settings:
+    showTape: 1
+    tapeArcDegrees: 180
+    tapeWidthShare: 0.36
+    tapeMinWidth: 220
+    tapeMaxWidth: 560
+    tapeFloorWidth: 150
+    tapeHeight: 34
+    tapeTop: 10
+    tapeTokenSize: 26
+    floorCaretHeight: 2.2
+    edgeTokenSize: 40
+    arrowSize: 24
+    edgeMinDistance: 3
+    edgeSideInset: 0.05
+    edgeTopInset: 0.17
+    edgeBottomInset: 0.2
+    keepOutOfHud: 1
+    hudGap: 8
+    ringTokenSize: 32
+    ringMinDistance: 4
+    grandmaRingMinDistance: 7
+    deliverRingInView: 0
+    ringMaxDistance: 40
+    ringCrosshairFade: 0.09
+    grandmaOnTape: 0
+    grandmaMarkers: 0
+    deliverArrowWhenCarrying: 1
+    distanceFontSize: 17
+    numberFontSize: 18
+    letterFontSize: 17
+    panelSortingOrder: -5
+    ringIsFrame: 1
+    tintArrow: 1
+    wood: {r: 0.6039216, g: 0.4, b: 0.23529412, a: 1}
+    woodLight: {r: 0.78431374, g: 0.56078434, b: 0.34509805, a: 1}
+    woodDark: {r: 0.24313726, g: 0.15686275, b: 0.101960786, a: 1}
+    cream: {r: 1, g: 0.9529412, b: 0.8627451, a: 1}
+    north: {r: 0.9098039, g: 0.41568628, b: 0.2901961, a: 1}
+    truck: {r: 0.94509804, g: 0.8901961, b: 0.7607843, a: 1}
+    deliver: {r: 0.9490196, g: 0.72156864, b: 0.23137255, a: 1}
+    keys: {r: 0.9647059, g: 0.8039216, b: 0.29803923, a: 1}
+    mood:
+    - {r: 0.5529412, g: 0.72156864, b: 0.41568628, a: 1}
+    - {r: 0.9019608, g: 0.74509805, b: 0.2901961, a: 1}
+    - {r: 0.8980392, g: 0.5058824, b: 0.22745098, a: 1}
+    - {r: 0.8117647, g: 0.2901961, b: 0.22745098, a: 1}
+    - {r: 0.5568628, g: 0.16470589, b: 0.16470589, a: 1}

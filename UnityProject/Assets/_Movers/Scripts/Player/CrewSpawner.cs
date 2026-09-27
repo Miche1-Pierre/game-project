@@ -86,6 +86,9 @@ namespace Movers
             }
 
             var p1 = firstPlayer.gameObject;
+            // The title screen's "Jouer seul" asks for one player (SceneFlow.RequestedPlayers);
+            // a scene played straight from the editor reads 2 and keeps its own setting.
+            if (SceneFlow.RequestedPlayers < 2) spawnSecondPlayer = false;
             if (!spawnSecondPlayer)
             {
                 Configure(CrewSetup.Ensure(p1), 0, firstColor);

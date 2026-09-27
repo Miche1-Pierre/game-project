@@ -188,24 +188,35 @@ namespace Movers
                 new[]
                 {
                     new GradientAlphaKey(0f, 0f),
-                    new GradientAlphaKey(0.55f, 0.18f),
-                    new GradientAlphaKey(0.42f, 0.6f),
+                    new GradientAlphaKey(0.62f, 0.16f),
+                    new GradientAlphaKey(0.46f, 0.6f),
                     new GradientAlphaKey(0f, 1f)
                 });
             col.color = new ParticleSystem.MinMaxGradient(g);
 
-            // Cheap turbulence. Without it the puff is a sphere of quads and reads as a bubble.
+            // Turbulence, so the puff curls and rolls instead of reading as a sphere of quads.
+            // Two octaves: the big roll of the cloud and the small curl at its edges. Bounded, and
+            // the particles stay in local space, so the mass you see stays on the volume.
             var noise = ps.noise;
             noise.enabled = true;
-            noise.strength = new ParticleSystem.MinMaxCurve(0.35f);
-            noise.frequency = 0.35f;
-            noise.scrollSpeed = new ParticleSystem.MinMaxCurve(0.25f);
+            noise.strength = new ParticleSystem.MinMaxCurve(0.42f);
+            noise.frequency = 0.45f;
+            noise.scrollSpeed = new ParticleSystem.MinMaxCurve(0.3f);
+            noise.octaveCount = 2;
             noise.damping = true;
 
+            // Each wisp turns slowly as it drifts: soft smoke never holds still.
+            var spin = ps.rotationOverLifetime;
+            spin.enabled = true;
+            spin.z = new ParticleSystem.MinMaxCurve(-0.35f, 0.35f);
+
+            // Torn, uneven puffs instead of one round blob (SmokeTextures.WispSheet). A little
+            // more alpha above makes up for the holes, so the cloud reads as thick as before.
+            SmokeTextures.UseWispSheet(ps);
             var r = GetComponent<ParticleSystemRenderer>();
             r.renderMode = ParticleSystemRenderMode.Billboard;
             r.alignment = ParticleSystemRenderSpace.View;
-            r.sharedMaterial = SmokeTextures.ParticleMaterial;
+            r.sharedMaterial = SmokeTextures.WispMaterial;
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             r.receiveShadows = false;
 

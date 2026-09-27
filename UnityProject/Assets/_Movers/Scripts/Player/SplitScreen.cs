@@ -23,6 +23,9 @@ namespace Movers
         // Vertical FOV of each half in split. Full screen views keep the FOV their camera was
         // authored with (60 on the house player).
         public float splitFieldOfView = 75f;
+        // Vertical FOV of each half when the player chose top/bottom (GameSettings.Layout):
+        // the halves are wide and short, so a smaller vertical angle keeps the same across.
+        public float stackedFieldOfView = 50f;
 
         const string Owner = "PLAYER (view)";
         const int MaxViews = 4;
@@ -144,7 +147,7 @@ namespace Movers
                 {
                     cam.enabled = true;
                     cam.rect = SplitRect(slot, n);
-                    cam.fieldOfView = splitFieldOfView;
+                    cam.fieldOfView = n == 2 && GameSettings.Layout == SplitLayout.Stacked ? stackedFieldOfView : splitFieldOfView;
                     if (slot == 0) ears = cam;
                 }
                 slot++;
@@ -156,6 +159,7 @@ namespace Movers
         // Two players side by side, P1 on the left. Three or four: a 2 x 2 grid, P1 top left.
         static Rect SplitRect(int slot, int count)
         {
+            if (count == 2 && GameSettings.Layout == SplitLayout.Stacked) return new Rect(0f, slot == 0 ? 0.5f : 0f, 1f, 0.5f);
             if (count == 2) return new Rect(slot * 0.5f, 0f, 0.5f, 1f);
             float x = (slot % 2) * 0.5f;
             float y = slot < 2 ? 0.5f : 0f;

@@ -33,6 +33,26 @@ first; speeds are the ground speed at which the planted foot does not slide):
   Talk               72  loop   upper-body layer: palms up, alternating hand beats, nods
   Give_Keys          48  once   the hand out, palm up; the hand-off at 1.0 s (normalized 0.5)
 
+The crew's actions (CHARACTERS, 2026-09-26), authored and rendered on the crew only. The upper-body
+ones play on AC_Crew_Slice's "Actions" layer (right arm and head); the falls are base-layer states:
+  Crew_Smoke         40  loop   the filter to the lips, a drag, the hand down as the smoke comes out;
+                                played by Motion Time on the cigarette's own cycle (SmokeTimeline.cs)
+  Crew_Drink         60  loop   the bottle at the lips tipped 22 degrees, head back, four gulps;
+                                Motion Time on the drink's clock (four swallows of BeerItem)
+  Crew_Throw         20  once   cocked behind the head, released at f4, followed through
+  Crew_Pocket        20  once   the right hand into the trouser pocket and out
+  Crew_Wear          24  once   the hand on the top of the head, a pat, a tug by the ear
+  Crew_Wave          24  loop   the right hand up, waved twice a second (the menus)
+  Crew_KnockedDown   30  once   flinch, thrown back off the feet, lands on the back
+  Crew_GetUp         40  once   from Crew_KnockedDown's last frame: sits up, squats, stands on the root
+  Crew_Fall          56  once   tripped at a run: dive, belly, all fours, one knee, back in the run
+                                stride (the loading screen runs, falls and runs on one spot)
+Props in the hand are placed from HandSockets' frame (socket_frame), in metres, with the same
+numbers as HandHeldProp.cs (CIG, BEER): the clip solves the wrist FROM the prop ("the filter on the
+lips"), and grip_report measures where the posed hand really puts it (0.8 cm for the cigarette,
+1.9 cm for the bottle's lip). The falls go through floor_guard, so no in-between frame goes under
+the floor (a blend of a flat foot into a pointed one dipped 0.20 BU in the first version).
+
 Five decisions worth reading before changing anything:
 
 1. **The rig is not touched and the export is model_grandma.py's.** Bones are posed with
@@ -92,6 +112,10 @@ Assets/_Project/Art/Characters/Clips), --renders (PNG folder, never Assets; none
 re-skinned SM_Grandma.fbx of model_grandma.py decision 6 until it is in Assets), --verify
 (re-import every FBX in a fresh scene and compare it with both rigs). Reads SM_Rocking_Chair,
 PKX_Fireplace and SM_Stove_Old for the renders. About 60 s for all clips with renders.
+
+Crew actions validated 2026-09-26, Blender 5.1.2: re-import of the 9 FBX: 36 bones equal to both
+rigs, take named like the file, loops close (0.0e+00); worst leg reach 0.985 (Crew_Fall 0.957),
+lowest body point +0.0030 BU on the falls, off-hinge 0.07 degrees at worst; renders on two sides.
 
 Validated 2026-09-26, Blender 5.1.2. Re-import of all 22 FBX: 36 bones, names, parents and rest
 positions equal to male01_1's and SM_Grandma's (delta 0.00000 BU), take named like the file, 369
@@ -331,6 +355,9 @@ class Figure:
             self.palm_local[s] = bh.matrix_local.to_3x3().inverted() @ p
         self.max_reach = 0.0
         self.mouth_local = None                 # set by measure_face()
+        # Metres per BU in Unity: the body's import scale. The crew's by default; main() sets the
+        # grandmother's. Props and hand sockets are authored in metres (HandSockets, HandHeldProp).
+        self.m_per_bu = CREW_SCALE
 
     # -- small tools -------------------------------------------------------------------
     def V(self, f, l, u):
@@ -1667,6 +1694,667 @@ def clip_give_keys(ctx, fig):
                 keys=[1, 10, 19, 25, 37, 49], checks=["planted"])
 
 
+# ----------------------------------------------------------------- crew actions (2026-09-26)
+# The crew's hands and falls: holding a small thing, smoking, drinking, throwing, pocketing,
+# putting something on, waving, and three full-body falls (knocked down by a blast, getting up,
+# tripping at a run). All authored on the crew rig.
+#
+# The upper-body ones play on AC_Crew_Slice's "Hands" layer, masked to the right arm and the
+# head (AM_RightArmHead): hips, spine and legs stay the Locomotion's, so they play while
+# standing, walking or crouching (layering_check measures it). The falls are base-layer states.
+#
+# Hands and props share one frame, HandSockets.cs (NPC/), reproduced by socket_frame(): local Z
+# along the fingers, Y out of the palm, X the thumb on the right hand; the origin palmAlong of
+# the hand's length from the wrist and palmOut metres out of the palm. A prop is authored once in
+# that frame in metres (HandHeld.cs grips, the same numbers), and the clips place the hand FROM
+# the prop: "the filter on the lips" is solved as a wrist position (hand_at), then measured back
+# on the posed body (grip_report), which is what Unity will show.
+#
+# Motion-time clips: Crew_Smoke and Crew_Drink are played by normalized time from the item's own
+# clock (AnimatorState Motion Time = "UseTime"), so the hand is at the lips exactly while the
+# ember glows. Their key frames below ARE the item timelines of UseTimeline.cs.
+
+PALM_ALONG = 0.6          # HandSockets.palmAlong
+PALM_OUT_M = 0.03         # HandSockets.palmOut; the crew bones import at scale 1, so metres
+
+# The props as HandHeld.cs grips them in the right-hand socket (metres; x thumb, y out of the
+# palm, z along the fingers). `axis` is the item's +Y (the cylinder axis, towards the cigarette's
+# lit tip, towards the bottle's neck), as a socket direction. Sizes are the game's primitives.
+CIG = dict(center=(0.012, -0.012, 0.062), axis=(0.0, -1.0, 0.0), half=0.045, radius=0.0065)
+BEER = dict(center=(-0.02, 0.022, 0.0), axis=(1.0, 0.0, 0.0), half=0.055, radius=0.0175,
+            neck_top=0.105, neck_mid=0.08, neck_half=0.025, neck_radius=0.007)
+
+
+def _along(prop, dist):
+    c, a = prop["center"], prop["axis"]
+    return tuple(c[i] + a[i] * dist for i in range(3))
+
+
+CIG_FILTER = _along(CIG, -CIG["half"])      # the end that goes in the mouth
+BEER_NECK = _along(BEER, BEER["neck_top"])  # the bottle's lip
+
+# Smoke cycle (UseTimeline.Smoke): 40 frames, 1.667 s. Aside 0, at the lips by f7 (0.175),
+# inhale until f18 (0.45), exhale from f19 (0.475) while the hand goes back down, aside by f26
+# (0.65). Drink loop (UseTimeline.Drink): 60 frames, 2.5 s, a gulp every 15 frames (0.625 s).
+SMOKE_N = 40
+SMOKE_KEYS = dict(lips=7, inhale_end=18, exhale=19, aside=26)
+DRINK_N = 60
+DRINK_GULPS = 4
+
+
+def socket_frame(fig, s="R"):
+    """HandSockets.Build on the posed hand: (origin, thumb, palm, fingers), armature space."""
+    pb = fig.pb["hand." + s]
+    z = (pb.tail - pb.head).normalized()
+    y = fig.palm_now(s)
+    y = (y - z * y.dot(z)).normalized()
+    x = z.cross(y)                      # right hand: the thumb side (left hand: the little finger)
+    o = pb.head + z * (PALM_ALONG * fig.len["hand." + s]) + y * (PALM_OUT_M / fig.m_per_bu)
+    return o, x, y, z
+
+
+def socket_point(fig, frame, p):
+    o, x, y, z = frame
+    return o + (x * p[0] + y * p[1] + z * p[2]) / fig.m_per_bu
+
+
+def socket_dir(frame, d):
+    _o, x, y, z = frame
+    return (x * d[0] + y * d[1] + z * d[2]).normalized()
+
+
+def grip_report(fig, kind, frame):
+    """Where the posed hand really puts the prop's business end, against the lips (metres)."""
+    sf = socket_frame(fig)
+    end = CIG_FILTER if kind == "cig" else BEER_NECK
+    d = (socket_point(fig, sf, end) - fig.mouth()).length * fig.m_per_bu
+    what = "cigarette filter" if kind == "cig" else "bottle lip"
+    return "grip f{}: {} {:.3f} m from the lips".format(frame, what, d)
+
+
+def make_hand_props():
+    """The cigarette and the beer as the game builds them (ItemArt primitives, CigaretteItem and
+    BeerItem sizes), in metres along local Z (the item's +Y), hidden until a clip holds one."""
+    import bmesh
+
+    def part(name, pieces, color):
+        me = bpy.data.meshes.new(name)
+        bm = bmesh.new()
+        for r, z0, z1 in pieces:
+            bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=12, radius1=r, radius2=r,
+                                  depth=z1 - z0, matrix=Matrix.Translation((0.0, 0.0, (z0 + z1) * 0.5)))
+        bm.to_mesh(me)
+        bm.free()
+        m = bpy.data.materials.new(name + "_mat")
+        m.diffuse_color = color
+        me.materials.append(m)
+        ob = bpy.data.objects.new(name, me)
+        bpy.context.scene.collection.objects.link(ob)
+        ob.hide_render = True
+        return ob
+
+    h = CIG["half"]
+    cig = [part("prop_cig_paper", [(CIG["radius"], -h, h)], (0.93, 0.92, 0.88, 1.0)),
+           part("prop_cig_ember", [(CIG["radius"] * 1.15, h, h + 0.008)], (1.0, 0.42, 0.10, 1.0))]
+    b = BEER
+    beer = [part("prop_beer", [(b["radius"], -b["half"], b["half"]),
+                               (b["neck_radius"], b["neck_mid"] - b["neck_half"], b["neck_top"])],
+                 (0.55, 0.28, 0.06, 1.0))]
+    return {"cig": (None, cig), "beer": (None, beer)}
+
+
+def place_hand_prop(props, kind, fig, arm):
+    """Show prop `kind` in the right-hand socket of the posed `fig` (None hides every hand prop)."""
+    for key in ("cig", "beer"):
+        if key in props:
+            show(props[key][1], False)
+    if kind is None or fig is None or kind not in props:
+        return
+    prop = CIG if kind == "cig" else BEER
+    sf = socket_frame(fig)
+    o = socket_point(fig, sf, prop["center"])
+    z = socket_dir(sf, prop["axis"])
+    x = z.orthogonal().normalized()
+    y = z.cross(x)
+    rot = Matrix((x, y, z)).transposed()
+    mw = arm.matrix_world
+    k = 1.0 / fig.m_per_bu
+    local = Matrix.Translation(o) @ (rot.to_4x4() @ Matrix.Diagonal((k, k, k, 1.0)))
+    for ob in props[kind][1]:
+        ob.matrix_world = mw @ local
+        ob.hide_render = False
+    upd()
+
+
+def crew_only(builder):
+    """A clip for the crew alone: measured and rendered on the crew body only."""
+    def build(ctx, fig):
+        spec = builder(ctx, fig)
+        spec["crew_only"] = True
+        return spec
+    return build
+
+
+def hand_frame(fig, fingers, palm):
+    z = resolve(fig, fingers).normalized()
+    y = resolve(fig, palm)
+    y = (y - z * y.dot(z)).normalized()
+    return z.cross(y), y, z
+
+
+def hand_at(s, point, grip, fingers, palm, pole):
+    """Arm channels that put the socket-frame point `grip` (metres) of hand s on `point` (a
+    Vector or a function of the posed body), fingers along `fingers`, palm facing `palm`. The
+    wrist is solved from that ideal socket frame; grip_report measures where the posed hand
+    really puts the prop."""
+    def wrist(f):
+        x, y, z = hand_frame(f, fingers, palm)
+        o = resolve(f, point) - (x * grip[0] + y * grip[1] + z * grip[2]) / f.m_per_bu
+        return o - z * (PALM_ALONG * f.len["hand." + s]) - y * (PALM_OUT_M / f.m_per_bu)
+    return arm_ch(s, wrist, pole, lambda f: hand_frame(f, fingers, palm)[2],
+                  lambda f: hand_frame(f, fingers, palm)[1], 0.0)
+
+
+def fingers_from(thumb, palm):
+    """The finger direction of a right hand whose thumb and palm point this way (thumb =
+    fingers x palm, so fingers = palm x thumb)."""
+    def fingers(f):
+        t = resolve(f, thumb).normalized()
+        p = resolve(f, palm)
+        p = (p - t * p.dot(t)).normalized()
+        return p.cross(t)
+    return fingers
+
+
+def arm_dir(s, direction, reach, pole, hand, palm, flex=0.0):
+    """An arm pointed along `direction` from its shoulder, the wrist `reach` of the arm's length
+    out: for the full-body falls, where the shoulder is wherever the torso went."""
+    def wrist(f):
+        d = resolve(f, direction).normalized()
+        return f.pb["upper_arm." + s].head + d * (reach * (f.len["upper_arm." + s] + f.len["forearm." + s]))
+    return arm_ch(s, wrist, pole, hand, palm, flex)
+
+
+def on_knee(s, knee_side, up=0.07, fwd=0.02):
+    """Hand s pushing on the `knee_side` knee (the push of getting up)."""
+    def wrist(f):
+        k = f.pb["shin." + knee_side].head
+        return k + f.U * up + f.F * fwd + f.out(knee_side) * 0.02 - f.F * 0.10
+    return arm_ch(s, wrist, fig_out_pole(s), lambda f: f.F * 0.7 - f.U * 0.7, lambda f: -f.U, 15.0)
+
+
+def fig_out_pole(s):
+    return lambda f: -f.F * 0.3 + f.out(s) * 0.9 - f.U * 0.3
+
+
+def crew_base(ctx, fig, t=0.0, breaths=1):
+    """The crew standing base of the action clips: Crew_Idle's stance and hanging arms, one breath
+    per loop. Only the right arm and the head reach Unity through the Hands mask; the rest keeps
+    the renders honest."""
+    b = 0.5 - 0.5 * math.cos(breaths * math.tau * t)
+    P = c_stand(ctx, fig)
+    P.update(s2=0.5 - 1.2 * b, s3=0.3 - 0.6 * b, shrugL=1.2 * b, shrugR=1.2 * b)
+    for s in "LR":
+        P.update(hang(s, ctx.crew_half, gap=0.07, swing=2.0 + 1.0 * b, bend=10.0 + 3.0 * b))
+    return P
+
+
+def fit_floor(ctx, fig, P, target=0.004, ids=None):
+    """Raise or lower the hips of pose P until its lowest body vertex sits `target` BU above the
+    floor. For the poses that lie, sit or kneel on it. Returns the hip height it settled on."""
+    body = ctx.bodies[id(fig)]
+    for _ in range(6):
+        fig.apply(P)
+        co = evaluated_coords(body, fig.arm)
+        rng = ids if ids is not None else range(len(co))
+        low = min(co[i].dot(fig.U) for i in rng)
+        if abs(low - target) < 0.001:
+            break
+        P["hip"] = resolve(fig, P["hip"]) + fig.U * (target - low)
+    return resolve(fig, P["hip"]).dot(fig.U)
+
+
+def floor_guard(ctx, fig, pose, floor=0.003):
+    """A pose function that never goes through the floor. The keys of a fall are fitted onto the
+    floor (fit_floor), but the frames between them are blends, and a foot turning from flat to
+    toes-down on its way (or a thigh landing) dips under it: up to 0.20 BU in the first Crew_Fall.
+    Per frame: a shoe under the floor lifts its own ankle target, anything else lifts the whole
+    body (hips and both ankle targets together, so the legs keep their shape)."""
+    body = ctx.bodies[id(fig)]
+    if not hasattr(ctx, "doms"):
+        ctx.doms = {}
+    if id(fig) not in ctx.doms:
+        dom = dominant(body)
+        shoe = {s: set(shoe_verts(body, s)) for s in "LR"}
+        rest = [i for i in range(len(dom)) if i not in shoe["L"] and i not in shoe["R"]]
+        ctx.doms[id(fig)] = (shoe, rest)
+    shoe, rest = ctx.doms[id(fig)]
+
+    def guarded(t):
+        P = dict(pose(t))
+        for _ in range(4):
+            fig.apply(P)
+            co = evaluated_coords(body, fig.arm)
+            U = fig.U
+            changed = False
+            low = min(co[i].dot(U) for i in rest)
+            if low < floor - 1e-4:
+                lift = U * (floor - low)
+                P["hip"] = resolve(fig, P["hip"]) + lift
+                for sd in "LR":
+                    a = resolve(fig, P.get("leg%s_ankle" % sd))
+                    if a is not None:
+                        P["leg%s_ankle" % sd] = a + lift
+                changed = True
+            else:
+                for sd in "LR":
+                    lo = min(co[i].dot(U) for i in shoe[sd])
+                    a = resolve(fig, P.get("leg%s_ankle" % sd))
+                    if lo < floor - 1e-4 and a is not None:
+                        P["leg%s_ankle" % sd] = a + U * (floor - lo)
+                        changed = True
+            if not changed:
+                break
+        return P
+    return guarded
+
+
+def smoke_aside(fig):
+    """The smoker's rest: elbow at the ribs, hand up by the shoulder, palm in, the cigarette
+    pointing out and forward."""
+    return hand_at("R", fig.V(0.30, -0.36, 1.98), CIG["center"],
+                   fig.U * 0.8 + fig.F * 0.35 + fig.L * 0.15, -fig.F * 0.55 + fig.L * 0.8,
+                   -fig.U * 0.8 + fig.R * 0.6 - fig.F * 0.1)
+
+
+def smoke_lips(fig):
+    """The filter on the lips: palm to the face, fingers up across it, the cigarette straight out."""
+    return hand_at("R", lambda f: f.mouth() + f.F * 0.012, CIG_FILTER,
+                   fig.U * 0.75 + fig.L * 0.45 + fig.F * 0.1, -fig.F,
+                   -fig.U * 0.8 + fig.R * 0.5 + fig.F * 0.2)
+
+
+def clip_crew_smoke(ctx, fig):
+    """Crew_Smoke, 40 frames (Hands layer, played by motion time from CigaretteItem's cycle): from
+    the aside pose the filter to the lips (f7), the drag with the head a touch forward then
+    lifting (f7-f18), the hand down and the head up and to the left as the smoke comes out
+    (f19-f26), aside again. Loops on the aside pose."""
+    N = SMOKE_N
+    k = SMOKE_KEYS
+
+    def base(t, **head):
+        P = crew_base(ctx, fig, t)
+        P.update(head)
+        return P
+
+    aside0 = base(0.0, neck=2.0, head=-2.0)
+    aside0.update(smoke_aside(fig))
+    lips0 = base(k["lips"] / N, neck=4.0, head=2.0)
+    lips0.update(smoke_lips(fig))
+    lips1 = base(k["inhale_end"] / N, neck=3.0, head=-3.0, shrugR=2.5, shrugL=2.5)
+    lips1.update(smoke_lips(fig))
+    blow = base(k["aside"] / N, neck=0.0, head=-9.0, head_yaw=7.0)
+    blow.update(smoke_aside(fig))
+    settle = base(33 / N, neck=2.0, head=-4.0, head_yaw=2.0)
+    settle.update(smoke_aside(fig))
+    keys = [(0, aside0), (k["lips"], lips0), (k["inhale_end"], lips1), (k["aside"], blow), (33, settle), (N, aside0)]
+    return dict(frames=N, loop=True, author="crew", pose=keyed(keys, N, True),
+                keys=[1, 5, 8, 19, 23, 27], checks=["planted"], hand_prop="cig", view="upper",
+                grips=[(k["lips"] + 1, "cig"), (k["inhale_end"] + 1, "cig")])
+
+
+def beer_arm(fig, angle, gulp=0.0):
+    """The bottle's lip on the lips, its bottom `angle` degrees above its neck. The fist holds it
+    from the right (palm to the left, thumb along the bottle towards the
+    mouth), the elbow forward and out. The grip lands 1.6 to 2.2 cm off the lips at 20 to 24
+    degrees (more tilt drifts further: 3.6 cm at 34; a palm turned up drifts 11 to 16 cm, the
+    forearm twist cannot reach it), so the tilt stays 22 and the head's 22 degrees back does the rest. (Not drink_arm:
+    that name is the grandmother's cup, which Sit_Drink and Stand_Drink use.)"""
+    def thumb(f):
+        a = math.radians(angle + 6.0 * gulp)
+        return -f.F * math.cos(a) - f.U * math.sin(a)
+    palm = fig.L
+    return hand_at("R", lambda f: f.mouth() + f.F * 0.010, BEER_NECK, fingers_from(thumb, palm), palm,
+                   fig.R * 0.6 - fig.U * 0.3 + fig.F * 0.6)
+
+
+def clip_crew_drink(ctx, fig):
+    """Crew_Drink, 60 frames loop (Hands layer, motion time from BeerItem's clock): the bottle at
+    the mouth tipped 22 degrees, the head back 22 degrees, four gulps a loop (the head and the
+    bottle dip back 3 and 6 degrees on each). The raise and the lowering are the Actions layer's
+    weight blend (CrewAnimator), from whatever the arm was doing."""
+    N = DRINK_N
+
+    def pose(t):
+        g = max(0.0, math.sin(DRINK_GULPS * math.tau * t)) ** 4
+        P = crew_base(ctx, fig, t, breaths=2)
+        P.update(neck=-7.0 - 1.0 * g, head=-15.0 - 3.0 * g, shrugR=3.0, s3=-1.0)
+        P.update(beer_arm(fig, 22.0, g))
+        return P
+    return dict(frames=N, loop=True, author="crew", pose=pose, keys=[1, 5, 16, 31], checks=["planted"],
+                hand_prop="beer", view="upper", grips=[(1, "beer"), (5, "beer"), (31, "beer")])
+
+
+def clip_crew_throw(ctx, fig):
+    """Crew_Throw, 0.83 s one-shot (Hands layer): starts cocked (the hand behind the head, which
+    the 0.08 s cross-fade snaps to), whips forward to the release at f4, follows through across
+    the body (f9), and hangs by f20. Entered on ObjectThrown, so the whip is at most 0.17 s behind
+    the object leaving: it reads as the throw that sent it."""
+    N = 20
+    cock = crew_base(ctx, fig, 0.0, breaths=0)
+    cock.update(head=-4.0, head_yaw=-6.0, shrugR=4.0)
+    cock.update(hand_at("R", fig.V(-0.36, -0.40, 2.42), (0.0, 0.0, 0.0), fig.U * 0.45 - fig.F * 0.8 - fig.R * 0.1,
+                        fig.F * 0.6 + fig.U * 0.4, fig.U * 0.25 + fig.R * 0.9 - fig.F * 0.3))
+    release = crew_base(ctx, fig, 0.0, breaths=0)
+    release.update(head=2.0, head_yaw=4.0)
+    release.update(hand_at("R", fig.V(0.58, -0.22, 2.22), (0.0, 0.0, 0.0), fig.F * 0.9 + fig.U * 0.2,
+                           -fig.U * 0.5 + fig.F * 0.5, -fig.U * 0.4 + fig.R * 0.9))
+    follow = crew_base(ctx, fig, 0.0, breaths=0)
+    follow.update(head=6.0, head_yaw=8.0, shrugR=-2.0)
+    follow.update(hand_at("R", fig.V(0.40, 0.02, 1.62), (0.0, 0.0, 0.0), fig.F * 0.45 - fig.U * 0.75 + fig.L * 0.45,
+                          -fig.F * 0.4 + fig.L * 0.6, -fig.U * 0.8 + fig.R * 0.5))
+    end = crew_base(ctx, fig, 0.0, breaths=0)
+    keys = [(0, cock), (4, release), (9, follow), (N, end)]
+    return dict(frames=N, loop=False, author="crew", pose=keyed(keys, N, False),
+                keys=[1, 3, 5, 8, 10, 15, 21], checks=["planted"], view="upper")
+
+
+def clip_crew_pocket(ctx, fig):
+    """Crew_Pocket, 0.83 s one-shot (Hands layer): the right hand down into the right front
+    trouser pocket (f7), in (f10), out (f14), back by f20. Entered on ItemPocketed and
+    ItemUnpocketed: the thing appears or vanishes as the hand gets there."""
+    N = 20
+    fingers = -fig.U * 0.85 + fig.F * 0.2 + fig.R * 0.1
+    palm = fig.L * 0.8 - fig.F * 0.2
+    pole = -fig.F * 0.5 + fig.R * 0.7 - fig.U * 0.2
+    stand = crew_base(ctx, fig, 0.0, breaths=0)
+    at = dict(stand)
+    at.update(head=8.0, neck=4.0, shrugR=-3.0, s_side=-2.0)
+    at.update(hand_at("R", fig.V(0.12, -0.31, 1.36), (0.0, 0.0, 0.0), fingers, palm, pole))
+    deep = dict(at)
+    deep.update(hand_at("R", fig.V(0.12, -0.31, 1.30), (0.0, 0.0, 0.0), fingers, palm, pole))
+    out_ = dict(at)
+    out_.update(head=5.0)
+    keys = [(0, stand), (7, at), (10, deep), (14, out_), (N, stand)]
+    return dict(frames=N, loop=False, author="crew", pose=keyed(keys, N, False),
+                keys=[1, 8, 11, 15, 21], checks=["planted"], view="upper")
+
+
+def clip_crew_wear(ctx, fig):
+    """Crew_Wear, 1 s one-shot (Actions layer): the right hand lifted in front of the chest (f6),
+    palm down on the top of the head (f10), a pat (f13), a tug by the ear (f16), down in front of
+    the chest (f19), hanging by f24: putting a thing on, whatever the slot. Entered when the set
+    of worn pieces changes (CrewAnimator)."""
+    N = 24
+    out_pole = fig.R * 0.9 - fig.U * 0.35 + fig.F * 0.1
+    high_pole = fig.R * 0.9 + fig.F * 0.25 - fig.U * 0.1
+    stand = crew_base(ctx, fig, 0.0, breaths=0)
+    lift = dict(stand)
+    lift.update(head=2.0, shrugR=2.0)
+    lift.update(hand_at("R", fig.V(0.34, -0.30, 2.02), (0.0, 0.0, 0.0), fig.F * 0.7 + fig.U * 0.6,
+                        fig.L * 0.9 - fig.U * 0.1, out_pole))
+    on = dict(stand)
+    on.update(head=8.0, neck=3.0, shrugR=6.0)
+    on.update(hand_at("R", fig.V(0.07, -0.03, 2.53), (0.0, 0.0, 0.0), fig.F * 0.7 + fig.L * 0.55,
+                      -fig.U, high_pole))
+    pat = dict(on)
+    pat.update(head=11.0, neck=4.0)
+    pat.update(hand_at("R", fig.V(0.07, -0.03, 2.49), (0.0, 0.0, 0.0), fig.F * 0.7 + fig.L * 0.55,
+                       -fig.U, high_pole))
+    tug = dict(stand)
+    tug.update(head=5.0, neck=2.0, head_roll=-4.0, shrugR=4.0)
+    tug.update(hand_at("R", fig.V(0.10, -0.26, 2.42), (0.0, 0.0, 0.0), fig.U * 0.75 + fig.F * 0.45,
+                       fig.L * 0.9 - fig.F * 0.1, out_pole))
+    lower = dict(stand)
+    lower.update(head=1.0)
+    lower.update(hand_at("R", fig.V(0.28, -0.32, 1.86), (0.0, 0.0, 0.0), fig.F * 0.9 - fig.U * 0.2,
+                         fig.L * 0.9, out_pole))
+    keys = [(0, stand), (6, lift), (10, on), (13, pat), (16, tug), (19, lower), (N, stand)]
+    return dict(frames=N, loop=False, author="crew", pose=keyed(keys, N, False),
+                keys=[1, 4, 7, 11, 14, 17, 20, 25], checks=["planted"], view="upper")
+
+
+def clip_crew_wave(ctx, fig):
+    """Crew_Wave, 1 s loop (Hands layer): the right hand up beside the head, palm forward, waved
+    +/-22 degrees twice a second. For an emote key and the title screen."""
+    def pose(t):
+        w = math.radians(22.0 * math.sin(2.0 * math.tau * t))
+        P = crew_base(ctx, fig, t)
+        P.update(head=-3.0, head_yaw=-5.0, shrugR=6.0)
+
+        def fingers(f):
+            return f.U * math.cos(w) + f.R * math.sin(w)
+        P.update(hand_at("R", fig.V(0.16, -0.55, 2.60), (0.0, 0.0, 0.0), fingers, fig.F,
+                         -fig.U * 0.6 + fig.R * 0.8 - fig.F * 0.1))
+        return P
+    return dict(frames=24, loop=True, author="crew", pose=pose, keys=[1, 4, 7, 13], checks=["planted"],
+                view="upper")
+
+
+def lying_back(ctx, fig, head=0.0, spread=0.0):
+    """On the back: hips 0.5 BU behind the root, torso flat along -F, legs out along +F with the
+    toes up, arms spread on the floor. Fitted onto the floor."""
+    P = c_stand(ctx, fig)
+    P.update(hip=fig.V(-0.50, 0.0, 0.30), pel_flex=-86.0, s1=0.0, s2=0.0, s3=0.0, neck=2.0, head=head)
+    for s, sg in (("L", 1.0), ("R", -1.0)):
+        P["leg%s_ankle" % s] = fig.V(0.46, sg * 0.25, 0.16)
+        P["leg%s_pole" % s] = fig.U + fig.F * 0.3
+        P["leg%s_pitch" % s] = 72.0
+        P["leg%s_yaw" % s] = sg * 10.0
+        out = fig.out(s)
+        P.update(arm_dir(s, -fig.F * (0.35 - spread) + out * 0.95 - fig.U * 0.05, 0.96,
+                         fig.U * 0.6 + fig.F * 0.3, -fig.F * 0.2 + out * 0.9, fig.U))
+    fit_floor(ctx, fig, P)
+    return P
+
+
+def clip_crew_knocked_down(ctx, fig):
+    """Crew_KnockedDown, 1.25 s one-shot (base layer, full body): a blast in front. A flinch with
+    the arms up (f3), thrown back off the feet with the legs out and the arms flung (f9), the seat
+    lands (f15), the back lands (f21), a small bounce of the head (f24), lying still (f30, which
+    Crew_GetUp starts from). In place: the capsule carries the flight, CrewAnimator turns the body
+    to face the blast and holds that yaw while it lies."""
+    N = 30
+    stand = crew_base(ctx, fig, 0.0, breaths=0)
+    flinch = dict(stand)
+    flinch.update(hip=fig.hip_mid0 + fig.V(-0.04, 0.0, -0.12), pel_flex=8.0, s1=6.0, s2=4.0, neck=6.0, head=10.0)
+    for s in "LR":
+        out = fig.out(s)
+        flinch.update(arm_ch(s, fig.V(0.36, 0.0, 2.22) + out * 0.16, -fig.U * 0.7 + out * 0.6,
+                             fig.U * 0.9 + fig.F * 0.2 - out * 0.2, fig.F, 0.0))
+    fly = c_stand(ctx, fig)
+    fly.update(hip=fig.V(-0.35, 0.0, 1.42), pel_flex=-32.0, s1=-6.0, s2=-6.0, s3=-4.0, neck=8.0, head=12.0)
+    for s, sg in (("L", 1.0), ("R", -1.0)):
+        out = fig.out(s)
+        fly["leg%s_ankle" % s] = fig.V(0.28, sg * 0.20, 0.62)
+        fly["leg%s_pole" % s] = fig.U + fig.F
+        fly["leg%s_pitch" % s] = 25.0
+        fly.update(arm_dir(s, -fig.F * 0.2 + out * 0.7 + fig.U * 0.75, 0.97, -fig.U * 0.3 + out * 0.8,
+                           fig.U * 0.7 + out * 0.6, fig.F))
+    seat = c_stand(ctx, fig)
+    seat.update(hip=fig.V(-0.55, 0.0, 0.35), pel_flex=-52.0, s1=-4.0, s2=-4.0, s3=-2.0, neck=6.0, head=10.0)
+    for s, sg in (("L", 1.0), ("R", -1.0)):
+        out = fig.out(s)
+        seat["leg%s_ankle" % s] = fig.V(0.42, sg * 0.22, 0.34)
+        seat["leg%s_pole" % s] = fig.U + fig.F * 0.5
+        seat["leg%s_pitch" % s] = 45.0
+        seat.update(arm_dir(s, -fig.F * 0.5 + out * 0.8 - fig.U * 0.25, 0.96, fig.U * 0.4 + out * 0.8,
+                            -fig.F * 0.4 + out * 0.8, -fig.U))
+    fit_floor(ctx, fig, seat)
+    flat = lying_back(ctx, fig, head=0.0)
+    bounce = lying_back(ctx, fig, head=-7.0)
+    bounce["hip"] = bounce["hip"] + fig.U * 0.02
+    rest = lying_back(ctx, fig, head=-3.0, spread=0.08)
+    keys = [(0, stand), (3, flinch), (9, fly), (15, seat), (21, flat), (24, bounce), (N, rest)]
+    return dict(frames=N, loop=False, author="crew", pose=floor_guard(ctx, fig, keyed(keys, N, False)),
+                keys=[1, 4, 10, 16, 22, 31], checks=[], view="floor", yaw=80.0)
+
+
+def clip_crew_get_up(ctx, fig):
+    """Crew_GetUp, 1.67 s one-shot (base layer, full body): from Crew_KnockedDown's last frame,
+    sits up with the hands behind (f8), pulls the feet in flat by the seat, one hand on the floor
+    and one on a knee (f16), pushes into a squat with both hands on the knees (f24), rises (f32),
+    stands on the root (f40: Crew_Idle's stance, so Locomotion follows without a jump). The feet
+    are planted from f16 on."""
+    N = 40
+    start = clip_crew_knocked_down(ctx, fig)["pose"](1.0)
+    sit = c_stand(ctx, fig)
+    sit.update(hip=fig.V(-0.52, 0.0, 0.30), pel_flex=-14.0, s1=6.0, s2=4.0, s3=2.0, neck=4.0, head=6.0)
+    for s, sg in (("L", 1.0), ("R", -1.0)):
+        out = fig.out(s)
+        sit["leg%s_ankle" % s] = fig.V(0.30, sg * 0.22, 0.14)
+        sit["leg%s_pole" % s] = fig.U + fig.F
+        sit["leg%s_pitch" % s] = 40.0
+        sit.update(arm_dir(s, -fig.F * 0.55 + out * 0.3 - fig.U * 0.8, 0.97, -fig.F * 0.5 + out * 0.8,
+                           -fig.U * 0.8 - fig.F * 0.3, -fig.U))
+    fit_floor(ctx, fig, sit)
+    feet = planted(fig)
+    for s in "LR":
+        feet["leg%s_pole" % s] = fig.F + fig.out(s) * 0.25
+    tuck = c_stand(ctx, fig)
+    tuck.update(feet)
+    tuck.update(hip=fig.V(-0.48, 0.0, 0.30), pel_flex=12.0, s1=8.0, s2=4.0, neck=0.0, head=-4.0)
+    tuck.update(arm_dir("R", -fig.U * 0.9 + fig.R * 0.35 - fig.F * 0.1, 0.97, -fig.F * 0.3 + fig.R * 0.9,
+                        -fig.U * 0.8 + fig.F * 0.2, -fig.U))
+    tuck.update(on_knee("L", "L"))
+    fit_floor(ctx, fig, tuck)
+    squat = c_stand(ctx, fig)
+    squat.update(feet)
+    squat.update(hip=fig.V(-0.24, 0.0, 0.74), pel_flex=38.0, s1=12.0, s2=6.0, neck=-10.0, head=-10.0)
+    squat.update(on_knee("L", "L"))
+    squat.update(on_knee("R", "R"))
+    rise = c_stand(ctx, fig)
+    rise.update(feet)
+    rise.update(hip=fig.V(-0.07, 0.0, 1.18), pel_flex=18.0, s1=6.0, s2=3.0, neck=-2.0, head=-4.0)
+    for s in "LR":
+        rise.update(hang(s, ctx.crew_half, gap=0.08, swing=10.0, bend=20.0))
+    stand = crew_base(ctx, fig, 0.0, breaths=0)
+    keys = [(0, start), (8, sit), (16, tuck), (24, squat), (32, rise), (N, stand)]
+    return dict(frames=N, loop=False, author="crew", pose=floor_guard(ctx, fig, keyed(keys, N, False)),
+                keys=[1, 9, 17, 25, 33, 41], checks=[], view="floor", yaw=80.0)
+
+
+def run_pose(ctx, fig, lead="R"):
+    """A running pose as channels: the lead leg forward, the other pushing off, arms bent and
+    swinging opposite, leaning 11 degrees (Crew_Run's numbers, frozen at mid stride)."""
+    P = c_stand(ctx, fig)
+    P.update(hip=fig.hip_mid0 + fig.V(0.03, 0.0, -0.10), pel_flex=5.0, s1=4.0, s2=3.0, s3=2.0,
+             neck=-3.0, head=-3.0)
+    back = "L" if lead == "R" else "R"
+    for s, fwd in ((lead, True), (back, False)):
+        sg = 1.0 if s == "L" else -1.0
+        P["leg%s_ankle" % s] = fig.V(0.32, sg * 0.14, 0.24) if fwd else fig.V(-0.42, sg * 0.14, 0.42)
+        P["leg%s_pole" % s] = fig.F.copy()
+        P["leg%s_pitch" % s] = 12.0 if fwd else -38.0
+        P.update(hang(s, ctx.crew_half, gap=0.095, swing=-30.0 if fwd else 30.0, bend=78.0, fore_in=0.28))
+    return P
+
+
+def clip_crew_fall(ctx, fig):
+    """Crew_Fall, 2.33 s one-shot (base layer, full body): tripped at a run. From a run stride
+    (f0) the back foot catches and the arms go out (f5), a dive (f10), the hands hit (f14), flat
+    on the belly with the heels up (f18), the legs flop (f24), a dazed head shake (f27-f33),
+    hands and knees (f38), one knee (f45), up (f51), back into the run stride (f56). In place, so
+    the title-screen loader can run, fall and run again on one spot (Run, Fall, Run...)."""
+    N = 56
+    run = run_pose(ctx, fig, "R")
+    trip = c_stand(ctx, fig)
+    trip.update(hip=fig.hip_mid0 + fig.V(0.22, 0.0, -0.16), pel_flex=30.0, s1=8.0, s2=6.0, neck=-14.0, head=-12.0)
+    trip.update(legL_ankle=fig.V(0.46, 0.14, 0.26), legL_pole=fig.F.copy(), legL_pitch=15.0, legL_yaw=0.0,
+                legR_ankle=fig.V(-0.42, -0.14, 0.34), legR_pole=fig.F.copy(), legR_pitch=-55.0, legR_yaw=0.0)
+    for s in "LR":
+        out = fig.out(s)
+        trip.update(arm_dir(s, fig.F * 0.8 + fig.U * 0.25 + out * 0.25, 0.95, -fig.U * 0.6 + out * 0.6,
+                            fig.F * 0.8 + fig.U * 0.2, -fig.U * 0.3 + fig.F * 0.3))
+    dive = c_stand(ctx, fig)
+    dive.update(hip=fig.V(0.55, 0.0, 0.85), pel_flex=62.0, s1=8.0, s2=5.0, neck=-24.0, head=-20.0)
+    for s, sg in (("L", 1.0), ("R", -1.0)):
+        out = fig.out(s)
+        dive["leg%s_ankle" % s] = fig.V(-0.35, sg * 0.16, 1.00)
+        dive["leg%s_pole" % s] = fig.F * 0.5 - fig.U * 0.5
+        dive["leg%s_pitch" % s] = -70.0
+        dive["leg%s_yaw" % s] = 0.0
+        dive.update(arm_dir(s, fig.F * 0.75 - fig.U * 0.55 + out * 0.25, 0.95, fig.U * 0.4 + out * 0.8,
+                            fig.F * 0.6 - fig.U * 0.6, -fig.U))
+    hands = c_stand(ctx, fig)
+    hands.update(hip=fig.V(0.55, 0.0, 0.50), pel_flex=80.0, s1=4.0, s2=2.0, neck=-26.0, head=-22.0)
+    for s, sg in (("L", 1.0), ("R", -1.0)):
+        out = fig.out(s)
+        hands["leg%s_ankle" % s] = fig.V(-0.45, sg * 0.16, 0.82)
+        hands["leg%s_pole" % s] = -fig.U + fig.F * 0.3
+        hands["leg%s_pitch" % s] = -80.0
+        hands["leg%s_yaw" % s] = 0.0
+        hands.update(arm_ch(s, fig.V(1.36, sg * 0.34, 0.14), fig.U * 0.3 + out * 0.8,
+                            fig.F * 0.9 + out * 0.1, -fig.U, 0.0))
+    fit_floor(ctx, fig, hands)
+
+    leg = fig.len["thigh.L"] + fig.len["shin.L"]
+
+    def prone(head, heels_up, head_yaw=0.0):
+        P = c_stand(ctx, fig)
+        P.update(hip=fig.V(0.42, 0.0, 0.25), pel_flex=87.0, s1=2.0, s2=2.0, s3=0.0, neck=-28.0, head=head,
+                 head_yaw=head_yaw)
+        for s, sg in (("L", 1.0), ("R", -1.0)):
+            out = fig.out(s)
+            P["leg%s_ankle" % s] = (fig.V(0.42 - 0.62 * leg, sg * 0.18, 0.62) if heels_up
+                                    else fig.V(0.42 - 0.94 * leg, sg * 0.20, 0.14))
+            P["leg%s_pole" % s] = -fig.U + fig.F * 0.2
+            # Flat: the tops of the feet on the floor, toes pointing back (-165: a toe-down pitch
+            # of -95 drove the toes 0.15 BU into the floor and fit_floor lifted the hips into a plank).
+            P["leg%s_pitch" % s] = -40.0 if heels_up else -165.0
+            P["leg%s_yaw" % s] = 0.0
+            P.update(arm_ch(s, fig.V(1.28, sg * 0.42, 0.10), fig.U * 0.2 + out * 0.9,
+                            fig.F * 0.9 + out * 0.2, -fig.U, 0.0))
+        fit_floor(ctx, fig, P)
+        return P
+    belly = prone(-22.0, True)
+    flop = prone(-4.0, False)
+    shake1 = prone(-18.0, False, 16.0)
+    shake2 = prone(-18.0, False, -16.0)
+    shake3 = prone(-16.0, False, 8.0)
+    fours = c_stand(ctx, fig)
+    fours.update(hip=fig.V(0.10, 0.0, 0.74), pel_flex=80.0, s1=2.0, s2=0.0, neck=-22.0, head=-14.0)
+    for s, sg in (("L", 1.0), ("R", -1.0)):
+        out = fig.out(s)
+        fours["leg%s_ankle" % s] = fig.V(-0.50, sg * 0.18, 0.12)
+        fours["leg%s_pole" % s] = fig.F.copy()
+        fours["leg%s_pitch" % s] = -165.0          # tops of the feet on the floor
+        fours["leg%s_yaw" % s] = 0.0
+        fours.update(arm_ch(s, fig.V(0.86, sg * 0.30, 0.12), -fig.F * 0.4 + out * 0.8,
+                            fig.F * 0.9 + out * 0.1, -fig.U, 0.0))
+    fit_floor(ctx, fig, fours)
+    kneel = c_stand(ctx, fig)
+    kneel.update(hip=fig.V(-0.02, 0.0, 0.98), pel_flex=24.0, s1=8.0, s2=4.0, neck=-8.0, head=-6.0)
+    kneel.update(legL_ankle=rest_ankle(fig, "L", 0.36), legL_pole=fig.F.copy(), legL_pitch=0.0, legL_yaw=0.0,
+                 legR_ankle=fig.V(-0.46, -0.16, 0.30), legR_pole=fig.F.copy(), legR_pitch=-45.0, legR_yaw=0.0)
+    kneel.update(on_knee("R", "L"))
+    kneel.update(hang("L", ctx.crew_half, gap=0.08, swing=6.0, bend=20.0))
+    fit_floor(ctx, fig, kneel)
+    up = c_stand(ctx, fig)
+    up.update(hip=fig.hip_mid0 + fig.V(0.05, 0.0, -0.12), pel_flex=14.0, s1=6.0, s2=3.0, neck=-4.0, head=-4.0)
+    up.update(legL_ankle=rest_ankle(fig, "L", 0.18), legL_pole=fig.F.copy(), legL_pitch=0.0, legL_yaw=0.0,
+              legR_ankle=rest_ankle(fig, "R", -0.28) + fig.U * 0.06, legR_pole=fig.F.copy(), legR_pitch=-25.0, legR_yaw=0.0)
+    for s, sw in (("L", 12.0), ("R", -12.0)):
+        up.update(hang(s, ctx.crew_half, gap=0.09, swing=sw, bend=40.0))
+    keys = [(0, run), (5, trip), (10, dive), (14, hands), (18, belly), (24, flop), (27, shake1), (30, shake2),
+            (33, shake3), (38, fours), (45, kneel), (51, up), (N, run)]
+    return dict(frames=N, loop=False, author="crew", pose=floor_guard(ctx, fig, keyed(keys, N, False)),
+                keys=[1, 6, 11, 15, 19, 25, 31, 36, 39, 43, 46, 52, 57], checks=[], view="floor", yaw=85.0)
+
+
+CREW_ACTIONS = [
+    ("Crew_Smoke", crew_only(clip_crew_smoke)),
+    ("Crew_Drink", crew_only(clip_crew_drink)),
+    ("Crew_Throw", crew_only(clip_crew_throw)),
+    ("Crew_Pocket", crew_only(clip_crew_pocket)),
+    ("Crew_Wear", crew_only(clip_crew_wear)),
+    ("Crew_Wave", crew_only(clip_crew_wave)),
+    ("Crew_KnockedDown", crew_only(clip_crew_knocked_down)),
+    ("Crew_GetUp", crew_only(clip_crew_get_up)),
+    ("Crew_Fall", crew_only(clip_crew_fall)),
+]
+
+
 CLIPS = [
     ("Crew_Idle", clip_crew_idle),
     ("Crew_Walk", gait_clip(WALK, "crew", "crew_half")),
@@ -1690,7 +2378,7 @@ CLIPS = [
     ("Angry_Point", clip_point),
     ("Talk", clip_talk),
     ("Give_Keys", clip_give_keys),
-]
+] + CREW_ACTIONS
 
 
 # ------------------------------------------------------------------------------- scene
@@ -2156,8 +2844,10 @@ def main():
     arm_c, body_c = import_body(args.crew, "crew")
     arm_g, body_g = import_body(args.grandma, "grandma")
     fig_c, fig_g = Figure(arm_c), Figure(arm_g)
+    fig_g.m_per_bu = GRANDMA_SCALE
     ctx = Ctx()
     ctx.seat = None
+    ctx.bodies = {id(fig_c): body_c, id(fig_g): body_g}   # fit_floor measures the skinned mesh
     ctx.crew_half = torso_half_width(fig_c, body_c, 1.70, 1.90)
     ctx.g_half = torso_half_width(fig_g, body_g, 1.70, 1.90)
     ctx.g_hip_half = torso_half_width(fig_g, body_g, 1.40, 1.55)
@@ -2212,6 +2902,7 @@ def main():
         props["chair"] = import_prop(r"GrandmaKit\Furniture\SM_Rocking_Chair.fbx", 1.0)
         props["fire"] = import_prop(r"PierreKit_Ext\PKX_Fireplace.fbx", 1.5)
         props["stove"] = import_prop(r"GrandmaKit\Kitchen\SM_Stove_Old.fbx", 1.0)
+        props.update(make_hand_props())
     mw = arm_c.matrix_world.to_3x3()
     wf = (mw @ fig_c.F).normalized()
     wr = (mw @ fig_c.R).normalized()
@@ -2282,7 +2973,10 @@ def main():
             row.update(speed_crew=v * CREW_SCALE, speed_g=v * GRANDMA_SCALE,
                        slide=max(r_[2] for r_ in res), lift=max(r_[3] for r_ in res), minh=minh)
         step = 1 if frames <= 60 else 2
-        for tag, fg, body, is_g in (("crew", fig_c, body_c, False), ("grandma", fig_g, body_g, True)):
+        bodies = (("crew", fig_c, body_c, False), ("grandma", fig_g, body_g, True))
+        if spec.get("crew_only"):
+            bodies = bodies[:1]           # the crew's actions: the grandmother never plays them
+        for tag, fg, body, is_g in bodies:
             r = measure_clip(fg, body, frames, spec["checks"] + (["seat"] if name in ("Sit_Down", "Stand_Up") else []),
                              ctx, is_g, skirt_ids, step)
             txt = "  on {}: lowest body point {:+.4f} BU".format(tag, r["low"])
@@ -2301,6 +2995,9 @@ def main():
                 txt += "; inside the stove (past its front, under its cooktop): {} vertices".format(r.get("stove_n", 0))
             log(txt)
             row[tag] = r
+        for gf, kind in spec.get("grips", []):
+            scene.frame_set(gf)
+            log("  " + grip_report(fig_c, kind, gf))
         summary.append(row)
 
         if renders:
@@ -2353,21 +3050,32 @@ def render_clip(name, spec, fig, arm_c, arm_g, cam, lab, props, renders, ctx, wf
         show(objs, True)
         centre = wf * 0.55 + Vector((0, 0, 1.30))
         yaw = 70.0
+    view = spec.get("view")
+    if view == "upper":                                 # the hands at the face: chest and head
+        centre, dist = Vector((0.0, 0.0, 2.05)), 3.0
+    elif view == "floor":                               # a fall: the whole body, low
+        centre, dist = Vector((0.0, 0.0, 0.85)), 6.2
     if spec.get("yaw") is not None:
         yaw = spec["yaw"]
+    # The crew's own actions render on the crew only, from two sides (the second row is the
+    # first turned 70 degrees), since the grandmother never plays them.
+    rows = [("crew", yaw), ("crew", yaw + 70.0)] if spec.get("crew_only") else [("crew", yaw), ("grandma", yaw)]
+    held = spec.get("hand_prop")
     paths = []
-    for tag in ("crew", "grandma"):
+    for tag, row_yaw in rows:
         show(tags["crew"], tag == "crew")
         show(tags["grandma"], tag == "grandma")
         for f in spec["keys"]:
             scene.frame_set(f)
-            a = math.radians(yaw)
+            place_hand_prop(props, held, fig if tag == spec["author"] else None, fig.arm)
+            a = math.radians(row_yaw)
             d = wf * math.cos(a) + wr * math.sin(a)
             aim(cam, centre + d * dist + Vector((0, 0, 0.45)), centre)
             put_label(lab, cam, "{} f{} {}".format(name, f, tag))
-            p = os.path.join(renders, "_tmp_{}_{}_{}.png".format(name, tag, f))
+            p = os.path.join(renders, "_tmp_{}_{}_{}_{}.png".format(name, tag, int(row_yaw), f))
             render(p)
             paths.append(p)
+    place_hand_prop(props, None, None, None)
     sheet(paths, os.path.join(renders, "{}_sheet.png".format(name)), len(spec["keys"]))
     if spec.get("gait") is not None:
         gait = spec["gait"]

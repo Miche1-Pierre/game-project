@@ -4,6 +4,68 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 
 ## 2026-09-27
 
+### Pierre's first playthrough, first round of fixes
+
+- **MAP:**
+  - The countryside around the house now matches the title screen: fields and hills, forests, hedges, flowers, wheat and about 88,000 instanced grass tufts, with the same sky, light and haze.
+  - THE MOVERS is painted on the truck, and the interior doors are a mix of open and shut.
+  - A plank ceiling covers the upper rooms, and smoke comes from the chimney when she lights the fire.
+  - **Measured:** 38.8 fps before, about 32 after, in the editor in split screen. The house itself is the main cost, with about 25,000 draw calls for the two cameras. That is the next performance lever.
+- **MENU:** movers carry absurd loads alone (piano, fridge, bathtub, clock, a tower of boxes, sofa). More woods, and three towns on the horizon for the future maps, with a signpost.
+- **UI:**
+  - Everything is about a third larger.
+  - Pressing Play in the editor always starts on the title menu, like the built game. Untick "The Movers/Play From Main Menu" to play the open scene directly.
+  - The intro sign waits for a key.
+  - The contract appears only when the grandmother hands over the list and the keys.
+  - The object card moves to the top right.
+- **PLAYER:**
+  - Your own hands are visible in first person.
+  - Small items are held close in the right hand, and brought to the lips.
+  - A real-looking cigarette and softer smoke.
+- **NOT DONE, noted:**
+  - finer fracture;
+  - a less robotic voice;
+  - the grandmother's props and animations in more detail;
+  - controls rebinding;
+  - saves: agreed not now.
+
+### The presentation layer (ADR-010)
+
+- **DESIGN, Pierre's decision, ADR-010:** a finished-looking layer before the two-player test. It is an exception to CLAUDE.md sections 13 and 18, taken knowingly.
+- **UI:**
+  - The in-game interface moves from OnGUI to LumaFlow on UI Toolkit, in wood, rope, cardboard and paper tags, set in Fredoka (SIL OFL, downloaded with Pierre's approval).
+  - It is laid out per split-screen viewport.
+  - Contract board, the grandmother's patience and mood, her speech bubbles in the world, toasts, pockets with icons, the delivery sign, the driving plate, the intro card and an itemised end screen with replay or menu.
+  - Key hints show every action available on what you look at or hold, with the key of your own device.
+  - Pause menu per player, with options (volumes, sensitivity, invert Y, language, layout) and the controls sheet.
+  - French first, English second.
+- **UI, where everyone is:** a compass tape and edge markers per view for the other player, the grandmother, the delivery point and the keys, positioned by Pierre's Target Indicators runtime.
+- **MENU:**
+  - MainMenu is the new first scene, a live diorama: a country road, the truck driving it, movers with boxes, the house in the distance, and the wooden title framed by branches.
+  - Play alone or as two.
+  - The loading screen shows a mover who runs, trips, falls, gets up and runs again.
+  - `SceneFlow` loads every scene.
+- **PLAYER:**
+  - Smoking brings the cigarette to the lips; the ember glows and the smoke leaves the mouth.
+  - Drinking tilts the bottle to the lips.
+  - A big knock-down tumbles the camera.
+  - The other player sees it through 9 new clips on an Actions layer (smoke, drink, throw, pocket, wear, knocked down, get up, fall, wave), with the object in the body's hand.
+- **AUDIO:** everything is synthesised at load, with no files and no downloads:
+  - footsteps by surface, and the grandmother's shuffle and babbled voice by mood;
+  - crew efforts, smoking and drinking;
+  - pocket, keys, doors, the truck engine;
+  - ambience that dims indoors, interface clicks, a gentle music loop;
+  - volumes per channel.
+- **ART:** the interface sprites are rendered from low-poly models by `tools/blender/render_ui_kit.py`.
+- **PROCESS, at Pierre's request ("assemble everything directly, stop over-testing"):**
+  - Each part was built, reviewed and fixed in staging, then assembled in one pass: 230 scripts, 0 compile errors.
+  - Installed with one Play check per scene: the house and the menu, 0 console errors each.
+  - No automated test battery this time. The real test is two people playing it.
+- **OPEN:**
+  - In the first capture P1's camera pointed at the floor, probably the mouse moving while the editor was unfocused: check when playing.
+  - The tree pack's Fall material was upgraded by Unity on import.
+  - `SLICE_ARCHITECTURE` does not list the new UI, audio and menu files and debug keys yet.
+
 ### The asset workflow, written down from what the bathrobe pilot used (ADR-011, proposed)
 
 Phase 2 of the robe pilot: only what the pilot actually ran is formalised, and none of it outranks playing the house with a second person. Branch `art/asset-workflow`, from `art/bathrobe-pilot`.

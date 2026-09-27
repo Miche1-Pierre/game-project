@@ -69,6 +69,7 @@ namespace Movers
 
         void OnGUI()
         {
+            if (!HudMode.UseLegacy && view != null) return;   // painted in OnPostRender, under the LumaFlow HUD
             if (Event.current.type != EventType.Repaint) return;
             if (shown <= cutoff) return;
 
@@ -81,6 +82,21 @@ namespace Movers
 
             GUI.depth = guiDepth;
             DrawSmoke(area, shown, Time.time);
+        }
+
+        // With the LumaFlow HUD (UICORE) the smoke goes into this camera's own picture instead:
+        // UI Toolkit panels are drawn before IMGUI, so an OnGUI veil would cover the HUD, the
+        // contract and the key hints included. Painted right after the camera rendered, it is
+        // under every panel, the way GUI.depth kept it under the old HUD. The pixel matrix maps
+        // onto this camera's viewport, so each half of a split screen gets only its own smoke.
+        void OnPostRender()
+        {
+            if (HudMode.UseLegacy || view == null || shown <= cutoff) return;
+            int w = view.pixelWidth, h = view.pixelHeight;
+            GL.PushMatrix();
+            GL.LoadPixelMatrix(0f, w, h, 0f);   // GUI convention: origin top left, as in MoversSmokeCLI
+            DrawSmoke(new Rect(0f, 0f, w, h), shown, Time.time);
+            GL.PopMatrix();
         }
 
         // The four layers, in one place, so the offline preview tool (MoversSmokeCLI) paints

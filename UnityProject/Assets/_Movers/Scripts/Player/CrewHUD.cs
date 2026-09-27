@@ -33,6 +33,7 @@ namespace Movers
 
         void OnGUI()
         {
+            if (!HudMode.UseLegacy) return;   // the LumaFlow HUD (HudRoot) draws this now
             if (Event.current.type != EventType.Repaint) return;
             if (view == null) view = CrewView.Of(this);
             if (!CrewView.TryGetRect(view, out Rect r)) return;
