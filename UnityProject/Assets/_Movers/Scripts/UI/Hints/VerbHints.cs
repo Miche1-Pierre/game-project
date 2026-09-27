@@ -271,7 +271,9 @@ namespace Movers
             string notice = seat != null ? seat.ActiveNotice : null;
             if (notice != null) set.Add(new HintLine(Verb.Raw, default, raw: Loc.Prompt(notice), warn: true));
             else if (truck != null && !truck.CanDrive) set.Add(new HintLine(Verb.RampMoving, default, warn: true));
-            else if (truck != null && truck.Body != null && truck.Body.linearVelocity.magnitude > seat.maxExitSpeed)
+            // Velocity, not the body's: on an online client the truck body is kinematic and the
+            // speed is the host's (TruckVehicle.Velocity).
+            else if (truck != null && truck.Body != null && truck.Velocity.magnitude > seat.maxExitSpeed)
                 set.Add(new HintLine(Verb.StopToGetOut, default, warn: true));
             else set.Add(new HintLine(Verb.GetOut, InputGlyphs.For(src, CrewButton.Interact)));
             set.Add(new HintLine(Verb.Steer, InputGlyphs.Move(src)));

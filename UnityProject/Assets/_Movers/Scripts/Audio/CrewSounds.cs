@@ -45,6 +45,8 @@ namespace Movers
 
         int scrape = -1;
         Transform scraping;
+        Vector3 dragAt;           // online client: the dragged body's last position
+        bool hasDragAt;
 
         public int Grunts { get; private set; }
         public int KnockDowns { get; private set; }          // blasts that threw him (tests)
@@ -273,11 +275,13 @@ namespace Movers
                 AudioDirector.Stop(scrape, 0.15f);
                 scrape = -1;
                 scraping = t;
+                hasDragAt = false;
             }
             if (held == null) return;
             Rigidbody rb = held.rb;
             float speed = 0f;
-            if (rb != null)
+            if (Net.IsClient && rb != null && rb.isKinematic) speed = ReplicaDragSpeed(t);
+            else if (rb != null)
             {
                 Vector3 v = rb.linearVelocity;
                 speed = new Vector2(v.x, v.z).magnitude;
@@ -285,6 +289,18 @@ namespace Movers
             if (scrape < 0 && speed > 0.15f && SfxBank.Has(SfxKind.ScrapeLoop))
                 scrape = AudioDirector.StartLoop(SfxKind.ScrapeLoop, t, Vector3.zero, SoundPreset.Impact, 0f, 1f, 0.05f);
             AudioDirector.SetLoop(scrape, Mathf.Clamp01(speed / 1.5f) * 0.65f, Mathf.Clamp(0.8f + speed * 0.15f, 0.8f, 1.15f));
+        }
+
+        // Online client: a replicated body is kinematic (the host moves it), so its speed is
+        // how far the transform went since the last frame.
+        float ReplicaDragSpeed(Transform t)
+        {
+            Vector3 p = t.position;
+            float dt = Time.deltaTime;
+            float speed = hasDragAt && dt > 0f ? new Vector2(p.x - dragAt.x, p.z - dragAt.z).magnitude / dt : 0f;
+            dragAt = p;
+            hasDragAt = true;
+            return speed;
         }
     }
 }
