@@ -21,7 +21,7 @@ namespace Movers
     }
 
     // The connection, and the only file that references NGO or Unity Services (NETCODE_SLICE 3,
-    // ADR-011). NGO carries two named messages, "mv.r" and "mv.u"; everything inside them is
+    // ADR-012). NGO carries two named messages, "mv.r" and "mv.u"; everything inside them is
     // Movers records (NetOut). The _Net root is created only by HostRelay, HostDirect, Join or
     // the command line; the static getters never create it, so the title screen polls offline.
     [DefaultExecutionOrder(NetOrder.Tick)]

@@ -6,9 +6,12 @@ zero animations, and the one pose this game needs is "holding something in front
 you". That pose is not in a generic locomotion library either. Authoring it costs a
 minute here and nothing afterwards.
 
+The clip plays in the "Carry" layer of AC_Crew_Slice; the crew's other clips (idle, walk,
+run, crouch) come from author_clips.py.
+
 Run headless, no GUI and no MCP addon needed:
 
-    blender --background --python tools/blender/author_carry_clip.py
+    blender --background --python-exit-code 1 --python tools/blender/author_carry_clip.py
 
 Arguments go after a bare `--`:
 
@@ -87,19 +90,34 @@ def point_bone(arm, name, target_dir):
     bpy.context.view_layer.update()
 
 
+def outward(arm, side, right):
+    """The direction away from the body on this side, read off where the shoulder is.
+
+    On this rig `right` is the character's own right, so the first version, which pushed the
+    left arm along +right, moved both arms inward: the carry pose had its elbows 12 cm inside
+    the shoulder line and the forearms ran through the chest, so on a bathrobe the hands came
+    out of the front of the robe (team review, 2026-09-25). Reading the side off the bones
+    works whatever the sign convention of the pack.
+    """
+    mid = arm.pose.bones["spine"].head
+    shoulder = arm.pose.bones["upper_arm." + side].head
+    return right if (shoulder - mid).dot(right) > 0.0 else -right
+
+
 def carry_pose(arm, axes, lift=0.0):
-    """Upper arms down and forward, forearms level, as if holding a crate.
+    """Upper arms down, forward and out, forearms level and closing in, as if holding a crate.
 
     `lift` is the breath: 0 at rest, 1 at the top of the cycle. It moves the arms a few
     centimetres rather than bobbing the whole body, because a mover under load does not
     bounce.
     """
     up, fwd, right = axes
-    for side, s in (("L", 1.0), ("R", -1.0)):
+    for side in ("L", "R"):
+        out = outward(arm, side, right)
         point_bone(arm, "upper_arm." + side,
-                   -up * (0.74 - lift * 0.10) + fwd * (0.58 + lift * 0.06) + right * (0.30 * s))
+                   -up * (0.74 - lift * 0.10) + fwd * (0.58 + lift * 0.06) + out * 0.30)
         point_bone(arm, "forearm." + side,
-                   fwd * 0.95 + up * (0.18 + lift * 0.10) + right * (-0.12 * s))
+                   fwd * 0.95 + up * (0.18 + lift * 0.10) - out * 0.12)
 
 
 def all_fcurves(action):
@@ -190,6 +208,10 @@ def export(path):
     asks for and this script does not do.
     """
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    # The pose is keyed in Pose mode, and select_all refuses to run there. render_preview
+    # used to leave Object mode behind it, so an export without --preview failed.
+    if bpy.context.object is not None and bpy.context.object.mode != "OBJECT":
+        bpy.ops.object.mode_set(mode="OBJECT")
     bpy.ops.object.select_all(action="SELECT")
     try:
         bpy.ops.export_scene.fbx(

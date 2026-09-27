@@ -1,4 +1,4 @@
-# ADR-011: Online co-op for the slice, over Unity Relay
+# ADR-012: Online co-op for the slice, over Unity Relay
 
 ## Status
 **Accepted (2026-09-27), Pierre's decision. Revised the same day after three reviews of the spec (NETCODE_SLICE appendix A).**

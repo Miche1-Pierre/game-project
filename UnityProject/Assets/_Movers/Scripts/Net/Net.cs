@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Movers
 {
-    // Online co-op for the slice (ADR-011, 07_MULTIPLAYER/NETCODE_SLICE.md). This file is the
+    // Online co-op for the slice (ADR-012, 07_MULTIPLAYER/NETCODE_SLICE.md). This file is the
     // facade every gameplay gate reads. Offline is the default and keeps today's code path:
     // HasAuthority is true, IsOnline, IsHost and IsClient are false, Drives and IsLocal are true.
     public enum NetRole : byte { Offline = 0, Host = 1, Client = 2 }

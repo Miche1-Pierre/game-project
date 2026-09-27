@@ -39,7 +39,7 @@ _How the systems of the vertical slice (ADR-009) fit together in `Map01_PierreKi
 | GRANDMA | new `NPC/*` |
 | TRUCK | `Vehicles/*` |
 
-**Online co-op (ADR-011):** the `Net/` layer (`Scripts/Net/`, `Net/Sync/`, `Net/Test/`), the online gates added to the files above, and the track ownership used to build them are specified in `07_MULTIPLAYER/NETCODE_SLICE.md` (contracts in section 12, file ownership in section 13).
+**Online co-op (ADR-012):** the `Net/` layer (`Scripts/Net/`, `Net/Sync/`, `Net/Test/`), the online gates added to the files above, and the track ownership used to build them are specified in `07_MULTIPLAYER/NETCODE_SLICE.md` (contracts in section 12, file ownership in section 13).
 
 ## 4. Frozen contracts
 Written first, compiled against the current code, source of truth in the files themselves.

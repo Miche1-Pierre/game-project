@@ -1,6 +1,6 @@
 # NETCODE FOR THE SLICE
 
-_Online co-op for `Map01_PierreKit_House`: two PCs, two home networks, one join code. Decision: [ADR-011](../decisions/ADR-011-online-coop-relay.md). Written 2026-09-27 from the brief and ten subsystem surveys, then revised the same day after three reviews (appendix A, review log). This is the build contract for the parallel tracks: section 12 (frozen contracts) and section 13 (file ownership and workflow) are binding. Pierre's answers are in section 16. Built, merged and tested the same day: what changed from this spec, the test results and how to play are in section 17._
+_Online co-op for `Map01_PierreKit_House`: two PCs, two home networks, one join code. Decision: [ADR-012](../decisions/ADR-012-online-coop-relay.md). Written 2026-09-27 from the brief and ten subsystem surveys, then revised the same day after three reviews (appendix A, review log). This is the build contract for the parallel tracks: section 12 (frozen contracts) and section 13 (file ownership and workflow) are binding. Pierre's answers are in section 16. Built, merged and tested the same day: what changed from this spec, the test results and how to play are in section 17._
 
 ## 1. Goal and scope
 
