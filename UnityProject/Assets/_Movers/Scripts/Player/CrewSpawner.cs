@@ -13,6 +13,10 @@ namespace Movers
     // is plugged in, otherwise nothing and stands still. F1 moves the keyboard to the other
     // player for solo testing, Shift+F1 brings the other player next to the one you drive.
     //
+    // Online (NETCODE_SLICE 9.1) each machine shows and drives one player: the host P1, the
+    // client P2, both on the keyboard, mouse and first pad at once (LocalDevicesSource). The
+    // host's P2 listens to the client (RemoteInputSource), the client's P1 to nothing.
+    //
     // Runs before every player component (-560, CrewMember is -550) so the clone is made from
     // the scene data, before anything has woken up and built runtime children on P1.
     [DefaultExecutionOrder(-560)]
@@ -167,6 +171,7 @@ namespace Movers
 
         void Start()
         {
+            if (Net.IsOnline) { StartOnline(); return; }
             if (gamepadForSecond) pad = MakePad(GamepadSource.FirstConnected());
             nextPadCheck = Time.unscaledTime + padCheckSeconds;
             AssignDefaultSources();
@@ -176,6 +181,7 @@ namespace Movers
         // starts with; also how a test hands the players back after driving them by script.
         public void AssignDefaultSources()
         {
+            if (Net.IsOnline) { AssignOnlineSources(); return; }
             var roster = CrewRoster.All;
             for (int i = 0; i < roster.Count; i++)
             {
@@ -213,6 +219,7 @@ namespace Movers
                 resultToast = null;
             }
 
+            if (Net.IsOnline) return;   // the local source finds its own pad
             if (!gamepadForSecond || Time.unscaledTime < nextPadCheck) return;
             nextPadCheck = Time.unscaledTime + padCheckSeconds;
 
@@ -235,6 +242,46 @@ namespace Movers
                 }
             }
             DebugCommands.Toast(pad != null ? pad.Label + " connected" : "Gamepad disconnected");
+        }
+
+        // ---- online ----
+
+        LocalDevicesSource local;
+
+        void StartOnline()
+        {
+            local = new LocalDevicesSource(keyboard);
+            AssignOnlineSources();
+
+            // One view per machine: the local player's, full screen, with the ears. The client's
+            // P2 also takes the MainCamera tag from P1.
+            var split = GetComponent<SplitScreen>();
+            if (split == null) split = FindAnyObjectByType<SplitScreen>();
+            if (split != null) split.SetLayout(Net.IsHost ? SplitScreen.Layout.SoloFirst : SplitScreen.Layout.SoloSecond);
+            if (Net.IsClient)
+            {
+                var p1 = CrewRoster.Get(Net.HostMember);
+                var p2 = CrewRoster.Get(Net.ClientMember);
+                if (p1 != null && p1.View != null) p1.View.gameObject.tag = "Untagged";
+                if (p2 != null && p2.View != null) p2.View.gameObject.tag = "MainCamera";
+            }
+
+            if (GetComponent<NetPlayerDriver>() == null) gameObject.AddComponent<NetPlayerDriver>();
+        }
+
+        // Host: P1 local, P2 the client. Client: P2 local, P1 a puppet with no input.
+        void AssignOnlineSources()
+        {
+            if (local == null) local = new LocalDevicesSource(keyboard);
+            var roster = CrewRoster.All;
+            for (int i = 0; i < roster.Count; i++)
+            {
+                var m = roster[i];
+                if (m == null || m.Input == null) continue;
+                if (m.index == Net.LocalMember) m.Input.SetSource(local);
+                else if (Net.IsHost && m.index == Net.ClientMember) m.Input.SetSource(new RemoteInputSource(m.Input));
+                else m.Input.SetSource(none);
+            }
         }
 
         static GamepadSource MakePad(int joystick) => joystick > 0 ? new GamepadSource(joystick) : null;
@@ -320,6 +367,72 @@ namespace Movers
         static void ResetStatics()
         {
             Active = null;
+        }
+    }
+
+    // Online, the one player on this machine listens to the keyboard and mouse AND the first
+    // gamepad at the same time (Pierre, 2026-09-27): held buttons from either, the look and
+    // the wheel summed, the stronger of the two moves. The pad is looked for every few
+    // seconds, so one plugged in during the run joins in. PadActive says which device was used
+    // last, for whatever shows a key or a pad button.
+    public sealed class LocalDevicesSource : ICrewInputSource
+    {
+        const float PadCheckSeconds = 2f;
+        const float Activity = 0.05f;
+
+        readonly KeyboardMouseSource keyboard;
+        GamepadSource pad;
+        float nextPadCheck;
+
+        public LocalDevicesSource(KeyboardMouseSource keyboard)
+        {
+            this.keyboard = keyboard ?? new KeyboardMouseSource();
+        }
+
+        public string Label => pad != null ? "Keyboard + " + pad.Label : "Keyboard";
+        public KeyboardMouseSource Keyboard => keyboard;
+        public GamepadSource Pad => pad;
+        public bool PadActive { get; private set; }
+
+        // For code that asks "is this a pad or a keyboard" of any source.
+        public static bool IsPad(ICrewInputSource s) => s is GamepadSource || (s is LocalDevicesSource d && d.PadActive);
+        public static bool IsKeyboard(ICrewInputSource s) => s is KeyboardMouseSource || (s is LocalDevicesSource d && !d.PadActive);
+
+        public void Poll(ref CrewInputFrame f, float dt)
+        {
+            keyboard.Poll(ref f, dt);
+            FindPad();
+            if (pad == null) { if (Active(f)) PadActive = false; return; }
+
+            var p = new CrewInputFrame();
+            pad.Poll(ref p, dt);
+            bool keys = Active(f), stick = Active(p);
+            if (keys) PadActive = false;
+            else if (stick) PadActive = true;
+
+            if (p.move.sqrMagnitude > f.move.sqrMagnitude) f.move = p.move;
+            f.lookDelta += p.lookDelta;
+            f.scroll += p.scroll;
+            f.rollDelta += p.rollDelta;
+            f.held |= p.held;
+        }
+
+        static bool Active(in CrewInputFrame f)
+        {
+            return f.held != 0 || f.move.sqrMagnitude > Activity * Activity || f.lookDelta.sqrMagnitude > Activity * Activity
+                   || Mathf.Abs(f.scroll) > 0.001f || Mathf.Abs(f.rollDelta) > 0.001f;
+        }
+
+        // GetJoystickNames allocates, hence the timer (as CrewSpawner does offline).
+        void FindPad()
+        {
+            if (Time.unscaledTime < nextPadCheck) return;
+            nextPadCheck = Time.unscaledTime + PadCheckSeconds;
+            int now = GamepadSource.FirstConnected();
+            int had = pad != null ? pad.joystick : 0;
+            if (now == had) return;
+            pad = now > 0 ? new GamepadSource(now) : null;
+            if (pad == null) PadActive = false;
         }
     }
 }

@@ -8,7 +8,8 @@ namespace Movers
     // Same rules as before: locked from the start, Escape frees it, a click on the game takes
     // it back. Both are read from whichever player the keyboard drives, through its CrewInput,
     // so a gamepad player's Start never frees the mouse under the keyboard player. No player
-    // on the keyboard: the cursor is left free.
+    // on the keyboard: the cursor is left free. Online, the one local player listens to both
+    // devices (LocalDevicesSource) and owns the mouse.
     [DisallowMultipleComponent]
     public sealed class CursorLock : MonoBehaviour
     {
@@ -16,11 +17,13 @@ namespace Movers
 
         void Start()
         {
+            if (Net.Scripted) return;   // a -netbot test instance never takes the mouse
             if (lockAtStart && KeyboardPlayer() != null) Cursor.lockState = CursorLockMode.Locked;
         }
 
         void Update()
         {
+            if (Net.Scripted) return;
             var input = KeyboardPlayer();
             if (input == null)
             {
@@ -38,7 +41,7 @@ namespace Movers
             for (int i = 0; i < roster.Count; i++)
             {
                 var input = roster[i] != null ? roster[i].Input : null;
-                if (input != null && input.Source is KeyboardMouseSource) return input;
+                if (input != null && (input.Source is KeyboardMouseSource || input.Source is LocalDevicesSource)) return input;
             }
             return null;
         }
