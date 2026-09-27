@@ -56,7 +56,9 @@ PAD_X, PAD_FRONT, PAD_BACK, PAD_TOP = 0.017, 0.038, 0.016, 0.016
 # to read as a puffier slipper.
 SHAPE = 3.0
 
-PINK = (0.93, 0.55, 0.70, 1.0)
+# The garment pink, sRGB as Unity shows it (#F294B8), from 05_ART/style/profile.json. The
+# slippers wrote their own 0.93, 0.55, 0.70 until 2026-09-27; one pink for every garment now.
+PINK = mb.palette("garment_pink")
 
 
 def parse_args():

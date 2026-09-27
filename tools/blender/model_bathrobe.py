@@ -84,8 +84,9 @@ PREVIEW = mb.repo_path("_ArtSource", "preview_bathrobe.png")   # its folder gets
 
 NAME = "SM_Crew_Chest_Bathrobe"
 
-PINK = (0.95, 0.58, 0.72, 1.0)
-TRIM = (0.88, 0.36, 0.55, 1.0)      # placeholder, Unity paints this with the crew colour
+# sRGB as Unity shows them, from 05_ART/style/profile.json: #F294B8 and #E05C8C.
+PINK = mb.palette("garment_pink")
+TRIM = mb.palette("garment_trim_placeholder")   # Unity paints the crew colour over it when worn
 
 SEGS = 20          # around the body. 12 read as a barrel with corners.
 SHAPE = 2.05       # superellipse exponent. 2.4 kept the corners full and they read as plate;

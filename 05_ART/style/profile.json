@@ -18,7 +18,7 @@
     "MAT_Crew_02_Blue": {"srgb": [0.184, 0.435, 0.816], "hex": "#2F6FD0", "unity_mat": "UnityProject/Assets/_Movers/Generated/Characters/Materials/MAT_Crew_02_Blue.mat", "blender_names": [], "source": "crew 2's torso panel"},
     "MAT_Crew_03_Yellow": {"srgb": [0.91, 0.714, 0.173], "hex": "#E8B62C", "unity_mat": "UnityProject/Assets/_Movers/Generated/Characters/Materials/MAT_Crew_03_Yellow.mat", "blender_names": [], "source": "crew 3's torso panel"},
     "MAT_Crew_04_Green": {"srgb": [0.239, 0.608, 0.333], "hex": "#3D9B55", "unity_mat": "UnityProject/Assets/_Movers/Generated/Characters/Materials/MAT_Crew_04_Green.mat", "blender_names": [], "source": "crew 4's torso panel"},
-    "garment_pink": {"srgb": [0.95, 0.58, 0.72], "hex": "#F294B8", "unity_mat": "", "blender_names": ["robe_pink", "slipper_pink"], "source": "the bathrobe as Unity shows it (materials embedded in the FBX). The slippers still write 0.93, 0.55, 0.70 (#ED8CB2): moving them to this pink is a separate step, judged on a before and after render"},
+    "garment_pink": {"srgb": [0.95, 0.58, 0.72], "hex": "#F294B8", "unity_mat": "", "blender_names": ["robe_pink", "slipper_pink"], "source": "the bathrobe as Unity shows it (materials embedded in the FBX). The only garment pink: the slippers moved to it from 0.93, 0.55, 0.70 (#ED8CB2) on 2026-09-27, on Jonathan's verdict on a before and after render"},
     "garment_trim_placeholder": {"srgb": [0.88, 0.36, 0.55], "hex": "#E05C8C", "unity_mat": "", "blender_names": ["robe_trim"], "source": "slot 1 of the bathrobe, what shows while it lies in the house; worn, CrewEquip paints the crew colour over it"}
   },
   "families": {
