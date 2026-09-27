@@ -18,7 +18,7 @@ The character pack ships three rigged bodies and zero animations. This writes th
 pose onto the rig plus a two-second looping breath, and exports an FBX that Unity imports
 as Humanoid and retargets onto the character.
 
-    blender --background --python tools/blender/author_carry_clip.py
+    blender --background --python-exit-code 1 --python tools/blender/author_carry_clip.py
 
 Defaults to `male01_1` and the `Generated/Characters` folder. Override with `--src`,
 `--out` and `--preview` after a bare `--`. It reads up and forward off the bones instead
@@ -28,11 +28,10 @@ Two manual steps remain in Unity. Blender names the FBX take after the scene, so
 the clip to `Carry_Idle` and tick Loop Time. And set the avatar to **Create From This
 Model**, not Copy From Other Avatar: the reason is in the script's `export` docstring.
 
-The same script writes the pose of a body with empty hands, arms down, into
-`Anim_Relaxed_Idle.fbx`. The Unity side of that clip is automated, see "Give the crew its two
-poses" below.
-
-    blender --background --python-exit-code 1 --python tools/blender/author_carry_clip.py -- --pose relaxed
+The clip plays on the "Carry" layer of Pierre's `AC_Crew_Slice`, whose idle is the pose of a
+body with empty hands (clips from `author_clips.py`). The `--pose relaxed` option and
+`MoversCrewPoseCLI`, written for the bathrobe pilot, were dropped when that controller was
+merged on 2026-09-26.
 
 ## Headless runs, three rules learned the hard way
 
@@ -73,15 +72,6 @@ saves a scene; images go to `Assets/_Movers/Generated/review/`, gitignored. Do N
 
 Not covered: the F key itself, which is input. The mirror shot shows an empty pane in
 batchmode; whether the mirror reflects in the editor is unverified.
-
-## Give the crew its two poses (Unity, no clicking)
-
-Imports `Anim_Relaxed_Idle.fbx` with the carry clip's own settings, makes it the default
-state of `AC_Crew` with the carry pose on the `Carrying` bool, and puts `CrewPose` on the four
-crew prefabs. Idempotent: a second run changes no file. No scene is touched. No `-quit`:
-
-    Unity.exe -batchmode -projectPath C:\dev\game-project\UnityProject \
-      -executeMethod Movers.EditorTools.MoversCrewPoseCLI.Setup -logFile pose.log
 
 ## Drive the Blender MCP bridge
 

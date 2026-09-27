@@ -6,14 +6,12 @@ zero animations, and the one pose this game needs is "holding something in front
 you". That pose is not in a generic locomotion library either. Authoring it costs a
 minute here and nothing afterwards.
 
-It also authors the pose the body holds when it carries nothing (--pose relaxed). Until
-2026-09-25 the crew had the carry pose only, so a player with empty hands stood with his
-arms out in front of him, and a bathrobe on that body could not be judged as a garment.
+The clip plays in the "Carry" layer of AC_Crew_Slice; the crew's other clips (idle, walk,
+run, crouch) come from author_clips.py.
 
 Run headless, no GUI and no MCP addon needed:
 
-    blender --background --python tools/blender/author_carry_clip.py
-    blender --background --python tools/blender/author_carry_clip.py -- --pose relaxed
+    blender --background --python-exit-code 1 --python tools/blender/author_carry_clip.py
 
 Arguments go after a bare `--`:
 
@@ -37,7 +35,6 @@ from mathutils import Matrix
 ROOT = r"C:\dev\game-project\UnityProject\Assets"
 DEFAULT_SRC = os.path.join(ROOT, r"Floreswa\Models\male01_1.fbx")
 DEFAULT_OUT = os.path.join(ROOT, r"_Movers\Generated\Characters\Anim_Carry_Idle.fbx")
-DEFAULT_RELAXED_OUT = os.path.join(ROOT, r"_Movers\Generated\Characters\Anim_Relaxed_Idle.fbx")
 
 FPS = 24
 LAST_FRAME = 48          # 2 seconds. Frame 49 repeats frame 1 so the clip loops.
@@ -50,14 +47,10 @@ KEYED = ["upper_arm.L", "forearm.L", "upper_arm.R", "forearm.R", "spine.002"]
 def parse_args():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     p = argparse.ArgumentParser(prog="author_carry_clip")
-    p.add_argument("--pose", choices=("carry", "relaxed"), default="carry")
     p.add_argument("--src", default=DEFAULT_SRC)
-    p.add_argument("--out", default=None)
+    p.add_argument("--out", default=DEFAULT_OUT)
     p.add_argument("--preview", default=None, help="write a PNG of the pose here")
-    args = p.parse_args(argv)
-    if args.out is None:
-        args.out = DEFAULT_OUT if args.pose == "carry" else DEFAULT_RELAXED_OUT
-    return args
+    return p.parse_args(argv)
 
 
 def import_source(path):
@@ -127,25 +120,6 @@ def carry_pose(arm, axes, lift=0.0):
                    fwd * 0.95 + up * (0.18 + lift * 0.10) - out * 0.12)
 
 
-def relaxed_pose(arm, axes, lift=0.0):
-    """Arms hanging at the sides, elbows soft, the pose of a body with nothing in its hands.
-
-    The upper arm leaves the body at about 16 degrees. Closer, the hands vanish into the
-    bathrobe's skirt, which is wider than the hips; that robe is the reason this pose was
-    written. `lift` is the same breath as in carry_pose, a slight swing forward.
-    """
-    up, fwd, right = axes
-    for side in ("L", "R"):
-        out = outward(arm, side, right)
-        point_bone(arm, "upper_arm." + side,
-                   -up * 0.96 + out * 0.28 + fwd * (0.04 + lift * 0.02))
-        point_bone(arm, "forearm." + side,
-                   -up * 0.95 + out * 0.20 + fwd * (0.22 + lift * 0.03))
-
-
-POSES = {"carry": ("Carry_Idle", carry_pose), "relaxed": ("Relaxed_Idle", relaxed_pose)}
-
-
 def all_fcurves(action):
     """Blender 5 moved F-Curves into slotted actions: layers -> strips -> channelbags.
 
@@ -162,10 +136,9 @@ def all_fcurves(action):
     return out
 
 
-def build_action(arm, axes, pose="carry"):
-    name, pose_fn = POSES[pose]
+def build_action(arm, axes):
     arm.animation_data_create()
-    action = bpy.data.actions.new(name)
+    action = bpy.data.actions.new("Carry_Idle")
     arm.animation_data.action = action
     for pb in arm.pose.bones:
         pb.rotation_mode = "QUATERNION"
@@ -179,7 +152,7 @@ def build_action(arm, axes, pose="carry"):
         scene.frame_set(frame)
         bpy.ops.pose.select_all(action="SELECT")
         bpy.ops.pose.transforms_clear()
-        pose_fn(arm, axes, lift)
+        carry_pose(arm, axes, lift)
 
         chest = arm.pose.bones["spine.002"]
         chest.rotation_quaternion = (
@@ -261,7 +234,7 @@ def main():
     bpy.ops.object.mode_set(mode="POSE")
 
     axes = rig_axes(arm)
-    action = build_action(arm, axes, args.pose)
+    action = build_action(arm, axes)
 
     if args.preview:
         render_preview(arm, axes, args.preview)
@@ -270,8 +243,7 @@ def main():
     print("exported {}: action '{}', {} curves, {} bytes".format(
         args.out, action.name, len(all_fcurves(action)), os.path.getsize(args.out)))
     print("NOTE: Blender names the FBX take after the scene, not after the action. "
-          "Rename the clip to {} in Unity and tick Loop Time "
-          "(MoversCrewPoseCLI.Setup does it for the relaxed clip).".format(action.name))
+          "Rename the clip to Carry_Idle in Unity and tick Loop Time.")
 
 
 if __name__ == "__main__":

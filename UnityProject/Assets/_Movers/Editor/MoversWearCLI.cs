@@ -72,7 +72,7 @@ namespace Movers.EditorTools
                 EnterPlayModeOptions.DisableDomainReload | EnterPlayModeOptions.DisableSceneReload;
 
             step = 0; t0 = 0f; failed = false; warnings = 0; errors = 0; touchedRunInBackground = false;
-            player = null; body = null; item = null; pose = null;
+            player = null; body = null; item = null; crewAnimator = null;
             startedAt = System.DateTime.UtcNow;
 
             Application.logMessageReceived += Count;
@@ -221,7 +221,7 @@ namespace Movers.EditorTools
         // The body at rest, the way every other player sees a crew member with empty hands.
         static void Outside()
         {
-            CheckPose("Relaxed_Idle", "with empty hands the body stands at rest");
+            CheckCarryLayer(false, "with empty hands the Carry layer is off");
             var cam = Aim(out Vector3 centre, out Vector3 fwd);
             Shoot(cam, centre, fwd, 0f, 3f, "front_3m");
             CheckStretch(2.5f);   // after a draw, see CheckStretch
@@ -239,38 +239,52 @@ namespace Movers.EditorTools
             step = 2;
         }
 
-        // Forces the carry pose as if the player held something: CrewPose would otherwise set the
-        // bool back from PlayerGrab on the next frame, so it is switched off for the shots.
+        // Forces the carry pose as if the player held something. The crew's animation contract
+        // (AC_Crew_Slice, SLICE_ARCHITECTURE) plays it on a "Carry" layer whose weight
+        // CrewAnimator, on the player root, sets from PlayerGrab every frame; it is switched off
+        // for the shots so the forced weight stays.
         static void StartCarrying()
         {
-            pose = body.animator != null ? body.animator.GetComponent<CrewPose>() : null;
-            Check(pose != null, "the crew body has a CrewPose");
-            if (pose != null) pose.enabled = false;
-            if (body.animator != null) body.animator.SetBool(CrewPose.Carrying, true);
+            crewAnimator = player.GetComponent<CrewAnimator>();
+            Check(crewAnimator != null, "the player has a CrewAnimator");
+            if (crewAnimator != null) crewAnimator.enabled = false;
+            int layer = CarryLayer();
+            if (layer >= 0) body.animator.SetLayerWeight(layer, 1f);
             t0 = Time.realtimeSinceStartup;
             step = 3;
         }
 
         static void OutsideCarrying()
         {
-            CheckPose("Carry_Idle", "while carrying the body holds the carry pose");
+            CheckCarryLayer(true, "while carrying the Carry layer plays " + CarryState);
             var cam = Aim(out Vector3 centre, out Vector3 fwd);
             Shoot(cam, centre, fwd, 0f, 3f, "front_3m_carrying");
             CheckStretch(2.5f);
             Shoot(cam, centre, fwd, 45f, 3f, "three_quarter_3m_carrying");
             Object.Destroy(cam.gameObject);
 
-            if (pose != null) pose.enabled = true;
+            if (crewAnimator != null) crewAnimator.enabled = true;
             t0 = Time.realtimeSinceStartup;
             step = 4;
         }
 
-        static CrewPose pose;
+        const string CarryState = "Carry_Idle";
+        static CrewAnimator crewAnimator;
 
-        static void CheckPose(string state, string what)
+        static int CarryLayer()
         {
             var a = body.animator;
-            Check(a != null && a.GetCurrentAnimatorStateInfo(0).IsName(state), what + " (" + state + ")");
+            return a != null ? a.GetLayerIndex("Carry") : -1;
+        }
+
+        static void CheckCarryLayer(bool carrying, string what)
+        {
+            var a = body.animator;
+            int layer = CarryLayer();
+            bool ok = layer >= 0 && (carrying
+                ? a.GetLayerWeight(layer) > 0.99f && a.GetCurrentAnimatorStateInfo(layer).IsName(CarryState)
+                : a.GetLayerWeight(layer) < 0.01f);
+            Check(ok, what);
         }
 
         // A camera for the outside shots, aimed at the middle of the worn piece, facing the body.
