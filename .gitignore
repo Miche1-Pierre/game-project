@@ -27,6 +27,11 @@ UnityProject/Assets/_Movers/Generated/beer/
 UnityProject/Assets/_Movers/Generated/beer.meta
 UnityProject/Assets/_Movers/Generated/items/
 UnityProject/Assets/_Movers/Generated/items.meta
+# Captures of a piece worn in the map (MoversWearCLI), same deal.
+UnityProject/Assets/_Movers/Generated/review/
+UnityProject/Assets/_Movers/Generated/review.meta
+# Blender review renders (silhouettes, the 8 m view, contact sheets), from movers_blender.py.
+_ArtSource/review/
 
 # Unity-generated IDE / solution files (regenerated locally)
 *.csproj

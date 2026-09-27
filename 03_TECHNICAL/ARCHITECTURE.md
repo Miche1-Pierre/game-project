@@ -8,7 +8,7 @@ _The overall shape of the code. Built like production software, because we are s
 - **Mirror folder structure**: the on-disk layout matches the system layout (Core/, Gameplay/, Player/, World/, Interaction/, Net/, UI/).
 - **Config-driven**: tunable values live in ScriptableObject config assets, not hard-coded (`DATA_ARCHITECTURE.md`).
 - **No backend, no database** by default. The game runs client-side over Steam P2P (like Meccha, PEAK, Lethal). Server infrastructure only if a concept demands it, with an ADR.
-- Assets: 3D as glTF / GLB out of Blender, imported and normalized in Unity.
+- Assets: 3D as FBX out of Blender (not glTF / GLB), imported and normalized in Unity. Built-in RP, Gamma colour space. Presets: `05_ART/style/profile.json`.
 
 ## Layers (indicative, refined with the concept)
 Core (bootstrap, services, events) -> Gameplay (rules, systems) -> Entities (player, NPC, objects) -> Presentation (view, audio, VFX) -> Net (sync).

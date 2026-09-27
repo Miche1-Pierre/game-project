@@ -66,6 +66,44 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
   - The tree pack's Fall material was upgraded by Unity on import.
   - `SLICE_ARCHITECTURE` does not list the new UI, audio and menu files and debug keys yet.
 
+### The asset workflow, written down from what the bathrobe pilot used (ADR-011, proposed)
+
+Phase 2 of the robe pilot: only what the pilot actually ran is formalised, and none of it outranks playing the house with a second person. Branch `art/asset-workflow`, from `art/bathrobe-pilot`.
+
+- **DOCS, ADR-011, proposed by Jonathan:** working references, a style profile, and a human verdict as the gate. Numbered 011 because Pierre's decisions took 008 (everything breaks), 009 (the vertical slice) and 010 (the presentation layer) in the meantime. It becomes "Accepted, and flagged" when Pierre agrees, and the environment tiers are his to decide.
+- **DOCS, STYLE_GUIDE sections 18 to 20:**
+  - working references v0: five tiers, promotion by a named human with a date, the family conventions;
+  - generation modes: STRICT_MATCH, STYLE_CONSISTENT and IMPROVE, each with what it preserves, may improve and avoids;
+  - the review checklist: the gates in order, the human verdict as the gate and `MoversWearCLI` in the map as the final one, five failure owners (Blender, Unity, Design, Code, Animation). Every hint a script prints now gets a threshold or a reader.
+- **DATA, `05_ART/style/profile.json` v0:**
+  - a palette in sRGB as Unity shows it: Pierre's nine `PK_*.mat`, the four crew colours, the garment pink #F294B8 and the robe's trim placeholder;
+  - three families: PierreKit structure, garments, and house props (left unspecified);
+  - a register of 17 glob entries with tiers, the export presets and the review settings.
+  - **Jonathan approved the garment and crew entries (H7):** the Floreswa body canonical, the robe v2 acceptable, the robe v1 anti, and the garment conventions. Every environment tier stays proposed, for Pierre.
+- **TECH, `tools/blender/movers_blender.py`, one module for the asset scripts:**
+  - paths from the repository root, so a script also runs from Pierre's `C:\GameProject`;
+  - the body import, and materials from the palette;
+  - rigid, skinned and animation export presets that fail loudly, with no fallback to `wm.fbx_export`, which writes centimetres;
+  - review renders in the Standard view transform, with the body's silhouette with and without the piece and the piece at 8 m;
+  - contact sheets, and a check of the register.
+  `model_bathrobe.py` and `model_slippers.py` run on it. The proof: the same `CHECK`, `MEASURE`, `ROBE_` and `SLIPPER_` lines before and after, exit 0 with `--python-exit-code 1`, and FBX files identical byte for byte outside the creation timestamp, with a fixed hash seed.
+- **CONTENT, the slippers take the garment pink:** #ED8CB2 becomes #F294B8, on Jonathan's verdict on a before and after render. Their FBX changed in its material colour only, checked by re-import. The robe is untouched.
+- **CONTENT, the slippers' previews had been wrong since 2026-09-17:** the crew rig stands turned 180 degrees about Z, and the slippers, built in the body's frame, were drawn on the other foot, back to front, with the right boot's toe through the left slipper. They are parented to the armature for the renders now, and each one swallows its boot. The silhouette test: they add 3 % of outline from the front, 4 % at three quarters. Also found: a review's world colour lands in every FBX material's AmbientColor, so the slippers render after exporting.
+- **MEASURED, `05_ART/style/metrics.json`:** Pierre's 26 modules against the 26 PKX pieces. No metric splits them cleanly. Three nearly do, and they agree that the agent overdid Pierre's wonkiness:
+  - the PKX lean off the grid far more: median share of tilted surface 53 %, against 7 %;
+  - they chamfer almost every edge: 0.90 against 0.53;
+  - they are mostly quads: 69 % against 4 %.
+  The question for Pierre is in STYLE_GUIDE section 18.
+- **DOCS, contradictions fixed:**
+  - glTF becomes FBX in ASSET_SPECS, ASSET_PIPELINE and ARCHITECTURE;
+  - ASSET_LIST's palette pointer named section 13, which holds the totals; it now points at the profile, and its orientation and budget lines point at the measured values;
+  - the three "Build Kit Prefabs" instructions are marked removed (7e70bd7);
+  - REJECTED.md gains ten rejections from the proposal, with their reasons;
+  - tools/README.md documents the module, the register check and the measurements, with two more headless rules: read the real exit code, and batchmode cannot sign in.
+- **TOOLING, three skills in Jonathan's user folder:** `make-asset`, `asset-to-unity` and `art-style`, written from the commands the pilot ran. They move into the repo once ADR-011 is accepted. A fresh session lists all three, and a read-only dry run of `make-asset` (the slippers to the garment pink) picked the skill unprompted and stopped after announcing its references.
+- **BLOCKED, Unity in batchmode:** it stops at package resolution. Pierre's `com.sahland.lumaflow` comes from the Asset Store, is not in this machine's package cache, and batchmode cannot sign in. So the slippers' new colour is not checked in Unity yet (`ReportAsset`), and nothing was compiled in this session. Opening the project once from the signed-in Unity Hub unblocks it.
+- **NOT DONE:** the environment tiers and the PKX question wait for Pierre. The slippers have still never been seen worn in Unity, and the F key has never been pressed by a human. The robe's tracked renders stay the old AgX ones until its script next runs for real: nothing in its FBX changed, so it was not re-exported.
+
 ## 2026-09-26
 
 ### The grandmother's house becomes a systemic vertical slice (ADR-009)
@@ -154,6 +192,20 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
   - target indicators;
   - first-person smoking and drinking with body animations;
   - synthesised audio.
+
+### The bathrobe is worn in the house, and the carry pose keeps its arms outside the chest
+
+The first run of an asset workflow tried end to end on one real piece: spec, references, review renders, human verdict, export, import report, worn in the map, human verdict again. Jonathan judged every step.
+
+- **CONTENT:** the robe's second version fixed the four shapes diagnosed on 2026-09-20 and the team still read armour: flat shaded, its twenty vertical facets are lamellar plates. It now shades smooth below 45 degrees, rims kept sharp (`SMOOTH_ANGLE` in `model_bathrobe.py`). Geometry unchanged: 1144 tris (740 pink, 404 trim), mid-calf, enclosure 0 under 0.8 cm. A cinched waist was tried at three strengths and dropped: every one put a hard ledge over the belt that read as the lower edge of a cuirass.
+- **TECH, the robe had never been worn, and it tore apart the first time:** all 19 weighted bones disagree with the body's bind poses, the arms by 160 to 170 degrees, because the robe's armature is Blender's re-import of the body's FBX and the re-import turns every bone frame. The joints themselves match to 0.00 cm under one uniform scale of 0.6956. `CrewEquip` now rebakes a skinned piece into the body's bind space (`BakeIntoBodySpace`, a least squares fit on the joints) and skins it with the body's own bind poses, refusing a piece whose joints miss by more than 1 cm. The check it replaces looked at the first shared bone only, the spine, and passed. Nine weightless leaf bones (`hand.L_end` and the like) now resolve through the rig. Skinned pieces import with Read/Write on.
+- **TECH, then two needles:** three hem vertices were weighted 90 % to the hands. Below the hip the skirt looks its weights up at hip height, where the hanging hands of the bind pose are nearer than the hips. Only the sleeves may take an arm now, and `check_weights` refuses the export otherwise. The hint had been printed on every run ("skirt weight share ... hand.L 1%") and judged by nobody.
+- **CONTENT, the pose for empty hands is Pierre's:** `AC_Crew` had the carry pose only, so every player stood with his arms out in front of him and a garment could not be judged on that body (Jonathan's call). The robe was first judged on a relaxed pose written for it. Pierre's `AC_Crew_Slice`, merged the same evening, already plays an idle, walk, run and crouch, with the carry pose on its own "Carry" layer driven by `CrewAnimator`, so the relaxed pose and its `CrewPose` driver were dropped in its favour and the robe re-checked on his idle.
+- **CONTENT, the carry pose fixed:** its elbows sat 12 cm inside the shoulder line and the forearms ran through the chest, because on this rig `right` is the character's own right and `right * s` moved both arms inward. Found by the team on the robe, whose front the hands came out of. Elbows now 12 cm out, hands at shoulder width. The clip plays in the Carry layer of `AC_Crew_Slice`, so every crew member carries this way, robe or not.
+- **TECH, tooling:** `MoversInspectCLI.ReportAsset` (what Unity makes of a model: tris per submesh, bounds, shaders, bones and bind poses against the body, joint fit) and `MoversWearCLI` (wears a piece on the player's body in `Map01_PierreKit_House` through the same call as the F key, at rest and carrying, shots at 3 m and 8 m, fails on any edge stretched past 2.5 times its bind length). How to run them: `tools/README.md`.
+- **DOCS:** the robe's references are in `_ArtSource/references/bathrobe/`. The concept sheet only existed in a temporary folder; the Sketchfab model is kept by its URL, the screenshot showed a personal bookmarks bar.
+- **Lessons for the asset pipeline, each measured:** Blender renders through AgX and the project is Gamma, so the review renders showed a mauve where Unity shows #F294B8; review with the Standard view transform. `blender -b` exits 0 when the script raises, so a refused export looks like a success; pass `--python-exit-code 1`. A skinned renderer baked before its first draw returns its bind pose, which let the needles pass the stretch check once; check after a draw. A compile error keeps Unity busy in batchmode for over ten minutes before it exits; compile on its own first. The agent's own five-point review passed the robe twice where the team's eyes did not; the human verdict stays the gate.
+- **NOT DONE:** the F key has still never been pressed by a human. The mirror renders an empty pane in the batchmode captures; whether it reflects in the editor is unverified. The robe is not placed in the map, which is Pierre's scene.
 
 ## 2026-09-25
 

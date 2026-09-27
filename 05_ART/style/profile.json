@@ -1,0 +1,138 @@
+{
+  "version": 0,
+  "status": "proposed",
+  "about": "Current practice, measured on the bathrobe pilot (decisions/ADR-011-asset-workflow.md, proposed). Read by tools/blender/movers_blender.py. What the fields mean and how tiers change: 05_ART/STYLE_GUIDE.md sections 18 to 20. Not the final art direction (ART_DIRECTION.md section 16).",
+  "color_space": "gamma",
+  "color_note": "Unity is in Gamma space and the models import with useSRGBMaterialColor on, so Unity shows the number in the FBX as it is. Every colour here is that number: sRGB, as Unity shows it. movers_blender.material() writes it unchanged into the Principled base colour, which the FBX carries, and its linear conversion into the viewport colour, which Workbench draws through the Standard view transform.",
+  "palette": {
+    "PK_wall": {"srgb": [1.0, 0.954687, 0.929957], "hex": "#FFF3ED", "unity_mat": "UnityProject/Assets/_Project/Art/PierreKit/Materials/PK_wall.mat", "blender_names": ["wall"], "source": "Pierre's kit, cream plaster. _Color of the Unity material"},
+    "PK_brique": {"srgb": [0.678515, 0.374975, 0.378049], "hex": "#AD6060", "unity_mat": "UnityProject/Assets/_Project/Art/PierreKit/Materials/PK_brique.mat", "blender_names": ["brique"], "source": "Pierre's kit, pink brick accents"},
+    "PK_brique_001": {"srgb": [0.543951, 0.555449, 0.557336], "hex": "#8B8E8E", "unity_mat": "UnityProject/Assets/_Project/Art/PierreKit/Materials/PK_brique_001.mat", "blender_names": ["brique.001"], "source": "Pierre's kit, grey stone"},
+    "PK_wood": {"srgb": [0.648408, 0.499956, 0.368734], "hex": "#A57F5E", "unity_mat": "UnityProject/Assets/_Project/Art/PierreKit/Materials/PK_wood.mat", "blender_names": ["wood"], "source": "Pierre's kit, light wood"},
+    "PK_wood_001": {"srgb": [0.441711, 0.340643, 0.25279], "hex": "#715740", "unity_mat": "UnityProject/Assets/_Project/Art/PierreKit/Materials/PK_wood_001.mat", "blender_names": ["wood.001"], "source": "Pierre's kit, dark wood"},
+    "PK_metal": {"srgb": [0.715241, 0.715241, 0.715241], "hex": "#B6B6B6", "unity_mat": "UnityProject/Assets/_Project/Art/PierreKit/Materials/PK_metal.mat", "blender_names": ["metal"], "source": "Pierre's kit"},
+    "PK_glass": {"srgb": [0.72, 0.87, 0.92], "alpha": 0.28, "hex": "#B8DEEB", "unity_mat": "UnityProject/Assets/_Project/Art/PierreKit/Materials/PK_glass.mat", "blender_names": ["glass"], "source": "Pierre's kit, transparent"},
+    "PK_Black_001": {"srgb": [0.05, 0.05, 0.05], "hex": "#0D0D0D", "unity_mat": "UnityProject/Assets/_Project/Art/PierreKit/Materials/PK_Black_001.mat", "blender_names": ["Black.001"], "source": "Pierre's kit"},
+    "PK_grass": {"srgb": [0.44, 0.6, 0.32], "hex": "#709952", "unity_mat": "UnityProject/Assets/_Project/Art/PierreKit/Materials/PK_grass.mat", "blender_names": [], "source": "in the kit's material folder; no kit FBX maps a material to it"},
+    "MAT_Crew_01_Red": {"srgb": [0.784, 0.224, 0.18], "hex": "#C8392E", "unity_mat": "UnityProject/Assets/_Movers/Generated/Characters/Materials/MAT_Crew_01_Red.mat", "blender_names": [], "source": "crew 1's torso panel, the identity colour (CHARACTERS.md)"},
+    "MAT_Crew_02_Blue": {"srgb": [0.184, 0.435, 0.816], "hex": "#2F6FD0", "unity_mat": "UnityProject/Assets/_Movers/Generated/Characters/Materials/MAT_Crew_02_Blue.mat", "blender_names": [], "source": "crew 2's torso panel"},
+    "MAT_Crew_03_Yellow": {"srgb": [0.91, 0.714, 0.173], "hex": "#E8B62C", "unity_mat": "UnityProject/Assets/_Movers/Generated/Characters/Materials/MAT_Crew_03_Yellow.mat", "blender_names": [], "source": "crew 3's torso panel"},
+    "MAT_Crew_04_Green": {"srgb": [0.239, 0.608, 0.333], "hex": "#3D9B55", "unity_mat": "UnityProject/Assets/_Movers/Generated/Characters/Materials/MAT_Crew_04_Green.mat", "blender_names": [], "source": "crew 4's torso panel"},
+    "garment_pink": {"srgb": [0.95, 0.58, 0.72], "hex": "#F294B8", "unity_mat": "", "blender_names": ["robe_pink", "slipper_pink"], "source": "the bathrobe as Unity shows it (materials embedded in the FBX). The only garment pink: the slippers moved to it from 0.93, 0.55, 0.70 (#ED8CB2) on 2026-09-27, on Jonathan's verdict on a before and after render"},
+    "garment_trim_placeholder": {"srgb": [0.88, 0.36, 0.55], "hex": "#E05C8C", "unity_mat": "", "blender_names": ["robe_trim"], "source": "slot 1 of the bathrobe, what shows while it lies in the house; worn, CrewEquip paints the crew colour over it"}
+  },
+  "families": {
+    "pierrekit_structure": {
+      "owner": "Pierre",
+      "source": "_ArtSource/assets.blend, read only: never written, never rendered, its frame never changed",
+      "import_scale": 1.5,
+      "module_bu": 2.0,
+      "orientation": "length on X, outside face towards +Z in Unity; roof sections rise towards -Z from the eave; stairs climb towards -Z",
+      "pivot": "bottom centre; floors: top centre; roofs: the eave; stairs: the foot",
+      "mannequin_bu": 1.2,
+      "tris": [280, 16567],
+      "tris_note": "the range of the 26 canonical PK_*.fbx (a plain wall 528, the rounded roof corner 16567), measured into 05_ART/style/metrics.json",
+      "materials": ["wall", "brique", "brique.001", "wood", "wood.001", "glass", "metal", "Black.001"],
+      "material_remap": "by name to PK_*.mat, through externalObjects in each .meta",
+      "export_preset": "pierrekit",
+      "checks": [
+        "normals out: export_pierrekit.py turns the inside-out parts round",
+        "globalScale 1.5 in every .meta",
+        "every material remapped by name to a PK_*.mat",
+        "the stair's steps are 0.44 m once scaled and it rises 2.79 m for a 3.06 m storey: the map adds a ramp and a plinth (ASSET_LIST section 11)"
+      ]
+    },
+    "garments": {
+      "owner": "Jonathan",
+      "approved_by": "Jonathan",
+      "date": "2026-09-27",
+      "source": "tools/blender/model_bathrobe.py, tools/blender/model_slippers.py",
+      "import_scale": 1.0,
+      "orientation": "modelled in place on the imported body; the character faces +Y in Blender world, because the imported object carries a rotation",
+      "pivot": "skinned: the armature; rigid: the anchor bone's head (foot.L for a slipper)",
+      "mannequin_bu": 2.588,
+      "body": "UnityProject/Assets/Floreswa/Models/male01_1.fbx: 2.588 BU tall, imported at 0.6956 to stand 1.80 m, 1862 tris",
+      "tris": [122, 1250],
+      "tris_note": "a full garment up to the 1.2K the reference garment spends (the robe: 1144); an accessory under a tenth of the body (a slipper: 122)",
+      "export_preset": "skinned",
+      "export_preset_note": "a rigid worn piece, such as the slippers, uses the rigid preset",
+      "smooth_angle_deg": 45,
+      "weights": "only the sleeves take an arm; below the hip the skirt looks its weights up at hip height",
+      "review_pose": "arms down, the crew's idle; in Unity also carrying",
+      "checks": [
+        "enclosure: every body vertex the piece covers at least 0.8 cm inside it (check_enclosure)",
+        "weights: none unweighted, none outside the sleeves on an arm, none of the skirt below the thigh (check_weights)",
+        "triangles within the budget",
+        "joint fit within 1 cm (ReportAsset, CrewEquip.BakeIntoBodySpace)",
+        "no edge stretched past 2.5 times its bind length, checked after a draw (MoversWearCLI)",
+        "no [CrewEquip] warning, no magenta shader"
+      ]
+    },
+    "house_props": {
+      "owner": "Pierre",
+      "status": "unspecified in v0: nothing in this family is generated before the go / no-go and Pierre's agreement",
+      "import_scale": 1.0,
+      "orientation": "GrandmaKit furniture faces local +Z, except seats, beds and benches, whose backrest is on +Z (ASSET_LIST section 11)",
+      "pivot": "base centre; wall-mounted pieces centred",
+      "mannequin_bu": 1.8,
+      "tris": null,
+      "export_preset": null,
+      "checks": []
+    }
+  },
+  "references_rule": "Globs are relative to the repository root. The last matching entry wins, so an exception follows the rule it refines. An entry with 'rev' is looked up in that commit, not in the working tree. 'family' is the family the entry informs, '*' for all. A tier changes only with approved_by and date filled in: Jonathan for garments and crew, Pierre for the environment.",
+  "references": [
+    {"glob": "UnityProject/Assets/_Project/Art/PierreKit/PK_*.fbx", "family": "pierrekit_structure", "tier": "canonical", "origin": "hand", "in_use": true, "approved_by": "", "date": "", "note": "Pierre's hand-made kit, called the reference style in ASSET_LIST section 11 (2026-09-21). Source _ArtSource/assets.blend"},
+    {"glob": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_*.fbx", "family": "pierrekit_structure", "tier": "acceptable", "origin": "agent", "in_use": true, "approved_by": "", "date": "", "note": "made by an agent in Pierre's style, source _ArtSource/assets_extension.blend; pending Pierre's review"},
+    {"glob": "UnityProject/Assets/Floreswa/Models/male01_1.fbx", "family": "garments", "tier": "canonical", "origin": "pack", "in_use": true, "approved_by": "Jonathan", "date": "2026-09-27", "note": "the crew body every worn piece is fitted to"},
+    {"glob": "UnityProject/Assets/_Project/Art/Crew/SM_Crew_Chest_Bathrobe.fbx", "family": "garments", "tier": "acceptable", "origin": "agent", "in_use": true, "approved_by": "Jonathan", "date": "2026-09-27", "note": "bathrobe v2, validated worn in the map by Jonathan on 2026-09-26. The slippers are not a reference: nobody has seen them on the body since the axis fix"},
+    {"glob": "UnityProject/Assets/_Project/Art/GrandmaKit/**/SM_*.fbx", "family": "house_props", "tier": "acceptable", "origin": "agent", "in_use": true, "approved_by": "", "date": "", "note": "only the furniture and props that _ArtSource/house_objects.txt places in Map01_PierreKit_House; unplaced pieces are not references"},
+    {"glob": "UnityProject/Assets/_Project/Art/GrandmaKit/Architecture/SM_*.fbx", "family": "pierrekit_structure", "tier": "legacy", "origin": "agent", "in_use": false, "approved_by": "", "date": "", "note": "replaced by the PierreKit"},
+    {"glob": "UnityProject/Assets/_Project/Art/GrandmaKit/Veranda/SM_*.fbx", "family": "pierrekit_structure", "tier": "legacy", "origin": "agent", "in_use": false, "approved_by": "", "date": "", "note": "replaced by the PierreKit veranda pieces"},
+    {"glob": "UnityProject/Assets/_Project/Art/CottageKit/SM_*.fbx", "family": "pierrekit_structure", "tier": "legacy", "origin": "agent", "in_use": true, "approved_by": "", "date": "", "note": "replaced by the PierreKit; two of its prefabs are still placed in the garden"},
+    {"glob": "UnityProject/Assets/_Project/Art/Architecture/SM_*.fbx", "family": "pierrekit_structure", "tier": "legacy", "origin": "agent", "in_use": false, "approved_by": "", "date": "", "note": "the first greybox architecture (2026-09-17)"},
+    {"glob": "UnityProject/Assets/_Project/Art/Furniture/SM_*.fbx", "family": "house_props", "tier": "legacy", "origin": "agent", "in_use": true, "approved_by": "", "date": "", "note": "the first greybox furniture (2026-09-17); one piece is still placed"},
+    {"glob": "UnityProject/Assets/_Project/Art/Props/SM_*.fbx", "family": "house_props", "tier": "legacy", "origin": "agent", "in_use": true, "approved_by": "", "date": "", "note": "the first greybox props (2026-09-17); one piece is still placed"},
+    {"glob": "UnityProject/Assets/BrokenVector/LowPolyStoragePack/**/*.dae", "family": "house_props", "tier": "acceptable", "origin": "pack", "in_use": true, "approved_by": "", "date": "", "note": "placed in the cellar and the garden"},
+    {"glob": "UnityProject/Assets/BrokenVector/LowPolyCarPack/**/*.fbx", "family": "house_props", "tier": "acceptable", "origin": "pack", "in_use": true, "approved_by": "", "date": "", "note": "the grandmother's car"},
+    {"glob": "UnityProject/Assets/BrokenVector/LowPolyTreePack/**/*.dae", "family": "house_props", "tier": "acceptable", "origin": "pack", "in_use": true, "approved_by": "", "date": "", "note": "the garden trees"},
+    {"glob": "UnityProject/Assets/BrokenVector/LowPolyDungeon/**/*.fbx", "family": "*", "tier": "do_not_copy", "origin": "pack", "in_use": false, "approved_by": "", "date": "", "note": "read wrong for a house: Tutorial_01's first pass used it and was remapped on 2026-09-17"},
+    {"glob": "UnityProject/Assets/Low Poly Pistol Weapon Pack 1/**/*.fbx", "family": "*", "tier": "do_not_copy", "origin": "pack", "in_use": false, "approved_by": "", "date": "", "note": "not this game's world"},
+    {"rev": "b64b648", "glob": "_ArtSource/bathrobe_*.png", "family": "garments", "tier": "anti", "origin": "agent", "in_use": false, "approved_by": "Jonathan", "date": "2026-09-27", "note": "bathrobe v1, judged samurai armour on 2026-09-20; its five faults are listed in _ArtSource/references/bathrobe/SOURCE.md. The v2 shaded flat (2026-09-25) failed too: flat vertical facets read as lamellar plates"}
+  ],
+  "export_presets": {
+    "rigid": {
+      "fbx": {"global_scale": 1.0, "apply_unit_scale": true, "apply_scale_options": "FBX_SCALE_ALL", "bake_space_transform": true, "add_leaf_bones": false, "bake_anim": false, "axis_forward": "-Z", "axis_up": "Y"},
+      "why": "bake_space_transform on: off, the axis conversion lands on the imported root and a slipper lay on its back once anything set a world rotation. apply_unit_scale with FBX_SCALE_ALL: with False and FBX_SCALE_NONE a mesh arrives 100 times too small (CHARACTERS.md)"
+    },
+    "skinned": {
+      "fbx": {"global_scale": 1.0, "apply_unit_scale": true, "apply_scale_options": "FBX_SCALE_ALL", "bake_space_transform": false, "add_leaf_bones": false, "bake_anim": false, "axis_forward": "-Z", "axis_up": "Y"},
+      "why": "bake_space_transform off: on is the documented way to wreck an armature. The axis conversion lands on the imported root and CrewEquip composes with it"
+    },
+    "animation": {
+      "fbx": {"object_types": ["ARMATURE"], "global_scale": 1.0, "apply_unit_scale": false, "apply_scale_options": "FBX_SCALE_NONE", "add_leaf_bones": false, "bake_anim": true, "bake_anim_use_all_actions": false, "bake_anim_use_nla_strips": false, "bake_anim_simplify_factor": 0.0, "axis_forward": "-Z", "axis_up": "Y"},
+      "why": "a humanoid clip retargets through the avatar and carries no scale; the armature alone; Blender names the take after the scene, so export_animation renames the scene for the export. The flags author_clips.py and model_grandma.py use"
+    },
+    "pierrekit": {
+      "fbx": {"object_types": ["MESH"], "apply_unit_scale": true, "global_scale": 1.0, "bake_space_transform": true, "axis_forward": "-Z", "axis_up": "Y", "mesh_smooth_type": "FACE", "use_mesh_modifiers": true},
+      "owner": "tools/blender/export_pierrekit.py, FBX_SETTINGS",
+      "why": "recorded here, not used by movers_blender: fracture_modules.py copies it exactly so the chunks overlay the module. A change goes into both files"
+    }
+  },
+  "review": {
+    "engine": "BLENDER_WORKBENCH",
+    "view_transform": "Standard",
+    "light": "STUDIO",
+    "backface_culling": true,
+    "world_color": [0.93, 0.93, 0.94],
+    "resolution": [760, 1080],
+    "views_deg": {"1_front": 90, "2_three_quarter": 140, "3_side": 180, "4_back": 270},
+    "silhouette": true,
+    "silhouette_views": ["1_front", "2_three_quarter"],
+    "distances_m": [2.5, 8.0],
+    "far_fov_deg": 60,
+    "far_yaw_deg": 20,
+    "far_resolution": [960, 540],
+    "note": "Distances are metres as the player sees them; a family's mannequin_bu converts them to Blender units (a garment's near view is 3.6 BU). The 8 m view uses the player camera's 60 degrees and a 20 degree yaw, as MoversWearCLI's 8 m shot does. Views are in degrees round the target, 90 facing the character's front."
+  }
+}

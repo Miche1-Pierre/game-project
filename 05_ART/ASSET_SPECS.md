@@ -3,7 +3,7 @@
 _Baseline specs so generated and free assets stay consistent. Refined with the concept._
 
 ## Baseline
-- Format: glTF / GLB out of Blender; import and normalize in Unity.
+- Format: FBX out of Blender, never glTF / GLB: every importer setting and every tool in the project is FBX. Built-in RP, Standard shader, Gamma colour space. Export presets and per-family conventions: `style/profile.json`, used through `tools/blender/movers_blender.py` (ADR-011).
 - Poly budget: low-poly; keep well within the 60 fps target.
 - Scale: 1 unit = 1 meter; consistent pivots and orientation.
 - Materials: from the shared library (`MATERIALS.md`); few per asset.

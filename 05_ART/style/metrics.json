@@ -1,0 +1,1442 @@
+{
+ "about": "Measured by tools/blender/measure_assets.py on the exported FBX, never on _ArtSource/assets.blend. What each metric means: the script's docstring. The reading for Pierre: 05_ART/STYLE_GUIDE.md section 18.",
+ "groups": {
+  "PK": {
+   "origin": "hand",
+   "glob": "UnityProject/Assets/_Project/Art/PierreKit/PK_*.fbx",
+   "files": 26,
+   "metrics": {
+    "tris": {
+     "min": 280,
+     "median": 1260.0,
+     "max": 16567
+    },
+    "tris_per_m2": {
+     "min": 9.44,
+     "median": 55.505,
+     "max": 386.21
+    },
+    "quad_share": {
+     "min": 0.0,
+     "median": 0.0355,
+     "max": 0.412
+    },
+    "ngon_share": {
+     "min": 0.0,
+     "median": 0.0,
+     "max": 0.03
+    },
+    "bevel_share": {
+     "min": 0.0,
+     "median": 0.531,
+     "max": 0.775
+    },
+    "off_axis_deg": {
+     "min": 0.003,
+     "median": 0.216,
+     "max": 8.961
+    },
+    "off_axis_share": {
+     "min": 0.0,
+     "median": 0.067,
+     "max": 0.772
+    },
+    "open_edge_share": {
+     "min": 0.0,
+     "median": 0.0,
+     "max": 0.067
+    }
+   }
+  },
+  "PKX": {
+   "origin": "agent",
+   "glob": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_*.fbx",
+   "files": 26,
+   "metrics": {
+    "tris": {
+     "min": 44,
+     "median": 410.0,
+     "max": 1684
+    },
+    "tris_per_m2": {
+     "min": 11.5,
+     "median": 45.29,
+     "max": 503.05
+    },
+    "quad_share": {
+     "min": 0.335,
+     "median": 0.692,
+     "max": 0.888
+    },
+    "ngon_share": {
+     "min": 0.0,
+     "median": 0.0,
+     "max": 0.05
+    },
+    "bevel_share": {
+     "min": 0.547,
+     "median": 0.9015,
+     "max": 1.0
+    },
+    "off_axis_deg": {
+     "min": 0.37,
+     "median": 1.026,
+     "max": 4.343
+    },
+    "off_axis_share": {
+     "min": 0.184,
+     "median": 0.527,
+     "max": 1.0
+    },
+    "open_edge_share": {
+     "min": 0.0,
+     "median": 0.0,
+     "max": 0.0
+    }
+   }
+  }
+ },
+ "separation": {
+  "tris": {
+   "threshold": 817.0,
+   "PK_below": false,
+   "right_side": "42 of 52",
+   "ranges_overlap": true
+  },
+  "tris_per_m2": {
+   "threshold": 106.595,
+   "PK_below": true,
+   "right_side": "35 of 52",
+   "ranges_overlap": true
+  },
+  "quad_share": {
+   "threshold": 0.267,
+   "PK_below": true,
+   "right_side": "51 of 52",
+   "ranges_overlap": true
+  },
+  "ngon_share": {
+   "threshold": 0.0315,
+   "PK_below": true,
+   "right_side": "30 of 52",
+   "ranges_overlap": true
+  },
+  "bevel_share": {
+   "threshold": 0.784,
+   "PK_below": true,
+   "right_side": "45 of 52",
+   "ranges_overlap": true
+  },
+  "off_axis_deg": {
+   "threshold": 0.3265,
+   "PK_below": true,
+   "right_side": "43 of 52",
+   "ranges_overlap": true
+  },
+  "off_axis_share": {
+   "threshold": 0.1765,
+   "PK_below": true,
+   "right_side": "47 of 52",
+   "ranges_overlap": true
+  },
+  "open_edge_share": {
+   "threshold": 0.003,
+   "PK_below": false,
+   "right_side": "31 of 52",
+   "ranges_overlap": true
+  }
+ },
+ "assets": [
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Door_Leaf.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 3490,
+   "size_m": [
+    1.224,
+    2.243,
+    0.342
+   ],
+   "materials": [
+    "glass",
+    "metal",
+    "wood"
+   ],
+   "tris_per_m2": 386.21,
+   "quad_share": 0.412,
+   "ngon_share": 0.002,
+   "bevel_share": 0.415,
+   "off_axis_deg": 0.548,
+   "off_axis_share": 0.157,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Floor_Plank_A.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 1476,
+   "size_m": [
+    3.065,
+    0.36,
+    3.065
+   ],
+   "materials": [
+    "wood.001"
+   ],
+   "tris_per_m2": 58.48,
+   "quad_share": 0.0,
+   "ngon_share": 0.0,
+   "bevel_share": 0.775,
+   "off_axis_deg": 0.089,
+   "off_axis_share": 0.017,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Floor_Plank_B.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 1394,
+   "size_m": [
+    3.065,
+    0.36,
+    3.065
+   ],
+   "materials": [
+    "wood.001"
+   ],
+   "tris_per_m2": 57.81,
+   "quad_share": 0.0,
+   "ngon_share": 0.0,
+   "bevel_share": 0.775,
+   "off_axis_deg": 0.089,
+   "off_axis_share": 0.017,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Floor_Stone.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 280,
+   "size_m": [
+    3.442,
+    0.292,
+    3.266
+   ],
+   "materials": [
+    "brique.001"
+   ],
+   "tris_per_m2": 9.44,
+   "quad_share": 0.0,
+   "ngon_share": 0.0,
+   "bevel_share": 0.492,
+   "off_axis_deg": 0.953,
+   "off_axis_share": 0.153,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Floor_Upper_A.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 1500,
+   "size_m": [
+    3.001,
+    0.295,
+    2.992
+   ],
+   "materials": [
+    "wood.001"
+   ],
+   "tris_per_m2": 54.17,
+   "quad_share": 0.169,
+   "ngon_share": 0.0,
+   "bevel_share": 0.727,
+   "off_axis_deg": 0.223,
+   "off_axis_share": 0.074,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Floor_Upper_B.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 2546,
+   "size_m": [
+    3.016,
+    0.293,
+    2.987
+   ],
+   "materials": [
+    "wood.001"
+   ],
+   "tris_per_m2": 67.1,
+   "quad_share": 0.171,
+   "ngon_share": 0.0,
+   "bevel_share": 0.682,
+   "off_axis_deg": 0.389,
+   "off_axis_share": 0.1,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Pillar_Brick.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 1404,
+   "size_m": [
+    1.021,
+    2.072,
+    1.007
+   ],
+   "materials": [
+    "brique",
+    "wood"
+   ],
+   "tris_per_m2": 82.61,
+   "quad_share": 0.193,
+   "ngon_share": 0.03,
+   "bevel_share": 0.515,
+   "off_axis_deg": 0.283,
+   "off_axis_share": 0.12,
+   "open_edge_share": 0.031
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Post_T.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 534,
+   "size_m": [
+    0.722,
+    3.152,
+    3.276
+   ],
+   "materials": [
+    "brique",
+    "wood.001"
+   ],
+   "tris_per_m2": 54.65,
+   "quad_share": 0.0,
+   "ngon_share": 0.0,
+   "bevel_share": 0.539,
+   "off_axis_deg": 0.205,
+   "off_axis_share": 0.066,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Roof_10.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 4184,
+   "size_m": [
+    3.446,
+    2.484,
+    3.244
+   ],
+   "materials": [
+    "brique",
+    "wood.001"
+   ],
+   "tris_per_m2": 60.53,
+   "quad_share": 0.043,
+   "ngon_share": 0.0,
+   "bevel_share": 0.518,
+   "off_axis_deg": 1.379,
+   "off_axis_share": 0.169,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Roof_11.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 5732,
+   "size_m": [
+    3.95,
+    2.498,
+    3.318
+   ],
+   "materials": [
+    "brique",
+    "wood.001"
+   ],
+   "tris_per_m2": 77.69,
+   "quad_share": 0.058,
+   "ngon_share": 0.0,
+   "bevel_share": 0.526,
+   "off_axis_deg": 1.708,
+   "off_axis_share": 0.221,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Roof_12.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 5868,
+   "size_m": [
+    3.924,
+    2.429,
+    3.531
+   ],
+   "materials": [
+    "brique",
+    "metal",
+    "wood.001"
+   ],
+   "tris_per_m2": 81.93,
+   "quad_share": 0.068,
+   "ngon_share": 0.001,
+   "bevel_share": 0.503,
+   "off_axis_deg": 1.612,
+   "off_axis_share": 0.214,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Roof_8.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 7416,
+   "size_m": [
+    3.97,
+    2.457,
+    3.617
+   ],
+   "materials": [
+    "brique",
+    "metal",
+    "wood.001"
+   ],
+   "tris_per_m2": 97.23,
+   "quad_share": 0.075,
+   "ngon_share": 0.001,
+   "bevel_share": 0.512,
+   "off_axis_deg": 1.902,
+   "off_axis_share": 0.259,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Roof_9.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 16567,
+   "size_m": [
+    5.503,
+    2.807,
+    5.66
+   ],
+   "materials": [
+    "brique",
+    "metal",
+    "wood.001"
+   ],
+   "tris_per_m2": 105.22,
+   "quad_share": 0.085,
+   "ngon_share": 0.002,
+   "bevel_share": 0.555,
+   "off_axis_deg": 2.617,
+   "off_axis_share": 0.337,
+   "open_edge_share": 0.006
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Stairs_Stone.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 5236,
+   "size_m": [
+    1.963,
+    3.937,
+    4.979
+   ],
+   "materials": [
+    "brique.001",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 51.87,
+   "quad_share": 0.016,
+   "ngon_share": 0.0,
+   "bevel_share": 0.642,
+   "off_axis_deg": 0.237,
+   "off_axis_share": 0.089,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Stairs_Wood.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 3374,
+   "size_m": [
+    1.823,
+    3.901,
+    4.876
+   ],
+   "materials": [
+    "brique.001",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 46.51,
+   "quad_share": 0.024,
+   "ngon_share": 0.0,
+   "bevel_share": 0.605,
+   "off_axis_deg": 0.079,
+   "off_axis_share": 0.02,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Veranda_Glass_Flat.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 514,
+   "size_m": [
+    3.009,
+    0.097,
+    1.115
+   ],
+   "materials": [
+    "glass",
+    "wood"
+   ],
+   "tris_per_m2": 57.28,
+   "quad_share": 0.024,
+   "ngon_share": 0.0,
+   "bevel_share": 0.465,
+   "off_axis_deg": 0.184,
+   "off_axis_share": 0.039,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Veranda_Glass_Wall.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 930,
+   "size_m": [
+    3.123,
+    3.014,
+    0.097
+   ],
+   "materials": [
+    "glass",
+    "wood"
+   ],
+   "tris_per_m2": 57.68,
+   "quad_share": 0.026,
+   "ngon_share": 0.0,
+   "bevel_share": 0.441,
+   "off_axis_deg": 0.209,
+   "off_axis_share": 0.047,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Veranda_Panel_Narrow.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 654,
+   "size_m": [
+    1.642,
+    3.308,
+    0.432
+   ],
+   "materials": [
+    "brique",
+    "glass",
+    "wood"
+   ],
+   "tris_per_m2": 56.36,
+   "quad_share": 0.019,
+   "ngon_share": 0.0,
+   "bevel_share": 0.536,
+   "off_axis_deg": 0.227,
+   "off_axis_share": 0.068,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Veranda_Panel_Wide.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 874,
+   "size_m": [
+    3.657,
+    3.308,
+    0.432
+   ],
+   "materials": [
+    "brique",
+    "glass",
+    "wood"
+   ],
+   "tris_per_m2": 32.06,
+   "quad_share": 0.028,
+   "ngon_share": 0.0,
+   "bevel_share": 0.523,
+   "off_axis_deg": 0.147,
+   "off_axis_share": 0.044,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Veranda_Roof.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 1126,
+   "size_m": [
+    3.123,
+    2.211,
+    2.244
+   ],
+   "materials": [
+    "glass",
+    "wood"
+   ],
+   "tris_per_m2": 42.61,
+   "quad_share": 0.022,
+   "ngon_share": 0.0,
+   "bevel_share": 0.485,
+   "off_axis_deg": 8.961,
+   "off_axis_share": 0.772,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Wall_Corner.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 418,
+   "size_m": [
+    1.788,
+    3.107,
+    1.812
+   ],
+   "materials": [
+    "brique"
+   ],
+   "tris_per_m2": 14.92,
+   "quad_share": 0.199,
+   "ngon_share": 0.025,
+   "bevel_share": 0.682,
+   "off_axis_deg": 0.075,
+   "off_axis_share": 0.034,
+   "open_edge_share": 0.026
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Wall_Door.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 1046,
+   "size_m": [
+    3.096,
+    3.131,
+    0.645
+   ],
+   "materials": [
+    "brique",
+    "wall",
+    "wood"
+   ],
+   "tris_per_m2": 40.91,
+   "quad_share": 0.056,
+   "ngon_share": 0.003,
+   "bevel_share": 0.433,
+   "off_axis_deg": 0.133,
+   "off_axis_share": 0.045,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Wall_Interior.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 388,
+   "size_m": [
+    3.0,
+    3.0,
+    0.252
+   ],
+   "materials": [
+    "wall"
+   ],
+   "tris_per_m2": 18.46,
+   "quad_share": 0.005,
+   "ngon_share": 0.0,
+   "bevel_share": 0.0,
+   "off_axis_deg": 0.003,
+   "off_axis_share": 0.0,
+   "open_edge_share": 0.067
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Wall_Plain.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 528,
+   "size_m": [
+    3.096,
+    3.067,
+    0.432
+   ],
+   "materials": [
+    "brique",
+    "wall"
+   ],
+   "tris_per_m2": 21.25,
+   "quad_share": 0.004,
+   "ngon_share": 0.0,
+   "bevel_share": 0.583,
+   "off_axis_deg": 0.032,
+   "off_axis_share": 0.017,
+   "open_edge_share": 0.049
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Wall_Window_Big.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 886,
+   "size_m": [
+    3.096,
+    3.067,
+    0.526
+   ],
+   "materials": [
+    "brique",
+    "wall",
+    "wood"
+   ],
+   "tris_per_m2": 33.44,
+   "quad_share": 0.159,
+   "ngon_share": 0.009,
+   "bevel_share": 0.638,
+   "off_axis_deg": 0.105,
+   "off_axis_share": 0.048,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit/PK_Wall_Window_Small.fbx",
+   "group": "PK",
+   "origin": "hand",
+   "import_scale": 1.5,
+   "tris": 898,
+   "size_m": [
+    3.096,
+    3.067,
+    0.526
+   ],
+   "materials": [
+    "brique",
+    "wall",
+    "wood"
+   ],
+   "tris_per_m2": 33.39,
+   "quad_share": 0.087,
+   "ngon_share": 0.0,
+   "bevel_share": 0.691,
+   "off_axis_deg": 0.084,
+   "off_axis_share": 0.037,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Chimney_Cap.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 308,
+   "size_m": [
+    1.516,
+    1.098,
+    1.522
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 21.38,
+   "quad_share": 0.692,
+   "ngon_share": 0.0,
+   "bevel_share": 0.994,
+   "off_axis_deg": 1.022,
+   "off_axis_share": 0.255,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Chimney_Stack.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 704,
+   "size_m": [
+    1.243,
+    3.062,
+    1.243
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 17.8,
+   "quad_share": 0.692,
+   "ngon_share": 0.0,
+   "bevel_share": 0.999,
+   "off_axis_deg": 1.213,
+   "off_axis_share": 0.851,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Corner_Quoin.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 308,
+   "size_m": [
+    0.626,
+    3.063,
+    0.636
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 32.57,
+   "quad_share": 0.692,
+   "ngon_share": 0.0,
+   "bevel_share": 1.0,
+   "off_axis_deg": 1.63,
+   "off_axis_share": 0.97,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Door_Leaf_Int.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 1684,
+   "size_m": [
+    1.329,
+    2.358,
+    0.298
+   ],
+   "materials": [
+    "metal",
+    "wood"
+   ],
+   "tris_per_m2": 167.55,
+   "quad_share": 0.751,
+   "ngon_share": 0.0,
+   "bevel_share": 0.852,
+   "off_axis_deg": 1.153,
+   "off_axis_share": 0.464,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Fence_2m.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 718,
+   "size_m": [
+    3.081,
+    1.367,
+    0.18
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 108.87,
+   "quad_share": 0.335,
+   "ngon_share": 0.0,
+   "bevel_share": 0.879,
+   "off_axis_deg": 2.719,
+   "off_axis_share": 0.883,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Fence_Gate.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 606,
+   "size_m": [
+    1.503,
+    1.327,
+    0.194
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 134.91,
+   "quad_share": 0.423,
+   "ngon_share": 0.0,
+   "bevel_share": 0.886,
+   "off_axis_deg": 3.693,
+   "off_axis_share": 0.817,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Fence_Post.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 44,
+   "size_m": [
+    0.158,
+    1.305,
+    0.162
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 66.16,
+   "quad_share": 0.692,
+   "ngon_share": 0.0,
+   "bevel_share": 1.0,
+   "off_axis_deg": 4.079,
+   "off_axis_share": 1.0,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Fireplace.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 628,
+   "size_m": [
+    2.44,
+    3.077,
+    1.136
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 18.39,
+   "quad_share": 0.697,
+   "ngon_share": 0.0,
+   "bevel_share": 0.982,
+   "off_axis_deg": 1.892,
+   "off_axis_share": 0.586,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Gable_4m.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 272,
+   "size_m": [
+    6.312,
+    1.848,
+    0.516
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 11.5,
+   "quad_share": 0.689,
+   "ngon_share": 0.0,
+   "bevel_share": 0.968,
+   "off_axis_deg": 0.585,
+   "off_axis_share": 0.244,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Gable_4m_Window.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 628,
+   "size_m": [
+    6.321,
+    1.85,
+    0.61
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 22.82,
+   "quad_share": 0.7,
+   "ngon_share": 0.005,
+   "bevel_share": 0.875,
+   "off_axis_deg": 0.775,
+   "off_axis_share": 0.249,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Garage_Door_Leaf.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 920,
+   "size_m": [
+    2.53,
+    2.592,
+    0.213
+   ],
+   "materials": [
+    "metal",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 43.61,
+   "quad_share": 0.608,
+   "ngon_share": 0.0,
+   "bevel_share": 0.793,
+   "off_axis_deg": 0.68,
+   "off_axis_share": 0.258,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Plinth_Stone.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 176,
+   "size_m": [
+    2.969,
+    0.531,
+    0.192
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 46.97,
+   "quad_share": 0.692,
+   "ngon_share": 0.0,
+   "bevel_share": 1.0,
+   "off_axis_deg": 2.478,
+   "off_axis_share": 0.904,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Railing_2m.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 440,
+   "size_m": [
+    3.087,
+    1.179,
+    0.153
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 107.97,
+   "quad_share": 0.692,
+   "ngon_share": 0.0,
+   "bevel_share": 0.917,
+   "off_axis_deg": 4.343,
+   "off_axis_share": 0.912,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Railing_Post.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 88,
+   "size_m": [
+    0.221,
+    1.252,
+    0.226
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 120.12,
+   "quad_share": 0.692,
+   "ngon_share": 0.0,
+   "bevel_share": 0.966,
+   "off_axis_deg": 3.097,
+   "off_axis_share": 1.0,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Step_Stone.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 88,
+   "size_m": [
+    3.002,
+    0.252,
+    0.839
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 13.69,
+   "quad_share": 0.692,
+   "ngon_share": 0.0,
+   "bevel_share": 1.0,
+   "off_axis_deg": 1.129,
+   "off_axis_share": 0.804,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Veranda_Cheek.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 184,
+   "size_m": [
+    2.278,
+    2.24,
+    0.088
+   ],
+   "materials": [
+    "glass",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 24.75,
+   "quad_share": 0.688,
+   "ngon_share": 0.0,
+   "bevel_share": 0.947,
+   "off_axis_deg": 0.613,
+   "off_axis_share": 0.184,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Veranda_Door_Leaf.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 996,
+   "size_m": [
+    1.222,
+    2.892,
+    0.285
+   ],
+   "materials": [
+    "glass",
+    "metal",
+    "wood"
+   ],
+   "tris_per_m2": 120.98,
+   "quad_share": 0.723,
+   "ngon_share": 0.0,
+   "bevel_share": 0.815,
+   "off_axis_deg": 0.712,
+   "off_axis_share": 0.184,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Veranda_Lintel.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 176,
+   "size_m": [
+    3.012,
+    0.309,
+    0.186
+   ],
+   "materials": [
+    "glass",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 58.0,
+   "quad_share": 0.692,
+   "ngon_share": 0.0,
+   "bevel_share": 0.995,
+   "off_axis_deg": 1.03,
+   "off_axis_share": 0.266,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Wall_Cellar.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 760,
+   "size_m": [
+    3.0,
+    3.0,
+    0.549
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 13.65,
+   "quad_share": 0.696,
+   "ngon_share": 0.0,
+   "bevel_share": 0.985,
+   "off_axis_deg": 0.728,
+   "off_axis_share": 0.488,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Wall_Garage.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 416,
+   "size_m": [
+    3.016,
+    3.08,
+    0.477
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 18.0,
+   "quad_share": 0.825,
+   "ngon_share": 0.0,
+   "bevel_share": 0.678,
+   "off_axis_deg": 0.879,
+   "off_axis_share": 0.566,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Wall_Int_Arch.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 312,
+   "size_m": [
+    3.0,
+    3.005,
+    0.418
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 15.68,
+   "quad_share": 0.857,
+   "ngon_share": 0.0,
+   "bevel_share": 0.562,
+   "off_axis_deg": 1.214,
+   "off_axis_share": 0.671,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Wall_Int_Door.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 404,
+   "size_m": [
+    3.0,
+    3.005,
+    0.385
+   ],
+   "materials": [
+    "brique",
+    "brique.001",
+    "glass",
+    "metal",
+    "wall",
+    "wood",
+    "wood.001"
+   ],
+   "tris_per_m2": 18.37,
+   "quad_share": 0.888,
+   "ngon_share": 0.0,
+   "bevel_share": 0.547,
+   "off_axis_deg": 1.012,
+   "off_axis_share": 0.641,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Window_Big_Sash_L.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 400,
+   "size_m": [
+    0.483,
+    1.356,
+    0.07
+   ],
+   "materials": [
+    "glass",
+    "wood"
+   ],
+   "tris_per_m2": 190.28,
+   "quad_share": 0.516,
+   "ngon_share": 0.05,
+   "bevel_share": 0.654,
+   "off_axis_deg": 0.37,
+   "off_axis_share": 0.204,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Window_Big_Sash_R.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 392,
+   "size_m": [
+    0.48,
+    1.355,
+    0.07
+   ],
+   "materials": [
+    "glass",
+    "wood"
+   ],
+   "tris_per_m2": 186.39,
+   "quad_share": 0.573,
+   "ngon_share": 0.033,
+   "bevel_share": 0.674,
+   "off_axis_deg": 0.517,
+   "off_axis_share": 0.21,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Window_Small_Sash_L.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 672,
+   "size_m": [
+    0.425,
+    0.843,
+    0.1
+   ],
+   "materials": [
+    "glass",
+    "wood"
+   ],
+   "tris_per_m2": 501.02,
+   "quad_share": 0.79,
+   "ngon_share": 0.035,
+   "bevel_share": 0.578,
+   "off_axis_deg": 0.821,
+   "off_axis_share": 0.39,
+   "open_edge_share": 0.0
+  },
+  {
+   "file": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_Window_Small_Sash_R.fbx",
+   "group": "PKX",
+   "origin": "agent",
+   "import_scale": 1.5,
+   "tris": 672,
+   "size_m": [
+    0.426,
+    0.843,
+    0.1
+   ],
+   "materials": [
+    "glass",
+    "wood"
+   ],
+   "tris_per_m2": 503.05,
+   "quad_share": 0.799,
+   "ngon_share": 0.038,
+   "bevel_share": 0.588,
+   "off_axis_deg": 0.782,
+   "off_axis_share": 0.31,
+   "open_edge_share": 0.0
+  }
+ ]
+}

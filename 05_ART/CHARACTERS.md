@@ -1,6 +1,6 @@
 # CHARACTERS
 
-_Simple, silhouette-first, cheap to rig and animate (risk R5). Brief written 2026-09-17, for the neutral outfit and the equip slots. First lot chosen by the team the same day: grandmother's things, stolen and worn. Nothing here is produced yet._
+_Simple, silhouette-first, cheap to rig and animate (risk R5). Brief written 2026-09-17, for the neutral outfit and the equip slots. First lot chosen by the team the same day: grandmother's things, stolen and worn. Produced since: the slippers, the glasses (the pack's own), and the bathrobe, validated worn in the map on 2026-09-26._
 
 ## Approach
 - Low-poly bodies, strong proportions, recognizable from silhouette.
@@ -61,7 +61,11 @@ Proposal, not a decision: **an equippable is a `MovableObject` like any other.**
 ## Technical rules
 
 - **Design every piece so it can be rigid.** A mesh parented to a bone costs almost nothing and works because the character imports with `optimizeGameObjects: 0`, so the bone hierarchy exists in the scene. Go skinned only when the piece crosses a joint that really bends, which in practice means the gloves.
-- **Skinned pieces share the base armature.** Modeled over the imported `male01_1.fbx` body, exported with that same armature, re-bound in Unity by copying `bones` and `rootBone` from the base renderer.
+- **Skinned pieces share the base armature.** Modeled over the imported `male01_1.fbx` body, exported with that same armature, re-bound in Unity by bone name. The names are not enough: Blender's re-import turns the bone frames, so the piece's own bind poses tear it apart on an animated body (the robe, 2026-09-25: arms off by 160 to 170 degrees). `CrewEquip.BakeIntoBodySpace` fits the piece's joints onto the body's and skins it with the body's bind poses; a skinned piece therefore imports with Read/Write on.
+- **Only the sleeves take an arm.** A garment's body, skirt, collar and belt get their weights from the torso alone. Looked up at hip height, the widest fold of a hem lands next to the hanging hands of the bind pose and flies off with them (`FAR_ARM_GROUPS` and `check_weights` in `tools/blender/model_bathrobe.py`).
+- **Cloth shades smooth.** Smooth by angle at 45 degrees, rims kept sharp. Flat shaded, the robe's vertical facets read as lamellar plates, which is where "samurai" came from.
+- **A piece is judged worn, in the map, in both poses.** `MoversWearCLI` puts it on the player's body in `Map01_PierreKit_House` through the F key's own call and shoots it at rest and carrying, at 3 m and 8 m. A Blender render has no scene light, no crew colour and no animation; two of the robe's three faults only showed in the map.
+- **The crew has two poses.** Pierre's idle with empty hands, and the carry pose on the "Carry" layer while carrying (`AC_Crew_Slice`, weighted by `CrewAnimator` from whether the hands are full). A garment is designed against the idle, which is how every other player sees you most of the time.
 - **`bake_space_transform`: ON for rigid pieces, OFF for skinned ones.** The earlier blanket "always off" was wrong and cost a round trip. Off, the Blender to Unity axis conversion is not baked into the mesh, it lands on the imported root instead: the slipper arrived with the foot running along Y and lay on its back the moment anything set a world rotation. On is what the static kit already does, and it is only unsafe for armatures.
 - **Export with `apply_unit_scale=True` and `apply_scale_options="FBX_SCALE_ALL"`.** With `False` and `FBX_SCALE_NONE`, copied from `author_carry_clip.py`, the mesh arrives 100 times too small with a compensating 100 on the root scale. That script's note that the unit flags change nothing is true for an animation, which retargets through the avatar and carries no scale, and false for a mesh.
 - **Nothing that places a piece may assign over its root transform.** `CrewEquip` composes with the imported rotation and multiplies into the imported scale, because an FBX can legitimately carry either. Both bugs looked like modelling errors and were not.
@@ -98,7 +102,7 @@ Two rigid, one skinned, so the lot still validates both technical paths.
 - **The gown.** The only real work in the lot, and the only piece that collides with the identity rule above: a closed pink gown covers the torso panel.
 
 ### The gown, resolved
-**Worn open, knee length.** The identity panel stays visible down the middle, so four players in a corridor stay separable. Open is also cheaper to skin than a closed tube around the torso, it reads as thrown on over work clothes, which is funnier, and knee length keeps the slippers visible so two slots can be worn at once without fighting.
+**Closed, mid-calf, the trim in the player colour.** The first answer here was worn open and knee length, to keep the identity panel visible. Built that way it read as an open tunic, not a bathrobe, so the robe closes and its collar, belt and cuffs carry the player colour instead (the amendment under Layer 0). Mid-calf rather than floor length because the skirt follows the pelvis, not the legs, and a longer hem would let a knee through; the slippers still show under it. Validated worn in the map, in both crew poses, on 2026-09-26.
 
 ### The choice it creates for free
 Each of these is a `MovableObject` with a `contractValue`. Wear it or sell it. Nothing to build, and under the theft reading later, wearing her dressing gown while she is still in the house is the whole game in one image.
