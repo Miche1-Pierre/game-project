@@ -97,6 +97,11 @@ namespace Movers
             return mo != null && mo.TryGetComponent(out HeldUsable u) ? u : null;
         }
 
+        // The pocket what is in the hands came out of, or -1; and the bar's last words
+        // ("Hands full") while they show. Read by the LumaFlow HUD (UICORE).
+        public int OutOfPocketSlot => outOfPocket != null ? outOfPocketSlot : -1;
+        public string ActiveHint => hint != null && Time.time < hintUntil ? hint : null;
+
         public bool Contains(MovableObject mo)
         {
             if (mo == null) return false;
@@ -350,6 +355,7 @@ namespace Movers
 
         void OnGUI()
         {
+            if (!HudMode.UseLegacy) return;   // the LumaFlow HUD (HudRoot) draws this now
             // Same layer as the HUD: the smoke may take the view, never the pockets.
             GUI.depth = 0;
             if (view == null) view = CrewView.Of(this);

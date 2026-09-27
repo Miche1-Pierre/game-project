@@ -57,6 +57,7 @@ namespace Movers
 
         void OnGUI()
         {
+            if (!HudMode.UseLegacy) return;   // the LumaFlow HUD (HudRoot) draws this now
             // Labels only: nothing to do for layout and input events.
             if (Event.current.type != EventType.Repaint) return;
             var session = GameSession.Current;

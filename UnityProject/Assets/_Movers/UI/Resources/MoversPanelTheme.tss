@@ -1,0 +1,5 @@
+/* The HUD panel theme: empty on purpose. Every element the HUD draws is styled inline
+   (LumaFlow and UiSkin), and text colour, font and shadow are inherited from the panel it
+   sits on. Unity's default theme would set a colour on every label and break that
+   inheritance. A screen that needs native controls (a slider, a toggle) styles them itself
+   or uses its own PanelSettings. */

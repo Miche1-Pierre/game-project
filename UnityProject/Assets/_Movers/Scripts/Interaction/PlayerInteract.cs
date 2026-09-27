@@ -149,6 +149,7 @@ namespace Movers
 
         void OnGUI()
         {
+            if (!HudMode.UseLegacy) return;   // the LumaFlow HUD (HudRoot) draws this now
             // Same depth as the HUD: above SmokeVision's overlay (depth 5). In the smoke you
             // cannot see the door, you can still read that you are looking at one.
             GUI.depth = 0;

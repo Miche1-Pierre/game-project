@@ -131,6 +131,7 @@ namespace Movers
 
         void OnGUI()
         {
+            if (!HudMode.UseLegacy) return;   // the LumaFlow HUD (HudRoot) draws this now
             if (!IsSpeaking || Event.current.type != EventType.Repaint) return;
             if (style == null)
             {
