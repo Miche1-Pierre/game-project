@@ -320,12 +320,15 @@ namespace Movers
 
         public void SetOpen(bool open, int instigator)
         {
+            // Online, only the host works doors; the client applies DoorSync's Command.
+            if (!Net.HasAuthority) return;
             if (!Command(open, instigator)) return;
             Announce(open, isWindow, EventPoint(), instigator, this);
         }
 
         // Sets the goal without a word on the bus: the group announces once for all its panels.
-        // true when the goal changed.
+        // true when the goal changed. Ungated, like Jiggle: it is also the online client's apply
+        // path for the host's doors (DoorSync).
         internal bool Command(bool open, int instigator = Actors.World)
         {
             if (IsWrecked) return false;
@@ -339,6 +342,8 @@ namespace Movers
         // clacks. Heard, and seen from across the room, which is the point.
         public void Rattle(int instigator)
         {
+            // The client jiggles from the replayed DoorLockedRattle instead (DoorSync).
+            if (!Net.HasAuthority) return;
             if (!Jiggle(instigator)) return;
             DoorLock.AnnounceRattle(EventPoint(), instigator, this);
         }
@@ -352,6 +357,22 @@ namespace Movers
             ImpactAudio.Play(ImpactAudio.Kind.Pin, edge, RattleVolume, instigator);
             ImpactAudio.Play(ImpactAudio.Kind.Thud, edge, RattleVolume * 0.6f, instigator);
             return true;
+        }
+
+        // Straight to open or shut, no swing, no sound: the online snapshot (DoorSync) applies
+        // the host's doors this way, like Seat does at startup. Lock-agnostic and wreck-agnostic:
+        // it copies the host's state as it is.
+        internal void Snap(bool open)
+        {
+            isOpen = open;
+            rattleEnd = -1f;
+            braking = false;
+            brakeAngle = float.NaN;
+            if (pivot == null) return;
+            angle = isOpen ? OpenAngleSigned : 0f;
+            swingGoal = angle;
+            pivot.localRotation = restLocal * Quaternion.AngleAxis(angle, axis);
+            if (pivotRb != null) pivotRb.rotation = pivot.rotation;
         }
 
         internal static void Announce(bool open, bool window, Vector3 at, int instigator, Object subject)

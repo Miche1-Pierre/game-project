@@ -224,6 +224,7 @@ namespace Movers
 
         void Rattle(int actor)
         {
+            if (!Net.HasAuthority) return;   // online, the client jiggles from the replayed event (DoorSync)
             bool rattled = false;
             for (int i = 0; i < panels.Count; i++)
             {
@@ -238,6 +239,7 @@ namespace Movers
 
         public void SetOpen(bool open, int instigator)
         {
+            if (!Net.HasAuthority) return;   // online, only the host works doors (DoorSync replicates the leaves)
             bool changed = false;
             for (int i = 0; i < panels.Count; i++)
             {
