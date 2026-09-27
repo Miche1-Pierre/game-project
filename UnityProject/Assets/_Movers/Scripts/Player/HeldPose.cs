@@ -6,19 +6,25 @@ namespace Movers
     // What using a held thing looks like from inside your own head. Goes on the player root,
     // next to PlayerGrab.
     //
-    //   smoking   the cigarette comes up to the lips for each drag and down by the chest between
-    //             drags (SmokeTimeline), its ember at the bottom of the view;
-    //   drinking  the bottle rises to the lips and tips further as it empties, a gulp at a time,
-    //             and the head tips back a little with it;
+    //   in the hand a small usable (the cigarette, the beer, a grenade) is drawn in the right
+    //               hand, close in front at the lower right (about 40 cm), from the moment it is
+    //               picked up: it comes from where it lay into the hand over takeSeconds.
+    //               FirstPersonHands closes the hand on it. Anything else is drawn where the
+    //               carry holds it, as before;
+    //   smoking     the cigarette comes up to the lips for each drag and back into the hand
+    //               between drags (SmokeTimeline), its ember at the bottom of the view;
+    //   drinking    the bottle rises to the lips and tips further as it empties, a gulp at a
+    //               time, and the head tips back a little with it;
     //   a grenade whose pin you are pulling is yanked once (the pin) and drawn back by the ear,
-    //             the wind-up of the throw that follows when the button comes up. Only for the
-    //             press that pulled the pin: a grenade armed by a blast or by the other player
-    //             is carried like anything else when you pick it up.
+    //               the wind-up of the throw that follows when the button comes up. Only for the
+    //               press that pulled the pin: a grenade armed by a blast or by the other player
+    //               is held like anything else when you pick it up.
     //
     // Only the picture moves: the item's child renderers, placed just before this player's own
     // camera culls and put back after the renders. The rigidbody is never touched, so the carry
-    // is exactly the one playtest 001 validated (ADR-007), in use or not:
-    //   - the cigarette's smoke still forms past its tip, out at your reach (CigaretteItem);
+    // is exactly the one playtest 001 validated (ADR-007), in use or not, in the hand or not:
+    //   - the cigarette's smoke clouds still form past the tip of the carried rigidbody, out at
+    //     your reach (CigaretteItem), so the smoke screen of ADR-005 has not moved;
     //   - a grenade is still thrown from the carry point, as far as before, and one dropped
     //     with the left button still falls from there;
     //   - nothing is steered into the CharacterController's capsule.
@@ -26,6 +32,10 @@ namespace Movers
     // cigarette 12 cm from the eye steady: physics runs at 50 Hz, the camera at the frame rate.
     // Every other camera sees the real item on the carry, and during a drag or a drink not even
     // that: HandHeldProp shows the other player a copy in the body's hand instead.
+    //
+    // The in-hand and wind-up poses are placed in the hands' rig (FirstPersonHands.Rig), which
+    // sways with the walk, so the item moves with the hand holding it; the lips are placed in
+    // the camera's own space, since the mouth does not sway.
     //
     // Update runs after PlayerGrab's (order 20 against 0), so a use that began this frame is
     // drawn this frame, and after HandHeldProp's (10), which copies the pieces while they are
@@ -36,11 +46,25 @@ namespace Movers
     {
         public enum Use { None, Smoke, Drink, WindUp }
 
+        [Header("In the hand (camera space: -1..1 across the view, depth in metres)")]
+        public Vector2 cigaretteScreen = new Vector2(0.38f, -0.55f);   // where the fingers pinch it
+        public float cigaretteDepth = 0.37f;
+        // Standing up between the fingers of a palm-down hand, the lit end on top where you see it.
+        public Vector3 cigaretteTipDirection = new Vector3(-0.15f, 1f, 0.25f);
+        public Vector2 bottleScreen = new Vector2(0.42f, -0.72f);      // the body's middle
+        public float bottleDepth = 0.42f;
+        public Vector3 bottleTilt = new Vector3(4f, 0f, 10f);           // degrees
+        public Vector2 grenadeScreen = new Vector2(0.42f, -0.6f);
+        public float grenadeDepth = 0.4f;
+        public Vector3 grenadeTilt = new Vector3(10f, -20f, 6f);
+        [Tooltip("Metres to the right (min, max) and below the eyes (min, max) the in-hand point is kept within, so a very wide or narrow view does not pull the arm off the body.")]
+        public Vector2 holdSideMetres = new Vector2(0.08f, 0.18f);
+        public Vector2 holdDropMetres = new Vector2(0.07f, 0.2f);
+        public float takeSeconds = 0.25f;     // from where it lay into the hand
+
         [Header("Smoking (camera space, metres: the camera is the eyes)")]
         public Vector3 lips = new Vector3(0f, -0.07f, 0.12f);          // where the filter goes
         public Vector3 smokeTipDirection = new Vector3(0.08f, -0.05f, 1f);
-        public Vector3 aside = new Vector3(0.16f, -0.21f, 0.40f);      // between drags, by the chest
-        public Vector3 asideTipDirection = new Vector3(0.25f, 0.6f, 0.65f);
 
         [Header("Drinking")]
         public Vector3 bottleLips = new Vector3(0f, -0.075f, 0.10f);   // where the bottle's lip goes
@@ -58,11 +82,15 @@ namespace Movers
         public float tremble = 0.004f;        // metres: the hand is not quite steady with a live one in it
 
         [Header("Timing")]
-        public float blendIn = 0.22f;         // seconds from the carry to the use pose
+        public float blendIn = 0.22f;         // seconds from the hand to the use pose
         public float blendOut = 0.3f;         // and back
         public float releaseFade = 0.15f;     // the picture catching up with the body when you let go
         [Tooltip("The eyes' near clip plane is lowered to this at Start: the lips are 12 cm from the eyes, and the scene's 0.3 m would cut the cigarette off.")]
         public float nearClip = 0.05f;
+
+        // The frame the in-hand poses are placed in: FirstPersonHands' rig under the camera, or
+        // the camera itself when there are no hands.
+        [HideInInspector] public Transform handsFrame;
 
         // The beer's neck top above its root (BeerItem.Build: Beer_Neck at 0.08, 0.025 half high).
         const float BottleNeckTop = 0.105f;
@@ -77,6 +105,8 @@ namespace Movers
         CigaretteItem cigarette;
         BeerItem beer;
         GrenadeItem grenade;
+        bool small;           // one of the three above: drawn in the hand
+        float hold;           // 0..1, from where it lay to the hand
         Use mode;
         float weight;
         float drinkClock;
@@ -104,7 +134,7 @@ namespace Movers
         // (HandHeldProp).
         public Use Mode => weight > 0f ? mode : Use.None;
         // What the hands are doing right now, without the blend: the button is up, this is None
-        // even while the picture is still easing back to the carry.
+        // even while the picture is still easing back to the hand.
         public Use Wanted { get; private set; }
         public float Weight => weight;
         public MovableObject Current => item;
@@ -121,6 +151,17 @@ namespace Movers
         // Update and the end of the renders). HandHeldProp copies them only when they are home.
         public bool PiecesAtHome => !held.Displaced;
         public Vector3 LipsWorld => eyes != null ? eyes.transform.TransformPoint(lips) : transform.position;
+
+        // For the hands (FirstPersonHands).
+        // A small usable is in the hands and drawn in the right hand (or on its way there).
+        public bool HoldsSmall => small && item != null && hold > 0f;
+        public CigaretteItem HeldCigarette => cigarette;
+        public BeerItem HeldBeer => beer;
+        public GrenadeItem HeldGrenade => grenade;
+        // 0 in the hand, 1 with the filter on the lips.
+        public float AtLips => mode == Use.Smoke ? Eased * SmokeTimeline.AtLips(SmokePhase) : 0f;
+        // 0..1..0 over the yank of the pin.
+        public float PinTug => pinClock >= 0f ? Mathf.Sin(Mathf.PI * Mathf.Clamp01(pinClock / Mathf.Max(0.01f, pinTugSeconds))) : 0f;
 
         void Awake()
         {
@@ -161,6 +202,8 @@ namespace Movers
             cigarette = null;
             beer = null;
             grenade = null;
+            small = false;
+            hold = 0f;
             weight = 0f;
             mode = Use.None;
             Wanted = Use.None;
@@ -172,9 +215,9 @@ namespace Movers
         void Update()
         {
             if (grab == null) return;
-            MovableObject held = grab.Held;
-            if (held != null && !held.gameObject.activeInHierarchy) held = null;
-            if (!ReferenceEquals(held, item)) Switch(held);
+            MovableObject heldNow = grab.Held;
+            if (heldNow != null && !heldNow.gameObject.activeInHierarchy) heldNow = null;
+            if (!ReferenceEquals(heldNow, item)) Switch(heldNow);
 
             float dt = Time.deltaTime;
             WatchGrenade(dt);
@@ -185,6 +228,9 @@ namespace Movers
             float seconds = target > weight ? blendIn : blendOut;
             weight = Mathf.MoveTowards(weight, target, seconds > 0.001f ? dt / seconds : 1f);
             if (weight <= 0f) mode = Use.None;
+
+            bool inHand = small && item != null && !grab.IsDragging && !(member != null && member.IsDriving);
+            hold = inHand ? Mathf.MoveTowards(hold, 1f, takeSeconds > 0.001f ? dt / takeSeconds : 1f) : 0f;
 
             if (beer != null && beer.IsDrinking) drinkClock += dt;
             else if (weight <= 0f) drinkClock = 0f;
@@ -198,11 +244,11 @@ namespace Movers
                 ViewOffset.For(eyes).Add(Vector3.zero, Quaternion.identity, Quaternion.Euler(-up * Eased, 0f, 0f));
             }
 
-            // Drawn at the lips now, not only in this player's render: the particle systems start
+            // Drawn in the hand now, not only in this player's render: the particle systems start
             // their frame right after Update (PreLateUpdate), and the cigarette's lit-tip wisp must
             // rise from the tip you see, not from the rigidbody out on the carry. The pieces have
             // no collider, so nothing else notices; every render still places them for its camera.
-            if (eyes != null && eyes.isActiveAndEnabled && (weight > 0f || fadeClock >= 0f)) Draw(eyes);
+            if (eyes != null && eyes.isActiveAndEnabled && (weight > 0f || hold > 0f || fadeClock >= 0f)) Draw(eyes);
         }
 
         Use WantedUse()
@@ -239,10 +285,10 @@ namespace Movers
             // Outside a render every piece is at home (the last render put them back), so both
             // sets can be read and swapped here safely.
             // The one leaving the hands keeps being drawn where it was for a moment, catching up
-            // with its body, instead of popping from the lips to the end of your arms.
+            // with its body, instead of popping from the hand to the end of your arms.
             fade.Clear();
             fadeClock = -1f;
-            if (item != null && weight > 0.01f && item.gameObject.activeInHierarchy
+            if (item != null && (weight > 0.01f || hold > 0.01f) && item.gameObject.activeInHierarchy
                 && Time.frameCount - lastPictureFrame <= 2)
             {
                 fade.Remember(item.transform);
@@ -255,6 +301,8 @@ namespace Movers
             cigarette = next != null ? next.GetComponent<CigaretteItem>() : null;
             beer = next != null ? next.GetComponent<BeerItem>() : null;
             grenade = next != null ? next.GetComponent<GrenadeItem>() : null;
+            small = cigarette != null || beer != null || grenade != null;
+            hold = 0f;
             weight = 0f;
             mode = Use.None;
             drinkClock = 0f;
@@ -278,9 +326,48 @@ namespace Movers
             return u < 0.4f ? Mathf.Sin(Mathf.PI * u / 0.4f) : 0f;
         }
 
-        // The use pose of the item's root, in world space, seen from `cam`.
-        void Pose(Transform cam, out Vector3 position, out Quaternion rotation)
+        Transform Frame(Transform cam)
         {
+            return handsFrame != null && handsFrame.parent == cam ? handsFrame : cam;
+        }
+
+        Vector3 InView(Camera cam, Vector2 screen, float z)
+        {
+            return FirstPersonHands.InView(cam, screen.x, screen.y, z, holdSideMetres, holdDropMetres);
+        }
+
+        // Where a small usable sits in the right hand, in world space, seen from `cam`.
+        void InHandPose(Camera cam, out Vector3 position, out Quaternion rotation)
+        {
+            Transform f = Frame(cam.transform);
+            Vector3 local;
+            Quaternion turn;
+            if (cigarette != null)
+            {
+                // The screen point is where the fingers pinch it, a little way up from the filter.
+                Vector3 tip = cigaretteTipDirection.normalized;
+                local = InView(cam, cigaretteScreen, cigaretteDepth)
+                        + tip * (cigarette.length * 0.5f - CigaretteItem.PinchFromFilter);
+                turn = Quaternion.FromToRotation(Vector3.up, tip);
+            }
+            else if (beer != null)
+            {
+                local = InView(cam, bottleScreen, bottleDepth);
+                turn = Quaternion.Euler(bottleTilt);
+            }
+            else
+            {
+                local = InView(cam, grenadeScreen, grenadeDepth);
+                turn = Quaternion.Euler(grenadeTilt);
+            }
+            position = f.TransformPoint(local);
+            rotation = f.rotation * turn;
+        }
+
+        // The use pose of the item's root, in world space, seen from `cam`.
+        void Pose(Camera camera, out Vector3 position, out Quaternion rotation)
+        {
+            Transform cam = camera.transform;
             Quaternion cr = cam.rotation;
             switch (mode)
             {
@@ -289,13 +376,13 @@ namespace Movers
                     float half = cigarette != null ? cigarette.length * 0.5f : 0.045f;
                     float at = SmokeTimeline.AtLips(SmokePhase);
                     Vector3 lipsDir = smokeTipDirection.normalized;
-                    Vector3 asideDir = asideTipDirection.normalized;
-                    // The filter on the lips, the tip out: the root is half a length along the tip.
-                    Vector3 local = Vector3.Lerp(aside, lips + lipsDir * half, at);
-                    Quaternion r = Quaternion.Slerp(Quaternion.FromToRotation(Vector3.up, asideDir),
-                                                    Quaternion.FromToRotation(Vector3.up, lipsDir), at);
-                    position = cam.TransformPoint(local);
-                    rotation = cr * r;
+                    // Between drags it is back in the hand; at the lips the filter is on them and
+                    // the tip out: the root is half a length along the tip.
+                    InHandPose(camera, out Vector3 handAt, out Quaternion handTurn);
+                    Vector3 lipsAt = cam.TransformPoint(lips + lipsDir * half);
+                    Quaternion lipsTurn = cr * Quaternion.FromToRotation(Vector3.up, lipsDir);
+                    position = Vector3.Lerp(handAt, lipsAt, at);
+                    rotation = Quaternion.Slerp(handTurn, lipsTurn, at);
                     return;
                 }
                 case Use.Drink:
@@ -311,17 +398,48 @@ namespace Movers
                 }
                 case Use.WindUp:
                 {
+                    Transform f = Frame(cam);
                     Vector3 local = windUp;
                     if (pinClock >= 0f) local += pinTug * Mathf.Sin(Mathf.PI * Mathf.Clamp01(pinClock / pinTugSeconds));
                     float t = Time.time * 9f;
                     local += new Vector3(Mathf.PerlinNoise(t, 0.3f) - 0.5f, Mathf.PerlinNoise(0.7f, t) - 0.5f, 0f) * (2f * tremble);
-                    position = cam.TransformPoint(local);
-                    rotation = cr * Quaternion.Euler(-25f, 15f, 0f);
+                    position = f.TransformPoint(local);
+                    rotation = f.rotation * Quaternion.Euler(-25f, 15f, 0f);
                     return;
                 }
             }
             position = item != null ? item.transform.position : cam.position;
             rotation = item != null ? item.transform.rotation : cr;
+        }
+
+        // Where `cam` draws the item in the hands this frame, in world space: in the hand for a
+        // small usable, blended toward its use pose. False when the item is drawn where it is.
+        // FirstPersonHands puts the right hand on it.
+        public bool TryGetPicture(Camera cam, out Vector3 position, out Quaternion rotation)
+        {
+            position = default;
+            rotation = Quaternion.identity;
+            if (cam == null || item == null || (weight <= 0f && hold <= 0f)) return false;
+            Transform root = item.transform;
+            Vector3 p = root.position;
+            Quaternion r = root.rotation;
+            if (small && hold > 0f)
+            {
+                InHandPose(cam, out Vector3 hp, out Quaternion hr);
+                float h = Mathf.SmoothStep(0f, 1f, hold);
+                p = Vector3.Lerp(p, hp, h);
+                r = Quaternion.Slerp(r, hr, h);
+            }
+            if (weight > 0f)
+            {
+                Pose(cam, out Vector3 up, out Quaternion ur);
+                float w = Eased;
+                p = Vector3.Lerp(p, up, w);
+                r = Quaternion.Slerp(r, ur, w);
+            }
+            position = p;
+            rotation = r;
+            return true;
         }
 
         // ---- the picture ----------------------------------------------------------------
@@ -352,12 +470,7 @@ namespace Movers
                 fade.Place(ft.position + fadeOffset * k, Quaternion.Slerp(Quaternion.identity, fadeTurn, k) * ft.rotation);
             }
 
-            if (item == null || weight <= 0f) { held.PutBack(); return; }
-            Transform root = item.transform;
-            Pose(cam.transform, out Vector3 pos, out Quaternion rot);
-            float w = Eased;
-            Vector3 p = Vector3.Lerp(root.position, pos, w);
-            Quaternion r = Quaternion.Slerp(root.rotation, rot, w);
+            if (!TryGetPicture(cam, out Vector3 p, out Quaternion r)) { held.PutBack(); return; }
             held.Place(p, r);
             lastPicturePosition = p;
             lastPictureRotation = r;

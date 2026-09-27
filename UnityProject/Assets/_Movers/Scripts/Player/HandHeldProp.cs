@@ -224,41 +224,13 @@ namespace Movers
         }
 
         // The lit tip's thread of smoke, on the copy: the real cigarette's is hidden with it.
+        // The same thread as the real one (CigaretteItem.BuildTipWisp). The copy is switched on
+        // and off with the drag, so it starts again by itself each time it shows.
         static ParticleSystem BuildWisp(Transform parent, float tip)
         {
-            var go = new GameObject("HandHeld_Wisp");
-            go.transform.SetParent(parent, false);
-            go.transform.localPosition = Vector3.up * tip;
-            var ps = go.AddComponent<ParticleSystem>();
-            ps.Stop();
-            var main = ps.main;
-            main.loop = true;
-            // The copy is switched on and off with the drag: it starts again each time it shows.
-            main.playOnAwake = true;
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(0.8f, 1.6f);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(0.05f, 0.2f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.03f, 0.08f);
-            main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.8f, 0.8f, 0.84f, 0.4f));
-            main.gravityModifier = -0.02f;
-            main.maxParticles = 40;
+            var ps = CigaretteItem.BuildTipWisp(parent, Vector3.up * tip, "HandHeld_Wisp", true);
             var emission = ps.emission;
-            emission.rateOverTime = 7f;
-            var col = ps.colorOverLifetime;
-            col.enabled = true;
-            var g = new Gradient();
-            g.SetKeys(
-                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
-                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.25f), new GradientAlphaKey(0f, 1f) });
-            col.color = new ParticleSystem.MinMaxGradient(g);
-            var size = ps.sizeOverLifetime;
-            size.enabled = true;
-            size.size = new ParticleSystem.MinMaxCurve(2.4f, new AnimationCurve(new Keyframe(0f, 0.3f), new Keyframe(1f, 1.4f)));
-            var r = go.GetComponent<ParticleSystemRenderer>();
-            r.renderMode = ParticleSystemRenderMode.Billboard;
-            r.sharedMaterial = SmokeTextures.ParticleMaterial;
-            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            r.receiveShadows = false;
+            emission.rateOverTime = CigaretteItem.WispDragRate;
             return ps;
         }
     }

@@ -36,6 +36,35 @@ namespace Movers
             return go.transform;
         }
 
+        // A small speckled texture: a base colour with dark and light flecks, a share of the
+        // pixels each (the cork of a filter, the grain of ash). Made once per caller, kept.
+        public static Texture2D Speckle(int size, Color baseColour, Color dark, Color light,
+                                        float darkShare, float lightShare, int seed)
+        {
+            var t = new Texture2D(size, size, TextureFormat.RGBA32, true)
+            {
+                wrapMode = TextureWrapMode.Repeat,
+                filterMode = FilterMode.Bilinear,
+                hideFlags = HideFlags.HideAndDontSave,
+            };
+            var rnd = new System.Random(seed);
+            var px = new Color32[size * size];
+            for (int i = 0; i < px.Length; i++)
+            {
+                double r = rnd.NextDouble();
+                // A little grain everywhere, so the base is not a flat colour either.
+                float grain = 0.94f + 0.12f * (float)rnd.NextDouble();
+                Color c = r < darkShare ? Color.Lerp(baseColour, dark, 0.6f + 0.4f * (float)rnd.NextDouble())
+                        : r < darkShare + lightShare ? Color.Lerp(baseColour, light, 0.5f + 0.5f * (float)rnd.NextDouble())
+                        : baseColour * grain;
+                c.a = 1f;
+                px[i] = c;
+            }
+            t.SetPixels32(px);
+            t.Apply();
+            return t;
+        }
+
         public static void Kill(Object o)
         {
             if (o == null) return;

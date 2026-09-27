@@ -36,6 +36,9 @@ namespace Movers
                 // Using what you hold, seen from inside your head: the cigarette to the lips, the
                 // bottle tipped back, the grenade wound up (CHARACTERS).
                 if (!player.TryGetComponent(out HeldPose _)) player.AddComponent<HeldPose>();
+                // Your own forearms and hands, for your own camera only: they hold what HeldPose
+                // puts in the hand and reach for what you carry.
+                if (!player.TryGetComponent(out FirstPersonHands _)) player.AddComponent<FirstPersonHands>();
             }
             // A blast that throws you tumbles your view to the floor and back (CHARACTERS).
             if (!player.TryGetComponent(out KnockdownTumble _)) player.AddComponent<KnockdownTumble>();
