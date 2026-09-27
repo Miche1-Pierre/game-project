@@ -6,13 +6,13 @@ _The exhaustive asset inventory for The Movers Map 1 (grandma house + garden), b
 
 ## 1. Conventions (so 300 assets stay coherent)
 
-- **No textures**: detail comes from geometry + flat per-material colors. See the palette in section 13.
+- **No textures**: detail comes from geometry + flat per-material colors. The colours in use are in `style/profile.json` (`palette`, sRGB as Unity shows them). This line used to point at a palette in section 13, which holds the totals.
 - **Scale**: 1 unit = 1 m. Real-world sizes (a chair ~0.9 m tall, a door ~2.1 m).
-- **Orientation**: front faces -Z in Unity (walls/furniture face the viewer at yaw 0).
+- **Orientation**: front faces -Z in Unity (walls/furniture face the viewer at yaw 0). The kits do not all follow it: the PierreKit's outside face is +Z, and GrandmaKit furniture faces +Z except seats, beds and benches (section 11). Per family: `style/profile.json`.
 - **Origin / pivot**: base-center for placeable objects (sits on the floor at its position); door/window units centered on the opening; wall modules base-center.
 - **Naming**: `SM_<Name>.fbx` (Blender mesh) -> `PF_<Name>.prefab` (Unity, flat color + collider). PascalCase, numeric variants as `_01`, `_02`.
 - **Families**: same style, proportions and poly density across a family (`Chair_01`..`Chair_04`, `Flower_01`..`Flower_06`). Variation is geometry, not scale.
-- **Poly budget** (guideline): small props 0.5k-5k tris; furniture 5k-15k; large architecture 10k-30k.
+- **Poly budget** (guideline): small props 0.5k-5k tris; furniture 5k-15k; large architecture 10k-30k. Written before any kit existed. A budget is now judged against comparable references: measured ranges per family are in `style/profile.json`, the PierreKit's in `style/metrics.json`.
 - **Materials**: pull from the shared list (section 13), few slots per asset.
 - **Modules**: wall grid = 4 m wide x 3 m high (sub-modules 1 m / 2 m / 3 m for flexibility). Roofs share one pitch (pick one, see section 12).
 - **Status stages** (`ASSET_STATUS.md`): Concept -> Greybox -> Placeholder -> Generated -> Cleaned -> Integrated -> Final.
@@ -226,7 +226,7 @@ Walkability was measured, not assumed: 62 physics checks pass (every floor at it
 - **Animation:** 22 humanoid clips in `Art/Characters/Clips`, from `tools/blender/author_clips.py`, shared by the crew and the grandmother. The controllers are `AC_Crew_Slice` and `AC_Grandma_Slice` in `_Movers/Generated/Characters`. The grandmother's skirt is re-weighted for sitting; it still grazes the chair's front edge.
 
 ### Furniture batch 1 (14, `Assets/_Project/Art/GrandmaKit/Furniture` + `/Prefabs/GrandmaKit/Furniture`)
-Bed_Old, Nightstand_01, Dresser_01, Wardrobe_01 (bedroom); Sofa_01, Armchair_01, Rocking_Chair, Coffee_Table, Side_Table, Bookshelf_01 (with books), TV_Old, Fireplace_Living (living); Dining_Table_01, Dining_Chair_01 (dining). Flat-colored prefabs + colliders. Rebuild via menu **The Movers > Build Kit Prefabs** (scans CottageKit + GrandmaKit).
+Bed_Old, Nightstand_01, Dresser_01, Wardrobe_01 (bedroom); Sofa_01, Armchair_01, Rocking_Chair, Coffee_Table, Side_Table, Bookshelf_01 (with books), TV_Old, Fireplace_Living (living); Dining_Table_01, Dining_Chair_01 (dining). Flat-colored prefabs + colliders. They were built by the menu **The Movers > Build Kit Prefabs**, removed on 2026-09-20 (commit 7e70bd7): prefabs are now made and edited by hand.
 
 ### Interior batch 2 (12: Kitchen 7, Bathroom 4, Office 1)
 Kitchen: Counter_Straight, Cabinet_Upper, Sink, Stove_Old, Fridge_Old (retro), Range_Hood, Kitchen_Island. Bathroom: Bathtub_Old (clawfoot), Toilet, Sink_Bath (pedestal), Shower. Office: Desk. In `Assets/_Project/Art/GrandmaKit/{Kitchen,Bathroom,Office}` + mirrored prefabs.
@@ -252,10 +252,10 @@ Architecture: Wall_2m, Wall_Corner, Window_Round, Door_Interior, Stairs_Spiral. 
 ### Structure lot (12: fills the house-structure gaps)
 Interior: Wall_Interior_Solid, Wall_Interior_Door, Wall_Interior_Opening (cloisons). Walls: Wall_1m, Wall_3m, Wall_Corner_Inner. Terrace_Deck (large wooden terrace). Veranda (in `GrandmaKit/Veranda`): Veranda_Panel, Veranda_Corner, Veranda_Roof, Veranda_Door, Veranda_Bay (faceted rounded conservatory). Now the house can be fully built AND partitioned into rooms, with a terrace and a straight or rounded veranda.
 
-**Running total: 163 kit pieces**, all FBX + flat-color prefabs with colliders. Rebuild all via **The Movers > Build Kit Prefabs**.
+**Running total: 163 kit pieces**, all FBX + flat-color prefabs with colliders. The **Build Kit Prefabs** menu that rebuilt them was removed on 2026-09-20 (commit 7e70bd7).
 
 ### Consolidated source (review + edit)
-All 163 pieces live upright, correct-scale, colored, in **`C:\GameProject\_ArtSource\GrandmaKit_All.blend`** (22 collections, one per category). Pierre reviews/edits there. To re-export an edited piece: select it, Alt+G (origin), File > Export > FBX into the matching `Art/...` folder with the settings in the FBX-pipeline memory, then run Build Kit Prefabs.
+All 163 pieces live upright, correct-scale, colored, in **`C:\GameProject\_ArtSource\GrandmaKit_All.blend`** (22 collections, one per category). Pierre reviews/edits there. To re-export an edited piece: select it, Alt+G (origin), File > Export > FBX into the matching `Art/...` folder with the settings in the FBX-pipeline memory. The last step used to be Build Kit Prefabs, removed on 2026-09-20 (commit 7e70bd7); a prefab is now updated by hand.
 
 ### Cottage Kit, 27 pieces (architecture)
 
