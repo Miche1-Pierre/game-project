@@ -112,7 +112,7 @@ namespace Movers
                 // On a body is not in the truck, even if it was put on standing in the truck:
                 // switched-off colliders send the cargo zone no exit (same as a pocket).
                 mo.worn = true;
-                PlayerPockets.LeaveTruck(mo);
+                if (Net.HasAuthority) PlayerPockets.LeaveTruck(mo);   // the client's cargo comes from the host
             }
 
             var record = new Worn
@@ -148,6 +148,7 @@ namespace Movers
             }
 
             worn[item.slot] = record;
+            NetTransforms.Snap(item.gameObject);
             return true;
         }
 
@@ -203,6 +204,7 @@ namespace Movers
                 rb.useGravity = w.hadGravity;
             }
             if (mo != null) mo.worn = false;
+            NetTransforms.Snap(item.gameObject);
 
             return item;
         }

@@ -92,6 +92,7 @@ namespace Movers
 
         void Update()
         {
+            if (Net.IsHost) NetHostTick();
             if (glass != null) glass.color = Color.Lerp(Empty, Full, fill);
         }
 
@@ -109,6 +110,7 @@ namespace Movers
 
         void OnCollisionEnter(Collision c)
         {
+            if (!Net.HasAuthority) return;   // online client: the host breaks it (BeerSplat, then the despawn)
             if (broken || IsHeld) return;   // it cannot break in your hand
             if (c.impulse.magnitude < breakImpulse) return;
             Break(c.GetContact(0).point, c.GetContact(0).normal);
@@ -121,16 +123,50 @@ namespace Movers
             if (broken) return;
             broken = true;
 
+            SplatFx(at, normal, splatSize);
+            if (Net.IsHost) ItemSync.SendBeerSplat(at, normal, splatSize);
+
+            Discard();   // no-op if it was already thrown away, which is the usual path
+            Destroy(gameObject);
+        }
+
+        // The mark a broken bottle leaves on the floor. Also played on the online client, from
+        // the host's break (Items BeerSplat).
+        public static void SplatFx(Vector3 at, Vector3 normal, float size)
+        {
             var splat = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             splat.name = "Beer_Splat";
             ItemArt.Kill(splat.GetComponent<Collider>());
             splat.transform.position = at + normal * 0.01f;
             splat.transform.rotation = Quaternion.FromToRotation(Vector3.up, normal);
-            splat.transform.localScale = new Vector3(splatSize, 0.004f, splatSize);
+            splat.transform.localScale = new Vector3(size, 0.004f, size);
             splat.GetComponent<Renderer>().sharedMaterial = ItemArt.Mat(Splat, Color.black);
+        }
 
-            Discard();   // no-op if it was already thrown away, which is the usual path
-            Destroy(gameObject);
+        // ---- online (NETCODE_SLICE 11.2) ----
+
+        const float NetStateEvery = 0.2f;   // 5 Hz while drinking
+        bool netSentDrinking;
+        float netSentFill = 1f;
+        float netNextState;
+
+        // Host: the drinking edges, and the level while it goes down.
+        void NetHostTick()
+        {
+            bool edge = IsDrinking != netSentDrinking;
+            bool level = Mathf.Abs(fill - netSentFill) >= 1f / 255f && Time.unscaledTime >= netNextState;
+            if (!edge && !level) return;
+            if (!ItemSync.SendBeer(this, IsDrinking, fill)) return;
+            netSentDrinking = IsDrinking;
+            netSentFill = fill;
+            netNextState = Time.unscaledTime + NetStateEvery;
+        }
+
+        // Client: the host's state (Items Beer). The swallows and the drunkenness stay there.
+        public void NetApply(bool drinking, float level)
+        {
+            IsDrinking = drinking;
+            fill = Mathf.Clamp01(level);
         }
 
         // ---- the object ----
