@@ -2,6 +2,46 @@
 
 _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSINESS, MARKETING._
 
+## 2026-09-27
+
+### The asset workflow, written down from what the bathrobe pilot used (ADR-011, proposed)
+
+Phase 2 of the robe pilot: only what the pilot actually ran is formalised, and none of it outranks playing the house with a second person. Branch `art/asset-workflow`, from `art/bathrobe-pilot`.
+
+- **DOCS, ADR-011, proposed by Jonathan:** working references, a style profile, and a human verdict as the gate. Numbered 011 because Pierre's decisions took 008 (everything breaks), 009 (the vertical slice) and 010 (the presentation layer) in the meantime. It becomes "Accepted, and flagged" when Pierre agrees, and the environment tiers are his to decide.
+- **DOCS, STYLE_GUIDE sections 18 to 20:**
+  - working references v0: five tiers, promotion by a named human with a date, the family conventions;
+  - generation modes: STRICT_MATCH, STYLE_CONSISTENT and IMPROVE, each with what it preserves, may improve and avoids;
+  - the review checklist: the gates in order, the human verdict as the gate and `MoversWearCLI` in the map as the final one, five failure owners (Blender, Unity, Design, Code, Animation). Every hint a script prints now gets a threshold or a reader.
+- **DATA, `05_ART/style/profile.json` v0:**
+  - a palette in sRGB as Unity shows it: Pierre's nine `PK_*.mat`, the four crew colours, the garment pink #F294B8 and the robe's trim placeholder;
+  - three families: PierreKit structure, garments, and house props (left unspecified);
+  - a register of 17 glob entries with tiers, the export presets and the review settings.
+  - **Jonathan approved the garment and crew entries (H7):** the Floreswa body canonical, the robe v2 acceptable, the robe v1 anti, and the garment conventions. Every environment tier stays proposed, for Pierre.
+- **TECH, `tools/blender/movers_blender.py`, one module for the asset scripts:**
+  - paths from the repository root, so a script also runs from Pierre's `C:\GameProject`;
+  - the body import, and materials from the palette;
+  - rigid, skinned and animation export presets that fail loudly, with no fallback to `wm.fbx_export`, which writes centimetres;
+  - review renders in the Standard view transform, with the body's silhouette with and without the piece and the piece at 8 m;
+  - contact sheets, and a check of the register.
+  `model_bathrobe.py` and `model_slippers.py` run on it. The proof: the same `CHECK`, `MEASURE`, `ROBE_` and `SLIPPER_` lines before and after, exit 0 with `--python-exit-code 1`, and FBX files identical byte for byte outside the creation timestamp, with a fixed hash seed.
+- **CONTENT, the slippers take the garment pink:** #ED8CB2 becomes #F294B8, on Jonathan's verdict on a before and after render. Their FBX changed in its material colour only, checked by re-import. The robe is untouched.
+- **CONTENT, the slippers' previews had been wrong since 2026-09-17:** the crew rig stands turned 180 degrees about Z, and the slippers, built in the body's frame, were drawn on the other foot, back to front, with the right boot's toe through the left slipper. They are parented to the armature for the renders now, and each one swallows its boot. The silhouette test: they add 3 % of outline from the front, 4 % at three quarters. Also found: a review's world colour lands in every FBX material's AmbientColor, so the slippers render after exporting.
+- **MEASURED, `05_ART/style/metrics.json`:** Pierre's 26 modules against the 26 PKX pieces. No metric splits them cleanly. Three nearly do, and they agree that the agent overdid Pierre's wonkiness:
+  - the PKX lean off the grid far more: median share of tilted surface 53 %, against 7 %;
+  - they chamfer almost every edge: 0.90 against 0.53;
+  - they are mostly quads: 69 % against 4 %.
+  The question for Pierre is in STYLE_GUIDE section 18.
+- **DOCS, contradictions fixed:**
+  - glTF becomes FBX in ASSET_SPECS, ASSET_PIPELINE and ARCHITECTURE;
+  - ASSET_LIST's palette pointer named section 13, which holds the totals; it now points at the profile, and its orientation and budget lines point at the measured values;
+  - the three "Build Kit Prefabs" instructions are marked removed (7e70bd7);
+  - REJECTED.md gains ten rejections from the proposal, with their reasons;
+  - tools/README.md documents the module, the register check and the measurements, with two more headless rules: read the real exit code, and batchmode cannot sign in.
+- **TOOLING, three skills in Jonathan's user folder:** `make-asset`, `asset-to-unity` and `art-style`, written from the commands the pilot ran. They move into the repo once ADR-011 is accepted. A fresh session lists all three, and a read-only dry run of `make-asset` (the slippers to the garment pink) picked the skill unprompted and stopped after announcing its references.
+- **BLOCKED, Unity in batchmode:** it stops at package resolution. Pierre's `com.sahland.lumaflow` comes from the Asset Store, is not in this machine's package cache, and batchmode cannot sign in. So the slippers' new colour is not checked in Unity yet (`ReportAsset`), and nothing was compiled in this session. Opening the project once from the signed-in Unity Hub unblocks it.
+- **NOT DONE:** the environment tiers and the PKX question wait for Pierre. The slippers have still never been seen worn in Unity, and the F key has never been pressed by a human. The robe's tracked renders stay the old AgX ones until its script next runs for real: nothing in its FBX changed, so it was not re-exported.
+
 ## 2026-09-26
 
 ### The grandmother's house becomes a systemic vertical slice (ADR-009)
