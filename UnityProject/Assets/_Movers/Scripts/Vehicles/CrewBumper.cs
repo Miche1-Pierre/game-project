@@ -36,9 +36,19 @@ namespace Movers
         const int MaxPlayers = 4;               // Actors: players are 0..3
         [System.NonSerialized] int[] shovedFrame;   // made on first use: the serializer may skip initialisers
 
+        // Online host, a body the client drives (NETCODE_SLICE 9.6): the shove travels to the
+        // client and his new pose comes back a round trip later. Until then he is left alone,
+        // and the hull ignores his stale capsule so the truck does not stop dead against it.
+        const float RemoteWindowExtra = 0.2f;
+        [System.NonSerialized] float[] remoteUntil;
+        [System.NonSerialized] CharacterController[] remoteCapsule;
+        [System.NonSerialized] Collider[] hullColliders;
+        [System.NonSerialized] bool remoteWindowOpen;
+
         public void Tick(Rigidbody body, Bounds hull)
         {
             if (body == null || hull.size == Vector3.zero) return;
+            if (remoteWindowOpen) CloseRemoteWindows();
             // Nothing on the truck moves fast enough to shove anyone: the usual case, parked.
             float reachSpeed = body.linearVelocity.magnitude + body.angularVelocity.magnitude * hull.extents.magnitude;
             if (reachSpeed < minClosingSpeed) return;
@@ -52,14 +62,68 @@ namespace Movers
                 // Several physics steps can run before his next Update: one shove per frame, or
                 // they would add up before the first one has moved him.
                 if (shovedFrame[m.index] == Time.frameCount) continue;
+                bool remote = !Net.Drives(m);
+                if (remote && remoteUntil != null && Time.time < remoteUntil[m.index]) continue;
                 var controller = m.Controller;
                 if (controller == null || !controller.isActiveAndEnabled) continue;
                 if (!m.TryGetComponent(out CharacterController capsule) || !capsule.enabled) continue;
-                if (Shove(body, hull, controller, capsule)) shovedFrame[m.index] = Time.frameCount;
+                if (Shove(body, hull, controller, capsule, remote))
+                {
+                    shovedFrame[m.index] = Time.frameCount;
+                    if (remote) OpenRemoteWindow(body, m.index, capsule);
+                }
             }
         }
 
-        bool Shove(Rigidbody body, Bounds hull, PlayerController controller, CharacterController capsule)
+        void OpenRemoteWindow(Rigidbody body, int index, CharacterController capsule)
+        {
+            if (remoteUntil == null)
+            {
+                remoteUntil = new float[MaxPlayers];
+                remoteCapsule = new CharacterController[MaxPlayers];
+            }
+            if (hullColliders == null) hullColliders = HullColliders(body);
+            remoteUntil[index] = Time.time + Net.RoundTrip + RemoteWindowExtra;
+            remoteCapsule[index] = capsule;
+            for (int i = 0; i < hullColliders.Length; i++)
+                if (Usable(hullColliders[i])) Physics.IgnoreCollision(hullColliders[i], capsule, true);
+            remoteWindowOpen = true;
+        }
+
+        void CloseRemoteWindows()
+        {
+            bool open = false;
+            for (int i = 0; i < MaxPlayers; i++)
+            {
+                var capsule = remoteCapsule[i];
+                if (capsule == null) continue;
+                if (Time.time < remoteUntil[i]) { open = true; continue; }
+                remoteCapsule[i] = null;
+                if (!Usable(capsule)) continue;   // switched off meanwhile: its pairs are gone anyway
+                for (int k = 0; k < hullColliders.Length; k++)
+                    if (Usable(hullColliders[k])) Physics.IgnoreCollision(hullColliders[k], capsule, false);
+            }
+            remoteWindowOpen = open;
+        }
+
+        static bool Usable(Collider c) => c != null && c.enabled && c.gameObject.activeInHierarchy;
+
+        // The truck's own solid colliders: not triggers, wheels, the ramp (its own body) or a driver.
+        static Collider[] HullColliders(Rigidbody body)
+        {
+            var all = body.GetComponentsInChildren<Collider>(true);
+            var list = new System.Collections.Generic.List<Collider>(all.Length);
+            for (int i = 0; i < all.Length; i++)
+            {
+                var c = all[i];
+                if (c.isTrigger || c is WheelCollider || c.attachedRigidbody != body) continue;
+                if (CrewRoster.Owner(c.transform) != null) continue;
+                list.Add(c);
+            }
+            return list.ToArray();
+        }
+
+        bool Shove(Rigidbody body, Bounds hull, PlayerController controller, CharacterController capsule, bool remote)
         {
             Vector3 centre = capsule.bounds.center;
             float radius = capsule.radius;
@@ -85,7 +149,8 @@ namespace Movers
             if (distance - radius > closing * lookAhead + 0.05f) return false;   // not yet
 
             // Top up to the speed he needs, whatever he is already doing: AddImpulse adds up.
-            Vector3 current = capsule.velocity;
+            // A puppet's capsule never moves by itself: its velocity is the one its client reports.
+            Vector3 current = remote ? controller.Velocity : capsule.velocity;
             Vector3 shove = Vector3.zero;
             float need = closing + margin - Vector3.Dot(current, away);
             if (need > 0f) shove += away * need;

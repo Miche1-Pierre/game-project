@@ -67,6 +67,12 @@ namespace Movers
             Vector2 move = d != null && d.Input != null ? d.Input.Move : Vector2.zero;
             bool handbrake = d != null && d.Input != null && d.Input.Held(CrewButton.Jump);
             float pedal = move.y;
+            if (!Net.HasAuthority)
+            {
+                // Online client: the host's pedal and handbrake (the driver's input is not here).
+                pedal = truck.Pedal;
+                handbrake = truck.Handbrake;
+            }
 
             // Pressing to go (either way) is throttle; pressing against the roll is braking.
             float go = pedal > 0.05f && v > -0.5f ? pedal : pedal < -0.05f && v < 0.5f ? -pedal : 0f;

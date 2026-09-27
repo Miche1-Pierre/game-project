@@ -32,6 +32,9 @@ namespace Movers
         public int fontSize = 18;               // at 1080 lines, scaled per viewport
 
         public CrewMember Driver => driver;
+        // Where the chase camera looks: the driver faces this way getting out. Online, the
+        // client sends its own with its input (TruckSync.LocalChaseYaw).
+        public float ChaseYaw => chase.Yaw;
         public override string Prompt => occupied ? "Get out" : "Drive";
         public override bool CanInteract => !occupied && vehicle != null && vehicle.isActiveAndEnabled;
 
@@ -78,6 +81,7 @@ namespace Movers
         string hintLine = "", infoLine = "";
         string notice;
         float noticeUntil;
+        const string NoRoomText = "No room to get out here";
 
         void Awake()
         {
@@ -104,7 +108,7 @@ namespace Movers
 
         public override void Interact(PlayerInteract by)
         {
-            if (by == null) return;
+            if (by == null || !Net.HasAuthority) return;
             var member = by.GetComponent<CrewMember>();
             if (member == null) member = CrewRoster.Owner(by.transform);
             TryEnter(member);
@@ -112,11 +116,20 @@ namespace Movers
 
         public bool TryEnter(CrewMember m)
         {
+            if (!Net.HasAuthority) return false;   // the client's seat follows TruckSync (ApplyEnter)
             if (m == null || !CanInteract || m.IsDriving || seatPoint == null) return false;
 
             // Hands on the wheel: whatever he carried drops at the door.
             if (m.Grab != null && m.Grab.IsCarrying) m.Grab.Release(false);
 
+            Seat(m);
+            if (Net.IsHost) TruckSync.SeatEnter(m.index);
+            return true;
+        }
+
+        // The body part of getting in, shared by the host (TryEnter) and the client (ApplyEnter).
+        void Seat(CrewMember m)
+        {
             driver = m;
             occupied = true;
             driverLeft = false;
@@ -165,8 +178,8 @@ namespace Movers
             m.IsDriving = true;
 
             vehicle.SetDriver(m);
-            chase.Begin(truckRoot);
-            return true;
+            // The chase view only on the machine whose screen shows that driver.
+            if (Net.IsLocal(m)) chase.Begin(truckRoot);
         }
 
         public bool TryExit()
@@ -175,7 +188,8 @@ namespace Movers
             if (vehicle != null && vehicle.Body != null && vehicle.Body.linearVelocity.magnitude > maxExitSpeed) return false;
             if (!FindExitSpot(out Vector3 feet))
             {
-                Notice("No room to get out here");
+                Notice(NoRoomText);
+                if (Net.IsHost && !Net.IsLocal(driver)) TruckSync.SeatNotice(driver.index, TruckSync.NoticeNoRoom);
                 return false;
             }
             Release(feet);
@@ -184,7 +198,7 @@ namespace Movers
 
         void Update()
         {
-            if (!occupied) return;
+            if (!occupied || !Net.HasAuthority) return;
             if (driver == null)
             {
                 Forget();
@@ -214,14 +228,18 @@ namespace Movers
         void LateUpdate()
         {
             if (!occupied || driver == null || driverCam == null || vehicle == null || vehicle.Body == null) return;
+            if (!Net.IsLocal(driver)) return;   // online: a remote driver's camera is his machine's
             Vector2 look = driver.Input != null ? GameSettings.ApplyLook(driver.Input.LookDelta) : Vector2.zero;   // the player's sensitivity and invert Y
-            chase.Tick(driverCam, truckRoot, vehicle.Body.linearVelocity, look, Time.deltaTime);
+            chase.Tick(driverCam, truckRoot, vehicle.Velocity, look, Time.deltaTime);
         }
 
         // Out through the door: standing on these feet, facing where the camera looked.
         void Release(Vector3 feet)
         {
             float yaw = driverCam != null ? chase.Yaw : driver.transform.eulerAngles.y;
+            // Online host, the client at the wheel: his camera is on his machine, and his input
+            // brings its heading (TruckSync.RemoteChaseYaw).
+            if (!Net.IsLocal(driver)) yaw = TruckSync.RemoteChaseYaw(driver.transform.eulerAngles.y);
             float lift = driverCapsule != null
                 ? driverCapsule.height * 0.5f - driverCapsule.center.y + driverCapsule.skinWidth + 0.02f
                 : 1f;
@@ -255,12 +273,14 @@ namespace Movers
             Restore(driverEquip, equipWasOn);
             driverEquip = null;
             m.IsDriving = false;
+            if (Net.IsHost) TruckSync.SeatExit(m.index, rootPosition, yaw);
         }
 
         // The driver is gone (destroyed, or the scene is unloading): nothing to give back, and
         // nothing is switched back on, colliders included.
         void Forget()
         {
+            if (Net.IsHost && !ReferenceEquals(driver, null)) TruckSync.SeatForgotten(driver.index, seatPoint);
             if (driver != null) driver.IsDriving = false;
             switchedOff.Clear();
             driverEquip = null;
@@ -273,6 +293,40 @@ namespace Movers
             driverLeft = false;
             driver = null;
             if (vehicle != null) vehicle.SetDriver(null);
+        }
+
+        // ---- online (NETCODE_SLICE 9.6, 11.7) ----
+
+        // Client: the host seated this member (SeatEnter). No drop of what he held: the host's
+        // Items records say so.
+        public void ApplyEnter(CrewMember m)
+        {
+            if (Net.HasAuthority || m == null || seatPoint == null) return;
+            if (occupied && driver == m) return;
+            if (occupied && driver != null) GiveBack(driver.transform.position, driver.transform.eulerAngles.y);
+            else if (occupied) Forget();
+            Seat(m);
+        }
+
+        // Client: the host put this member out (SeatExit), on these feet and facing this way.
+        public void ApplyExit(CrewMember m, Vector3 rootPosition, float yaw)
+        {
+            if (Net.HasAuthority || !occupied || m == null || driver != m) return;
+            GiveBack(rootPosition, yaw);
+        }
+
+        // Host: the client left while at the wheel. He is put out at the door, so P1 can drive.
+        public void ForceRelease()
+        {
+            if (!Net.HasAuthority || !occupied) return;
+            if (driver == null) { Forget(); return; }
+            Release(FindExitSpot(out Vector3 feet) ? feet : DoorSideGround());
+        }
+
+        // Client: a notice the host raised for this machine's driver.
+        public void ApplyNotice(byte code)
+        {
+            if (code == TruckSync.NoticeNoRoom) Notice(NoRoomText);
         }
 
         static bool SwitchOff(Behaviour b)
@@ -416,7 +470,7 @@ namespace Movers
             Hint hint;
             if (Time.time < noticeUntil) hint = Hint.Notice;
             else if (!vehicle.CanDrive) hint = Hint.Ramp;
-            else if (vehicle.Body != null && vehicle.Body.linearVelocity.magnitude > maxExitSpeed) hint = Hint.TooFast;
+            else if (vehicle.Body != null && vehicle.Velocity.magnitude > maxExitSpeed) hint = Hint.TooFast;
             else hint = Hint.GetOut;
 
             var source = driver.Input != null ? driver.Input.Source : null;
