@@ -2,6 +2,45 @@
 
 _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSINESS, MARKETING._
 
+## 2026-09-27
+
+### The presentation layer (ADR-010)
+
+- **DESIGN, Pierre's decision, ADR-010:** a finished-looking layer before the two-player test. It is an exception to CLAUDE.md sections 13 and 18, taken knowingly.
+- **UI:**
+  - The in-game interface moves from OnGUI to LumaFlow on UI Toolkit, in wood, rope, cardboard and paper tags, set in Fredoka (SIL OFL, downloaded with Pierre's approval).
+  - It is laid out per split-screen viewport.
+  - Contract board, the grandmother's patience and mood, her speech bubbles in the world, toasts, pockets with icons, the delivery sign, the driving plate, the intro card and an itemised end screen with replay or menu.
+  - Key hints show every action available on what you look at or hold, with the key of your own device.
+  - Pause menu per player, with options (volumes, sensitivity, invert Y, language, layout) and the controls sheet.
+  - French first, English second.
+- **UI, where everyone is:** a compass tape and edge markers per view for the other player, the grandmother, the delivery point and the keys, positioned by Pierre's Target Indicators runtime.
+- **MENU:**
+  - MainMenu is the new first scene, a live diorama: a country road, the truck driving it, movers with boxes, the house in the distance, and the wooden title framed by branches.
+  - Play alone or as two.
+  - The loading screen shows a mover who runs, trips, falls, gets up and runs again.
+  - `SceneFlow` loads every scene.
+- **PLAYER:**
+  - Smoking brings the cigarette to the lips; the ember glows and the smoke leaves the mouth.
+  - Drinking tilts the bottle to the lips.
+  - A big knock-down tumbles the camera.
+  - The other player sees it through 9 new clips on an Actions layer (smoke, drink, throw, pocket, wear, knocked down, get up, fall, wave), with the object in the body's hand.
+- **AUDIO:** everything is synthesised at load, with no files and no downloads:
+  - footsteps by surface, and the grandmother's shuffle and babbled voice by mood;
+  - crew efforts, smoking and drinking;
+  - pocket, keys, doors, the truck engine;
+  - ambience that dims indoors, interface clicks, a gentle music loop;
+  - volumes per channel.
+- **ART:** the interface sprites are rendered from low-poly models by `tools/blender/render_ui_kit.py`.
+- **PROCESS, at Pierre's request ("assemble everything directly, stop over-testing"):**
+  - Each part was built, reviewed and fixed in staging, then assembled in one pass: 230 scripts, 0 compile errors.
+  - Installed with one Play check per scene: the house and the menu, 0 console errors each.
+  - No automated test battery this time. The real test is two people playing it.
+- **OPEN:**
+  - In the first capture P1's camera pointed at the floor, probably the mouse moving while the editor was unfocused: check when playing.
+  - The tree pack's Fall material was upgraded by Unity on import.
+  - `SLICE_ARCHITECTURE` does not list the new UI, audio and menu files and debug keys yet.
+
 ## 2026-09-26
 
 ### The grandmother's house becomes a systemic vertical slice (ADR-009)

@@ -1,8 +1,8 @@
 # PROJECT STATE
 
-_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-26, after the grandmother's house became a systemic vertical slice (ADR-009)._
+_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-27, after the presentation layer (ADR-010)._
 
-**PHASE:** Vertical slice built (ADR-009), waiting to be played by two people. Presentation wave (UI, menu, audio, animations) in progress.
+**PHASE:** Vertical slice built (ADR-009) and dressed (ADR-010: wooden UI with key hints, title menu, loader, target indicators, smoking and drinking, synthesised audio). Waiting to be played by two people.
 
 **CONCEPT:** The Movers. A 1-4 player co-op physical moving game. Contract, carry, load the truck, get paid, upgrade. See `02_GAME_DESIGN/GAME_CONCEPT.md` and ADR-003.
 **CORE LOOP:** Carry the owner's belongings out and load them into the truck, while physics and geometry fight you. See `02_GAME_DESIGN/CORE_LOOP.md`.
