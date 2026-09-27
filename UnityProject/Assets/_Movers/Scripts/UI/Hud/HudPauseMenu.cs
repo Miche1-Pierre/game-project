@@ -80,7 +80,7 @@ namespace Movers
             input.Muted = false;
             Vector2 move = input.Move;
             bool confirm = input.Down(CrewButton.Jump) || input.Down(CrewButton.Interact) ||
-                           (input.Source is KeyboardMouseSource && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)));
+                           (HasKeyboard(input) && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)));
             bool back = input.Down(CrewButton.Pause) || input.Down(CrewButton.Crouch);
             // The pad's d-pad arrives as the pocket buttons (GamepadSource): up, right, down, left.
             int pad = input.Down(CrewButton.Pocket1) ? 1 : input.Down(CrewButton.Pocket2) ? 4
@@ -143,7 +143,7 @@ namespace Movers
             }
             OpenCount++;
             SyncWorldPause();
-            if (member.Input.Source is KeyboardMouseSource)
+            if (HasKeyboard(member.Input))
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
@@ -167,7 +167,7 @@ namespace Movers
                 if (member != null && member.Input != null && !sessionHolds) member.Input.Muted = false;
             }
             SyncWorldPause();
-            if (!quiet && member != null && member.Input != null && member.Input.Source is KeyboardMouseSource && !Session.IsOver)
+            if (!quiet && member != null && HasKeyboard(member.Input) && !Session.IsOver)
                 Cursor.lockState = CursorLockMode.Locked;
             if (!quiet) UiAudio.Close();
             Version.Value++;
@@ -195,6 +195,9 @@ namespace Movers
         {
             int n = RowCount;
             Selected = (Selected + delta + n) % n;
+            // Online there is no split screen: the Layout row is hidden, and stepped over.
+            if (Net.IsOnline && Page == HudPausePage.Options && Selected == (int)OptionRow.Layout)
+                Selected = (Selected + delta + n) % n;
             UiAudio.Hover();
             Version.Value++;
         }
@@ -228,7 +231,10 @@ namespace Movers
                 case MainRow.Menu:
                     UiAudio.Click();
                     Close(true);
-                    SceneFlow.LoadMenu();
+                    // Online: the host's leave ends the run for both, the client's leaves alone
+                    // (NETCODE_SLICE 10); NetSession loads the menu.
+                    if (Net.IsOnline) NetSession.LeaveToMenu();
+                    else SceneFlow.LoadMenu();
                     break;
             }
         }
@@ -253,6 +259,7 @@ namespace Movers
                     GameSettings.Language = GameSettings.Language == Language.French ? Language.English : Language.French;
                     break;
                 case OptionRow.Layout:
+                    if (Net.IsOnline) return;
                     GameSettings.Layout = GameSettings.Layout == SplitLayout.SideBySide ? SplitLayout.Stacked : SplitLayout.SideBySide;
                     var split = Object.FindAnyObjectByType<SplitScreen>();
                     if (split != null) split.Apply();
@@ -275,6 +282,15 @@ namespace Movers
         // own use of timeScale is left alone the rest of the time.
         static void SyncWorldPause()
         {
+            // Online the world never stops (NETCODE_SLICE 10): a pause that was on is given back.
+            if (Net.IsOnline)
+            {
+                if (!WorldPaused) return;
+                WorldPaused = false;
+                Time.timeScale = savedTimeScale;
+                AudioListener.pause = false;
+                return;
+            }
             bool all = OpenCount > 0 && OpenCount >= PlayersOnScreen();
             if (all == WorldPaused) return;
             WorldPaused = all;
@@ -285,6 +301,15 @@ namespace Movers
             }
             else Time.timeScale = savedTimeScale;
             AudioListener.pause = all;
+        }
+
+        // Whether this player's menu reads the keyboard (Enter, the cursor). Online the one local
+        // player holds the keyboard whatever its source is (keys and pad together).
+        static bool HasKeyboard(CrewInput input)
+        {
+            var src = input != null ? input.Source : null;
+            if (src is KeyboardMouseSource) return true;
+            return Net.IsOnline && src != null && !(src is NullInputSource) && !(src is RemoteInputSource);
         }
 
         // Players who could open a menu: a view on screen and a device (not NullInputSource).

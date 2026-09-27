@@ -26,6 +26,8 @@ namespace Movers
             public bool toGame = true;
             public int players = 2;
             public bool padConnected;
+            public bool online;
+            public int localMember = -1;   // online: the player on this machine
         }
 
         static readonly UiPlace CenterPlace = UiPlace.Center(0f, 0f);
@@ -73,6 +75,7 @@ namespace Movers
         // "[J1] Clavier et souris   [J2] Manette", or "[J2] pas de manette" in warning ink.
         static Widget Crew(Model m)
         {
+            if (m.online) return OnlineCrew(m);
             var th = UiKit.Theme;
             var tx = th.Text;
             var parts = new List<Widget>(6)
@@ -87,6 +90,26 @@ namespace Movers
                 parts.Add(m.padConnected
                     ? UiKit.Label(Loc.T("menu.gamepad"), tx.SmallBold, th.ink, false)
                     : UiKit.Label(Loc.T("load.noPad"), tx.SmallBold, th.warnInk, false));
+            }
+            return new Row(parts, 8f, MainAxisAlignment.Center, CrossAxisAlignment.Center);
+        }
+
+        // Online, one player per PC: "[Toi] Clavier et souris   [J2 en ligne]" on the host,
+        // "[J1 en ligne]   [Toi] Clavier et souris" on the client.
+        static Widget OnlineCrew(Model m)
+        {
+            var th = UiKit.Theme;
+            var tx = th.Text;
+            var parts = new List<Widget>(5);
+            for (int i = 0; i < 2; i++)
+            {
+                if (i > 0) parts.Add(UiKit.Gap(20f));
+                if (i == m.localMember)
+                {
+                    parts.Add(UiKit.Chip(Loc.T("load.you"), CrewColor(i)));
+                    parts.Add(UiKit.Label(Loc.T("menu.keyboard"), tx.SmallBold, th.ink, false));
+                }
+                else parts.Add(UiKit.Chip(Loc.T(i == 0 ? "load.remote1" : "load.remote2"), CrewColor(i)));
             }
             return new Row(parts, 8f, MainAxisAlignment.Center, CrossAxisAlignment.Center);
         }

@@ -37,16 +37,20 @@ namespace Movers
         static readonly UiTransform TagTilt = new UiTransform(-2.2f);
         static readonly UiName ColumnName = new UiName("menu-column");
 
-        public static Widget Build(MainMenuModel m, System.Action<int> activate, System.Action<int, int> change) =>
-            new ReactiveBuilder<int>(m.Version, _ => Screen(m, activate, change));
+        public static Widget Build(MainMenuModel m, System.Action<int> activate, System.Action<int, int> change,
+                                   System.Action<string> submitCode) =>
+            new ReactiveBuilder<int>(m.Version, _ => Screen(m, activate, change, submitCode));
 
-        static Widget Screen(MainMenuModel m, System.Action<int> activate, System.Action<int, int> change)
+        static Widget Screen(MainMenuModel m, System.Action<int> activate, System.Action<int, int> change, System.Action<string> submitCode)
         {
             Widget page;
             switch (m.Page)
             {
                 case MenuPage.Options: page = Options(m, activate, change); break;
                 case MenuPage.Controls: page = Controls(m, activate, change); break;
+                case MenuPage.Online: page = Online(m, activate); break;
+                case MenuPage.Hosting: page = Hosting(m, activate); break;
+                case MenuPage.Joining: page = Joining(m, activate, submitCode); break;
                 default: page = Title(m, activate); break;
             }
             return new Stack(new[]
@@ -75,6 +79,7 @@ namespace Movers
             var rows = new List<Widget>(MainMenuModel.TitleRows);
             rows.Add(TitleButton(m, activate, MainMenuModel.TitleRow.Solo, "menu.play1"));
             rows.Add(TitleButton(m, activate, MainMenuModel.TitleRow.Duo, "menu.play2"));
+            rows.Add(TitleButton(m, activate, MainMenuModel.TitleRow.Online, "menu.online"));
             rows.Add(TitleButton(m, activate, MainMenuModel.TitleRow.Options, "menu.options"));
             rows.Add(TitleButton(m, activate, MainMenuModel.TitleRow.Controls, "menu.controls"));
             rows.Add(TitleButton(m, activate, MainMenuModel.TitleRow.Quit, "menu.quit"));
@@ -110,8 +115,10 @@ namespace Movers
             string text, icon;
             Color tint = th.ink;
             int row = m.ShowSelection ? m.Selected : (int)MainMenuModel.TitleRow.Duo;
+            if (m.Message != null) return InfoTag(Loc.T(m.Message), UiSprites.IconWarning, th.warnInk);   // "the host left"
             switch ((MainMenuModel.TitleRow)row)
             {
+                case MainMenuModel.TitleRow.Online: text = Loc.T("menu.onlineHint"); icon = UiSprites.IconTruck; break;
                 case MainMenuModel.TitleRow.Solo: text = Loc.T("menu.solo"); icon = UiSprites.IconBox; break;
                 case MainMenuModel.TitleRow.Duo:
                     text = Loc.T(m.PadConnected ? "menu.padReady" : PadNoneKey);
@@ -122,12 +129,133 @@ namespace Movers
                 case MainMenuModel.TitleRow.Controls: text = Loc.T("menu.controlsHint"); icon = UiSprites.IconKey; break;
                 default: text = Loc.T("menu.quitHint"); icon = UiSprites.IconTruck; break;
             }
+            return InfoTag(text, icon, tint);
+        }
+
+        // An icon and a line on a paper tag, under the buttons.
+        static Widget InfoTag(string text, string icon, Color tint)
+        {
+            var th = UiKit.Theme;
             Widget line = new Row(new[]
             {
                 UiKit.Icon(icon, 26f),
                 UiKit.Wrapped(text, tint == th.ink ? th.Text.BodyBold : th.Text.Tinted(th.Text.BodyBold, tint), 330f),
             }, 10f, MainAxisAlignment.Start, CrossAxisAlignment.Center);
             return new SizedBox(UiKit.Tag(line, 6f, UiMotion.Pop), ButtonWidth);
+        }
+
+        // ---- online (NETCODE_SLICE 3.3) ----
+
+        // Héberger, Rejoindre, Retour; the direct host in development builds only, last, as
+        // MainMenuModel.OnlineRow orders it.
+        static Widget Online(MainMenuModel m, System.Action<int> activate)
+        {
+            var th = UiKit.Theme;
+            var rows = new List<Widget>(6)
+            {
+                UiKit.TitleSign(Loc.T("net.title").ToUpperInvariant(), th.Text.Title, UiMotion.Drop),
+                PageButton(m, activate, (int)MainMenuModel.OnlineRow.Host, "net.host"),
+                PageButton(m, activate, (int)MainMenuModel.OnlineRow.Join, "net.join"),
+                PageButton(m, activate, (int)MainMenuModel.OnlineRow.Back, "net.back"),
+            };
+            if (UnityEngine.Debug.isDebugBuild) rows.Add(PageButton(m, activate, (int)MainMenuModel.OnlineRow.HostDirect, "net.hostDirect"));
+            string hint;
+            switch (m.ShowSelection ? (MainMenuModel.OnlineRow)m.Selected : MainMenuModel.OnlineRow.Host)
+            {
+                case MainMenuModel.OnlineRow.Join: hint = "net.joinHint"; break;
+                case MainMenuModel.OnlineRow.HostDirect: hint = "net.hostDirectHint"; break;
+                case MainMenuModel.OnlineRow.Back: hint = "menu.onlineHint"; break;
+                default: hint = "net.hostHint"; break;
+            }
+            rows.Add(InfoTag(Loc.T(hint), UiSprites.IconKey, th.ink));
+            return new Column(rows, 10f, MainAxisAlignment.Start, CrossAxisAlignment.Start);
+        }
+
+        // The code as key caps (a direct address as one wide key), what is happening, and
+        // Copier, Lancer (once player 2 is in), Annuler.
+        static Widget Hosting(MainMenuModel m, System.Action<int> activate)
+        {
+            var th = UiKit.Theme;
+            var rows = new List<Widget>(7) { UiKit.TitleSign(Loc.T("net.host").ToUpperInvariant(), th.Text.Title, UiMotion.Drop) };
+            if (!string.IsNullOrEmpty(m.JoinCode))
+            {
+                Widget code = new Column(new[]
+                {
+                    UiKit.Label(Loc.T("net.code"), th.Text.SmallBold, th.inkSoft, false),
+                    CodeCaps(m.JoinCode),
+                }, 6f, MainAxisAlignment.Start, CrossAxisAlignment.Start);
+                rows.Add(new SizedBox(UiKit.Tag(code, 10f, UiMotion.Pop, th.Skins.TagBig), ButtonWidth));
+            }
+            Widget status = StatusLine(m, true);
+            if (status != null) rows.Add(status);
+            rows.Add(PageButton(m, activate, (int)MainMenuModel.HostRow.Copy, m.Copied ? "net.copied" : "net.copy",
+                                !string.IsNullOrEmpty(m.JoinCode)));
+            rows.Add(PageButton(m, activate, (int)MainMenuModel.HostRow.Start, "net.start", m.PeerConnected));
+            rows.Add(PageButton(m, activate, (int)MainMenuModel.HostRow.Cancel, "net.cancel"));
+            return new Column(rows, 10f, MainAxisAlignment.Start, CrossAxisAlignment.Start);
+        }
+
+        // The field (typed, or pasted: "Coller" is the pad's only way), Se connecter, Retour,
+        // and what is happening.
+        static Widget Joining(MainMenuModel m, System.Action<int> activate, System.Action<string> submitCode)
+        {
+            var th = UiKit.Theme;
+            var s = m.NetStatus;
+            bool busy = s == NetStatus.Connecting || s == NetStatus.Lobby || s == NetStatus.Loading;
+            bool fieldSelected = m.ShowSelection && m.Selected == (int)MainMenuModel.JoinRow.Field;
+            var style = new TextFieldStyle(background: th.cream, foreground: th.ink, border: th.woodDark, placeholder: th.inkSoft,
+                                           typography: th.Text.Title, padding: EdgeInsets.Symmetric(12f, 6f));
+            Widget field = new TextField(m.Code, placeholder: Loc.T("net.field"), enabled: !busy, style: style,
+                                         focusNode: m.CodeFocus, onSubmitted: submitCode);
+            var rows = new List<Widget>(7)
+            {
+                UiKit.TitleSign(Loc.T("net.join").ToUpperInvariant(), th.Text.Title, UiMotion.Drop),
+                new SizedBox(UiKit.Tag(field, 8f, null, fieldSelected ? th.Skins.ButtonHover : th.Skins.TagBig), ButtonWidth),
+                PageButton(m, activate, (int)MainMenuModel.JoinRow.Paste, "net.paste", !busy),
+                PageButton(m, activate, (int)MainMenuModel.JoinRow.Connect, "net.connect", !busy),
+                PageButton(m, activate, (int)MainMenuModel.JoinRow.Back, "net.back"),
+            };
+            Widget status = StatusLine(m, false);
+            if (status != null) rows.Add(status);
+            return new Column(rows, 10f, MainAxisAlignment.Start, CrossAxisAlignment.Start);
+        }
+
+        static Widget PageButton(MainMenuModel m, System.Action<int> activate, int row, string key, bool enabled = true)
+        {
+            bool selected = m.ShowSelection && m.Selected == row;
+            return UiKit.Button(Loc.T(key), () => activate(row), selected, enabled && !m.Leaving,
+                                selected ? SubmitGlyph(m.Device) : default, ButtonWidth);
+        }
+
+        // "RQ7K2M" as six key caps; "192.168.1.20:7777" as one wide key.
+        static Widget CodeCaps(string code)
+        {
+            if (code.Length != 6) return UiKit.Key(new Glyph(GlyphKind.WideKey, code, UiSprites.KeyWide), 48f);
+            var caps = new List<Widget>(6);
+            for (int i = 0; i < code.Length; i++) caps.Add(UiKit.Key(new Glyph(GlyphKind.Key, code[i].ToString()), 52f));
+            return new Row(caps, 6f, MainAxisAlignment.Start, CrossAxisAlignment.Center);
+        }
+
+        // The status line of the host and join pages, from NetSession's state; null when idle.
+        static Widget StatusLine(MainMenuModel m, bool hosting)
+        {
+            var th = UiKit.Theme;
+            string key = null, icon = UiSprites.IconClock;
+            Color tint = th.ink;
+            switch (m.NetStatus)
+            {
+                case NetStatus.Connecting: key = hosting ? "net.creating" : "net.connecting"; break;
+                case NetStatus.WaitingForPeer: key = "net.waiting"; break;
+                case NetStatus.PeerJoined: key = "net.peerJoined"; icon = UiSprites.IconCheck; tint = th.goodInk; break;
+                case NetStatus.Lobby: key = "net.connected"; icon = UiSprites.IconCheck; tint = th.goodInk; break;
+                case NetStatus.Loading: key = "net.loading"; break;
+                case NetStatus.Failed:
+                    key = NetSession.LocKey(m.NetError) ?? "net.failed";
+                    icon = UiSprites.IconWarning;
+                    tint = th.badInk;
+                    break;
+            }
+            return key != null ? InfoTag(Loc.T(key), icon, tint) : null;
         }
 
         // ---- options ----

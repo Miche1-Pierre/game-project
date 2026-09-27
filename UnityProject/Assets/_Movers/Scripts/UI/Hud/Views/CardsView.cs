@@ -118,7 +118,7 @@ namespace Movers
             Widget buttons = new Row(new[]
             {
                 UiKit.Button(Loc.T("end.replay"), Replay, true, true, DeviceGlyph(devices, CrewButton.Interact), 260f),
-                UiKit.Button(Loc.T("end.menu"), SceneFlow.LoadMenu, false, true, DeviceGlyph(devices, CrewButton.Pause), 200f),
+                UiKit.Button(Loc.T("end.menu"), ToMenu, false, true, DeviceGlyph(devices, CrewButton.Pause), 200f),
             }, 18f, MainAxisAlignment.Center, CrossAxisAlignment.Center);
 
             var parts = new List<Widget>(8)
@@ -156,10 +156,25 @@ namespace Movers
         // "Rejouer" plays this job again, in this scene. SceneFlow only knows the house (and
         // brings the loading screen); any other map with a session (Tutorial_01) reloads itself,
         // the way E/X on this card does through GameSession, so both routes land in one place.
+        // Online (NETCODE_SLICE 3.6, 10): the host reloads for both through the funnel, the
+        // client asks the host for it.
         static void Replay()
         {
+            if (Net.IsOnline)
+            {
+                if (Net.IsHost) NetSession.ReloadForBoth();
+                else NetSession.RequestReplay();
+                return;
+            }
             if (SceneManager.GetActiveScene().name == SceneFlow.GameScene) SceneFlow.ReloadGame();
             else SceneReload.Reload();
+        }
+
+        // Online the host's "Menu" ends the run for both, the client's leaves alone.
+        static void ToMenu()
+        {
+            if (Net.IsOnline) NetSession.LeaveToMenu();
+            else SceneFlow.LoadMenu();
         }
 
         static Color Amount(int v, UiTheme th) => v > 0 ? th.goodInk : v < 0 ? th.badInk : th.inkSoft;

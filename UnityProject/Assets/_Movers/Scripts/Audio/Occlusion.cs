@@ -37,6 +37,9 @@ namespace Movers
                 if (c == null || c is CharacterController) continue;
                 Rigidbody rb = c.attachedRigidbody;
                 if (rb != null && !rb.isKinematic) continue;
+                // Online client: replicated bodies are kinematic there, but they are things that
+                // move, as on the host.
+                if (rb != null && Net.IsClient && NetIds.IdOf(rb.gameObject) != 0) continue;
                 if (ignore != null && c.transform.IsChildOf(ignore)) continue;
                 walls++;
             }
