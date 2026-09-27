@@ -131,6 +131,9 @@ namespace Movers
             // sample on repeat. The beep is a signal, it stays exact.
             src.pitch = kind == Kind.Beep ? 1f : Random.Range(0.93f, 1.07f);
             src.Play();
+            // AUDIO: heard from the nearest player in split screen, muffled by walls, and scaled
+            // by the effects volume, like every other sound (Audio/AudioDirector.cs).
+            AudioDirector.Adopt(src, position, AudioChannel.Sfx);
         }
 
         static void RaiseNoise(int k, Vector3 position, float volume, int instigator)
