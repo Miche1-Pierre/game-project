@@ -4,6 +4,30 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 
 ## 2026-09-27
 
+### Pierre's first playthrough, first round of fixes
+
+- **MAP:**
+  - The countryside around the house now matches the title screen: fields and hills, forests, hedges, flowers, wheat and about 88,000 instanced grass tufts, with the same sky, light and haze.
+  - THE MOVERS is painted on the truck, and the interior doors are a mix of open and shut.
+  - A plank ceiling covers the upper rooms, and smoke comes from the chimney when she lights the fire.
+  - **Measured:** 38.8 fps before, about 32 after, in the editor in split screen. The house itself is the main cost, with about 25,000 draw calls for the two cameras. That is the next performance lever.
+- **MENU:** movers carry absurd loads alone (piano, fridge, bathtub, clock, a tower of boxes, sofa). More woods, and three towns on the horizon for the future maps, with a signpost.
+- **UI:**
+  - Everything is about a third larger.
+  - The intro sign waits for a key.
+  - The contract appears only when the grandmother hands over the list and the keys.
+  - The object card moves to the top right.
+- **PLAYER:**
+  - Your own hands are visible in first person.
+  - Small items are held close in the right hand, and brought to the lips.
+  - A real-looking cigarette and softer smoke.
+- **NOT DONE, noted:**
+  - finer fracture;
+  - a less robotic voice;
+  - the grandmother's props and animations in more detail;
+  - controls rebinding;
+  - saves: agreed not now.
+
 ### The presentation layer (ADR-010)
 
 - **DESIGN, Pierre's decision, ADR-010:** a finished-looking layer before the two-player test. It is an exception to CLAUDE.md sections 13 and 18, taken knowingly.
