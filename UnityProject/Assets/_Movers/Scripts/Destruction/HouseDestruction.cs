@@ -181,6 +181,9 @@ namespace Movers
 
             var selfSupported = new List<int>();
             BuildGraph(selfSupported);
+            // Online client: the same parts and colliders, but no graph running. Nothing falls for
+            // lack of support here; the host's structure records say what fell (NETCODE_SLICE 11.4).
+            if (Net.IsClient) StructureGraph.Uninstall(graph);
 
             if (debugTools && Debug.isDebugBuild && !TryGetComponent(out DestructionDebug _))
                 gameObject.AddComponent<DestructionDebug>();
@@ -224,6 +227,7 @@ namespace Movers
         // too; a blast resolves its own at once.
         void FixedUpdate()
         {
+            if (!Net.HasAuthority) return;
             if (graph == null) return;
             graph.Queue.maxStagger = Mathf.Max(0f, collapseStagger);
             graph.ResolvePending();
@@ -799,6 +803,7 @@ namespace Movers
         // rebuilt. Movables that were only moved stay where the crew left them.
         public void ResetDestruction()
         {
+            if (!Net.HasAuthority) return;   // host only; F11 is refused online anyway
             if (graph != null) graph.Queue.Clear();
             var debris = DebrisManager.Existing;
             if (debris != null) debris.Clear();

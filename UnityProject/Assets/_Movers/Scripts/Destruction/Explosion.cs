@@ -130,6 +130,8 @@ namespace Movers
 
         public static void Detonate(Vector3 position, float radius = 6.5f, float power = 1f, int instigator = Actors.World)
         {
+            // Online, blasts are the host's; the client sees them through PlayCosmetic.
+            if (!Net.HasAuthority) return;
             if (!Application.isPlaying || quitting) return;
             if (!IsFinite(position) || !(radius > 0.05f) || !(power > 0f)
                 || float.IsInfinity(radius) || float.IsInfinity(power)) return;
@@ -208,7 +210,13 @@ namespace Movers
             {
                 Debug.LogException(e);
             }
-            // Picture and sound: cosmetic, so each one fails alone.
+            // Picture and sound: cosmetic, so each one fails alone. The online client gets the
+            // same picture from this record, after the transitions of the blast (4.2).
+            if (Net.IsHost)
+            {
+                try { PropsSync.ExplosionFx(c, radius, power, blast.instigator); }
+                catch (System.Exception e) { Debug.LogException(e); }
+            }
             try { CameraShake.Shake(c, Mathf.Clamp(power, 0f, 1.2f), radius * ShakeReach); }
             catch (System.Exception e) { Debug.LogException(e); }
             try { ExplosionFX.Spawn(c, radius, power); }
@@ -222,6 +230,32 @@ namespace Movers
 
             // 6. the grenades, last, so a chain reaction starts from a room already blown up
             Announce(c, radius, power);
+        }
+
+        // The online client's side of a host blast (Props ExplosionFx): the push on the local
+        // debris (the only dynamic bodies there), the shake, the fireball, the boom, and a wake
+        // for frozen debris. Nothing breaks, nobody is knocked (the host does both and they
+        // replicate), and no Detonated and no WorldEvents: the host's are forwarded.
+        public static void PlayCosmetic(Vector3 position, float radius, float power)
+        {
+            if (!Application.isPlaying || quitting) return;
+            if (!IsFinite(position) || !(radius > 0.05f) || !(power > 0f)
+                || float.IsInfinity(radius) || float.IsInfinity(power)) return;
+            try
+            {
+                Physics.SyncTransforms();
+                PushBodies(position, radius, power, Actors.World);
+            }
+            catch (System.Exception e) { Debug.LogException(e); }
+            finally { pushed.Clear(); }
+            try { CameraShake.Shake(position, Mathf.Clamp(power, 0f, 1.2f), radius * ShakeReach); }
+            catch (System.Exception e) { Debug.LogException(e); }
+            try { ExplosionFX.Spawn(position, radius, power); }
+            catch (System.Exception e) { Debug.LogException(e); }
+            try { ImpactAudio.PlayFromNet(ImpactAudio.Kind.Boom, position, 1f); }
+            catch (System.Exception e) { Debug.LogException(e); }
+            try { DebrisManager.WakeFromBlast(position, radius, power); }
+            catch (System.Exception e) { Debug.LogException(e); }
         }
 
         static void RecordCost(float ms)

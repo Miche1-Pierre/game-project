@@ -222,7 +222,9 @@ namespace Movers
                     if (p.rb.IsSleeping())
                     {
                         p.sleepTime += dt;
-                        if (p.sleepTime >= freezeAfterSleep)
+                        // Never on the online client: a frozen piece is immovable there, and the
+                        // replicated props (kinematic) would pass through it (NETCODE_SLICE 11.4).
+                        if (p.sleepTime >= freezeAfterSleep && !Net.IsClient)
                         {
                             if (RestsOnStaticGround(p)) Freeze(p);
                             // On furniture or on other debris: stay a sleeping rigidbody, and
@@ -321,6 +323,14 @@ namespace Movers
             p.rb.collisionDetectionMode = p.detectionMode;
             p.rb.WakeUp();
             p.sleepTime = 0f;
+        }
+
+        // The online client's blast (Explosion.PlayCosmetic): Detonated is never raised there, so
+        // the picture of a host blast wakes the local debris through this. A no-op when no
+        // debris exists yet.
+        public static void WakeFromBlast(Vector3 position, float radius, float power)
+        {
+            if (instance != null) instance.OnDetonated(position, radius, power);
         }
 
         // Raised by Explosion after its own forces are applied, so the frozen pieces missed
