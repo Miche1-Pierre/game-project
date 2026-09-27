@@ -76,6 +76,13 @@ namespace Movers
 
         void Update()
         {
+            // Online client: the prompt only, for the local player; the host acts on the press
+            // it gets through the input stream (9.5). The P1 puppet casts no ray at all.
+            if (!Net.HasAuthority)
+            {
+                target = Net.IsLocal(Member) ? FindTarget() : null;
+                return;
+            }
             target = FindTarget();
             if (target == null) return;
             // Taken first: whatever Interact does, the press is spent for this player.
