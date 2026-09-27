@@ -45,6 +45,7 @@ namespace Movers
             public uint id;
             public NetKind kind;
             public int x, y, z;   // sweep-time world position, cm
+            public bool moves;    // a body that can settle before the sweep: its position is not hashed
             public string path;
         }
 
@@ -220,6 +221,10 @@ namespace Movers
                 var e = entries[i];
                 NetSync.HashInto(ref h, e.id);
                 NetSync.HashInto(ref h, (ulong)e.kind);
+                // Bodies and the grandmother can fall or snap to the NavMesh during the load
+                // frames, by an amount that depends on frame timing, so only static things hash
+                // their position. The snapshot sets the moving ones anyway.
+                if (e.moves) continue;
                 NetSync.HashInto(ref h, (ulong)(long)e.x);
                 NetSync.HashInto(ref h, (ulong)(long)e.y);
                 NetSync.HashInto(ref h, (ulong)(long)e.z);
@@ -307,12 +312,14 @@ namespace Movers
             byId[id] = go;
             byGo[go] = id;
             var p = go.transform.position;
+            bool tracked = IsTrackedBody(go);
             entries.Add(new Entry
             {
                 id = id, kind = kind, path = CurrentPath(),
                 x = Mathf.RoundToInt(p.x * 100f), y = Mathf.RoundToInt(p.y * 100f), z = Mathf.RoundToInt(p.z * 100f),
+                moves = tracked || kind == NetKind.Grandma,
             });
-            if (IsTrackedBody(go)) trackedBodies.Add(id);
+            if (tracked) trackedBodies.Add(id);
         }
 
         static string CurrentPath()
