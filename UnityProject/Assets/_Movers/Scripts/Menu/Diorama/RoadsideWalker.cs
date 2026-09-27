@@ -33,6 +33,8 @@ namespace Movers
         [Tooltip("Bottom centre of the box, in this object's space (forward is the way he walks).")]
         public Vector3 boxPosition = new Vector3(0f, 0.92f, 0.36f);
         public Vector3 boxSize = new Vector3(0.56f, 0.42f, 0.44f);
+        [Tooltip("Boxes stacked in his arms, one on the other (a wobbly tower from 2 on).")]
+        [Min(1)] public int boxCount = 1;
 
         static readonly int SpeedId = Animator.StringToHash("Speed");
         int carryLayer = -1;
@@ -45,7 +47,7 @@ namespace Movers
         {
             s = Mathf.Lerp(startDistance, endDistance, phase);
             wanderPhase = phase * 17f;
-            if (carryBox) CardboardBox.Create(transform, boxPosition, boxSize, template, gameObject.layer);
+            if (carryBox) StackBoxes();
             if (body != null)
             {
                 body.applyRootMotion = false;
@@ -56,6 +58,24 @@ namespace Movers
                 body.Update(0.4f + phase * 3f);
             }
             Place(0f);
+        }
+
+        // One box, or a tower of them: each a little different in size, shifted and turned a
+        // little on the one below, so the stack reads as badly balanced.
+        void StackBoxes()
+        {
+            var rng = new System.Random(Mathf.RoundToInt(phase * 1000f) + 17);
+            float y = 0f;
+            for (int i = 0; i < boxCount; i++)
+            {
+                float k = i == 0 ? 1f : Mathf.Lerp(0.8f, 1.05f, (float)rng.NextDouble());
+                var size = new Vector3(boxSize.x * k, boxSize.y * Mathf.Lerp(0.85f, 1.1f, (float)rng.NextDouble()), boxSize.z * k);
+                float lean = i * 0.012f;
+                var at = boxPosition + new Vector3(((float)rng.NextDouble() - 0.5f) * 0.08f + lean, y, ((float)rng.NextDouble() - 0.5f) * 0.06f);
+                var box = CardboardBox.Create(transform, at, size, template, gameObject.layer);
+                box.transform.localRotation = Quaternion.Euler(0f, ((float)rng.NextDouble() - 0.5f) * (i == 0 ? 0f : 14f), (i == 0 ? 0f : ((float)rng.NextDouble() - 0.5f) * 3f));
+                y += size.y;
+            }
         }
 
         void Update()
