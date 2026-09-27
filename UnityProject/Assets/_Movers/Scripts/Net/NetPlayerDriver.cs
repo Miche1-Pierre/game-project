@@ -153,6 +153,8 @@ namespace Movers
                 remote.SetState(p.move, p.lookTotal, p.scrollTotal, p.rollTotal);
                 remote.SetPaused(p.paused);
             }
+            // At the wheel, the client's chase heading is its exit facing (VehicleSeat.Release).
+            if (p.seated) TruckSync.SetRemoteChaseYaw(p.chaseYaw);
             HasAck = true;
             AckSeq = p.seq;
         }
@@ -249,8 +251,9 @@ namespace Movers
             o.paused = HudPauseMenu.OpenCount > 0;
             o.seated = m.IsDriving;
             o.seatEpoch = TruckSync.SeatEpoch;
-            // At the wheel the local camera is the chase view: its yaw is where the driver looks.
-            o.chaseYaw = m.View != null ? m.View.transform.eulerAngles.y : m.transform.eulerAngles.y;
+            // At the wheel, the chase camera's heading (TruckSync.LocalChaseYaw, NaN off the seat).
+            float chase = TruckSync.LocalChaseYaw;
+            o.chaseYaw = float.IsNaN(chase) ? 0f : chase;
             o.pose = m.Controller.NetPoseNow();
             sampled = true;
         }
