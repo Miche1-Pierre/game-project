@@ -81,6 +81,10 @@ namespace Movers
         // were not cleaned up when closing the scene").
         static void OnQuitting() { quitting = true; }
 
+        // Online client: the host's sounds arrive here (NETCODE_SLICE 11.5). Stub from CORE;
+        // the DESTRUCTION track fills it.
+        public static void PlayFromNet(Kind kind, Vector3 position, float volume) { }
+
         // Play one sound at a point in the world. volume is 0..1 on top of the clip's own level.
         public static void Play(Kind kind, Vector3 position, float volume = 1f)
         {

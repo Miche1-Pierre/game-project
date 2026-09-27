@@ -88,6 +88,12 @@ namespace Movers
         // is switched off (the truck seat does that): it would otherwise keep the last walk.
         public Vector3 Velocity => cc != null && cc.enabled ? cc.velocity : Vector3.zero;
 
+        // Online co-op (NETCODE_SLICE 9.3, 9.4). Stubs from CORE: the replicated values for a
+        // puppet body come with the PLAYERS track; offline and driven bodies read their own.
+        public bool Grounded => cc != null && cc.isGrounded;
+        public bool NetThrowHeld => false;
+        public void ApplyNetPose(in NetPose pose) { }
+
         public CrewInput Input => input;
 
         void Awake()

@@ -83,6 +83,10 @@ namespace Movers
         public Rigidbody Body => rb;
         public float ForwardSpeed { get; private set; }     // m/s along the cab direction, negative in reverse
         public float SpeedKmh => rb != null ? rb.linearVelocity.magnitude * 3.6f : 0f;
+        // Online co-op (NETCODE_SLICE 11.7). Stubs from CORE; GAMELOOP-TRUCK fills the replica values.
+        public Vector3 Velocity => rb != null ? rb.linearVelocity : Vector3.zero;
+        public float Pedal => 0f;          // -1..1
+        public bool Handbrake => false;
         public float SteerAngle { get; private set; }
         // Driving off with the ramp down would drag a 5 m plank along the road.
         public bool CanDrive => ramp == null || ramp.IsStowed;
