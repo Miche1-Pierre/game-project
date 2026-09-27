@@ -152,6 +152,7 @@ namespace Movers
 
         void OnCollisionEnter(Collision c)
         {
+            if (!Net.HasAuthority) return;   // online, things break on the host (Props Breakable)
             // Unity sends collision messages to disabled components too: disabled means off.
             if (!enabled || IsDestroyed) return;
             float now = Time.time;
@@ -179,6 +180,7 @@ namespace Movers
         public DamageResult ApplyDamage(in DamageEvent e)
         {
             var before = State;
+            if (!Net.HasAuthority) return DamageResult.None(before);
             if (IsDestroyed || !enabled || !(e.damage > 0f)) return DamageResult.None(before);
             if (IsWorn()) return DamageResult.None(before);
             Init();
@@ -199,6 +201,7 @@ namespace Movers
         {
             markedBroken = true;
             Tint(BrokenTint);
+            if (Net.IsHost) PropsSync.BreakableState(this, DestructionState.Damaged, default, Vector3.zero);
             if (mo != null)
             {
                 mo.broken = true;
@@ -273,6 +276,12 @@ namespace Movers
             for (int i = 0; i < panes.Length; i++)
                 if (panes[i] != null) panes[i].Shatter(e);
 
+            // Online: after the children's own records, before the debris, with the velocity the
+            // debris inherits (the client's replica body is kinematic and has none).
+            if (Net.IsHost)
+                PropsSync.BreakableState(this, DestructionState.Destroyed, e,
+                                         !structural && rb != null && !rb.isKinematic ? rb.linearVelocity : Vector3.zero);
+
             Vector3 at = transform.position;
             var table = DestructionMaterialTable.Current;
             GatherOwnRenderers();
@@ -304,7 +313,7 @@ namespace Movers
                 mo.destroyed = true;
                 mo.loaded = false;
                 mo.broken = true;
-                LetGo(mo);
+                if (Net.HasAuthority) LetGo(mo);
             }
 
             gameObject.SetActive(false);
@@ -315,8 +324,57 @@ namespace Movers
                 DestructionEvents.Structure(this, at, DestructionState.Destroyed, e.instigator);
                 if (DestructionEvents.IsDoor(name)) DestructionEvents.Door(this, at, e.instigator);
             }
-            if (GraphNode >= 0) StructureGraph.Current?.MarkRemoved(GraphNode, e.instigator);
+            if (GraphNode >= 0 && Net.HasAuthority) StructureGraph.Current?.MarkRemoved(GraphNode, e.instigator);
             Destroyed?.Invoke(this);
+        }
+
+        // ---- online client ----
+
+        // The host's transition (Props Breakable), applied without raising anything and without
+        // a sound (the host's arrives as Props Sound). Damaged marks it; Destroyed breaks it
+        // with the host's hit and inherited velocity (inherit), unless silent (the join
+        // snapshot), where it is simply switched off. Never recurses: the children's own
+        // records arrive first. Who held it is let go by the replicated item flags.
+        public void NetApply(DestructionState state, in DamageEvent e, Vector3 inherit, bool silent)
+        {
+            if (IsDestroyed) return;
+            Init();
+            if (state == DestructionState.Damaged)
+            {
+                if (markedBroken) return;
+                markedBroken = true;
+                Tint(BrokenTint);
+                if (mo != null) mo.broken = true;
+                return;
+            }
+            if (state != DestructionState.Destroyed) return;
+            IsDestroyed = true;
+            health = 0f;
+
+            if (!silent)
+            {
+                var table = DestructionMaterialTable.Current;
+                GatherOwnRenderers();
+                if (ownRenderers.Count > 0)
+                {
+                    Bounds b = ownRenderers[0].bounds;
+                    for (int i = 1; i < ownRenderers.Count; i++) b.Encapsulate(ownRenderers[i].bounds);
+                    DebrisManager.WakeInBounds(b);
+                    int pieces = structural ? StructuralPieces(b) : MovablePieces(b);
+                    MeshShatter.Shatter(ownRenderers, pieces, TotalMass(b), inherit, e.position, e.ImpulseVector,
+                                        structural ? table.structureDebrisLifetime : table.propDebrisLifetime, e.instigator);
+                    if (structural) DestructionFX.Dust(b.center, b.extents.magnitude);
+                }
+                ownRenderers.Clear();
+            }
+
+            if (mo != null)
+            {
+                mo.destroyed = true;
+                mo.loaded = false;
+                mo.broken = true;
+            }
+            gameObject.SetActive(false);
         }
 
         // ---- the structure graph ----

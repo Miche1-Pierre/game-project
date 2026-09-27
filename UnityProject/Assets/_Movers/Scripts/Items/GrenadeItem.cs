@@ -87,6 +87,8 @@ namespace Movers
         }
 
         public static int ArmedCount => Armed.Count;
+        // For the join snapshot (PropsSync).
+        internal static IReadOnlyList<GrenadeItem> ArmedList => Armed;
 
         // ---- this one ----
 
@@ -142,6 +144,7 @@ namespace Movers
         // nothing more, the grenade is already as dangerous as it gets.
         public override void OnUseBegin()
         {
+            if (!Net.HasAuthority) return;   // online, the host arms it (Props Grenade)
             if (exploded || armed) return;
             var member = holder != null ? CrewRoster.Owner(holder.transform) : null;
             armedBy = member != null ? member.index : Actors.World;
@@ -154,6 +157,7 @@ namespace Movers
         // wherever it went, still ticking.
         public override void OnUseEnd()
         {
+            if (!Net.HasAuthority) return;
             if (!armed || exploded) return;
 
             var by = holder;
@@ -189,6 +193,7 @@ namespace Movers
             if (armed)
             {
                 fuseLeft = Mathf.Min(fuseLeft, seconds);
+                if (Net.IsHost) PropsSync.Grenade(this);
                 return;
             }
 
@@ -202,6 +207,7 @@ namespace Movers
                 listed = true;
             }
             EnsureFuses();
+            if (Net.IsHost) PropsSync.Grenade(this);
         }
 
         // Goes off now. The blast itself is Explosion's.
@@ -234,6 +240,7 @@ namespace Movers
         // in: this one goes too, a moment later. One already ticking keeps its own clock.
         void OnNearbyDetonation(Vector3 at, float blastRadius, float blastPower)
         {
+            if (!Net.HasAuthority) return;
             if (this == null || exploded || armed) return;
             float reach = blastRadius * chainReach;
             if ((transform.position - at).sqrMagnitude > reach * reach) return;
@@ -304,7 +311,17 @@ namespace Movers
             litLeft -= dt;
             SetLit(litLeft > 0f);
 
-            if (fuseLeft <= 0f) Explode();
+            // Online, only the host's goes off; the client's copy blinks on until its despawn.
+            if (fuseLeft <= 0f && Net.HasAuthority) Explode();
+        }
+
+        // Online client (Props Grenade): the host's pin and fuse. The pin hides, and Arm starts
+        // the local clock for the blink; the bang is the host's (ExplosionFx), never this one's.
+        public void NetApply(bool isArmed, bool pinOut, float secondsLeft, int by)
+        {
+            if (exploded) return;
+            if (pinOut && pin != null && pin.gameObject.activeSelf) pin.gameObject.SetActive(false);
+            if (isArmed) Arm(secondsLeft, by);
         }
 
         void SetLit(bool on)
@@ -409,6 +426,8 @@ namespace Movers
 
             item.movable = mo;
             item.Build();
+            // Online host, after the scene's ids are known: the client builds its own (5.4).
+            if (Net.IsHost && NetIds.Ready) NetSpawns.Announce(go, NetSpawnKind.Grenade);
             return item;
         }
 

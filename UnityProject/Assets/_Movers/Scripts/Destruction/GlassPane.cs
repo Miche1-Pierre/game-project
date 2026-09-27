@@ -83,6 +83,7 @@ namespace Movers
 
         void OnCollisionEnter(Collision c)
         {
+            if (!Net.HasAuthority) return;   // online, glass breaks on the host (Props Glass)
             // Unity sends collision messages to disabled components too: disabled means off.
             if (!enabled || IsBroken) return;
             if (c.rigidbody == null) return;
@@ -107,6 +108,7 @@ namespace Movers
         public DamageResult ApplyDamage(in DamageEvent e)
         {
             var before = State;
+            if (!Net.HasAuthority) return DamageResult.None(before);
             if (IsBroken || !enabled || !(e.damage > 0f)) return DamageResult.None(before);
             Init();
             float applied = e.damage * (e.type == DamageType.Blast
@@ -130,6 +132,14 @@ namespace Movers
         void Crack(in DamageEvent e)
         {
             IsCracked = true;
+            if (Net.IsHost) PropsSync.GlassState(this, DestructionState.Damaged, e);
+            ShowCracked();
+            ImpactAudio.Play(ImpactAudio.Kind.Glass, e.position, 0.3f, e.instigator);
+        }
+
+        // The milky look of cracked glass.
+        void ShowCracked()
+        {
             if (rend != null)
             {
                 if (block == null) block = new MaterialPropertyBlock();
@@ -143,7 +153,6 @@ namespace Movers
                     rend.SetPropertyBlock(block);
                 }
             }
-            ImpactAudio.Play(ImpactAudio.Kind.Glass, e.position, 0.3f, e.instigator);
         }
 
         // Kept for older callers.
@@ -158,6 +167,7 @@ namespace Movers
             Init();
             IsBroken = true;
             health = 0f;
+            if (Net.IsHost) PropsSync.GlassState(this, DestructionState.Destroyed, e);
             Vector3 at = transform.position;
 
             if (rend != null && rend.enabled && gameObject.activeInHierarchy)
@@ -180,6 +190,42 @@ namespace Movers
             DestructionEvents.Window(this, at, e.instigator);
             Broken?.Invoke(this);
         }
+
+        // ---- online client ----
+
+        // The host's transition (Props Glass), applied without raising anything and without a
+        // sound (the host's arrives as Props Sound). Damaged cracks it, Destroyed breaks it:
+        // shards and glitter, unless silent (the join snapshot), where the pane is simply gone.
+        public void NetApply(DestructionState state, in DamageEvent e, bool silent)
+        {
+            Init();
+            if (IsBroken) return;
+            if (state == DestructionState.Damaged)
+            {
+                if (IsCracked) return;
+                IsCracked = true;
+                ShowCracked();
+                return;
+            }
+            if (state != DestructionState.Destroyed) return;
+            IsBroken = true;
+            health = 0f;
+            if (!silent && rend != null && rend.enabled && gameObject.activeInHierarchy)
+            {
+                Bounds bounds = rend.bounds;
+                DebrisManager.WakeInBounds(bounds);
+                single.Clear();
+                single.Add(rend);
+                MeshShatter.Shatter(single, NetShards, mass, Vector3.zero, e.position, e.ImpulseVector,
+                                    DestructionMaterialTable.Current.glassShardLifetime, e.instigator);
+                single.Clear();
+                DestructionFX.Glass(bounds, e.ImpulseVector / Mathf.Max(1f, mass));
+            }
+            gameObject.SetActive(false);
+        }
+
+        // The host picks 3 to 5 shards at random; the client's picture takes the middle.
+        const int NetShards = 4;
 
         // Undoes a break, for the debug reset (Breakable.Revive and ReviveAll call it): full
         // health, clear glass, and the pane with its collider back in the opening. The shards
