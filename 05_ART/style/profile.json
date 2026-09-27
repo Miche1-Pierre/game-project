@@ -44,6 +44,8 @@
     },
     "garments": {
       "owner": "Jonathan",
+      "approved_by": "Jonathan",
+      "date": "2026-09-27",
       "source": "tools/blender/model_bathrobe.py, tools/blender/model_slippers.py",
       "import_scale": 1.0,
       "orientation": "modelled in place on the imported body; the character faces +Y in Blender world, because the imported object carries a rotation",
@@ -82,8 +84,8 @@
   "references": [
     {"glob": "UnityProject/Assets/_Project/Art/PierreKit/PK_*.fbx", "family": "pierrekit_structure", "tier": "canonical", "origin": "hand", "in_use": true, "approved_by": "", "date": "", "note": "Pierre's hand-made kit, called the reference style in ASSET_LIST section 11 (2026-09-21). Source _ArtSource/assets.blend"},
     {"glob": "UnityProject/Assets/_Project/Art/PierreKit_Ext/PKX_*.fbx", "family": "pierrekit_structure", "tier": "acceptable", "origin": "agent", "in_use": true, "approved_by": "", "date": "", "note": "made by an agent in Pierre's style, source _ArtSource/assets_extension.blend; pending Pierre's review"},
-    {"glob": "UnityProject/Assets/Floreswa/Models/male01_1.fbx", "family": "garments", "tier": "canonical", "origin": "pack", "in_use": true, "approved_by": "", "date": "", "note": "the crew body every worn piece is fitted to"},
-    {"glob": "UnityProject/Assets/_Project/Art/Crew/SM_Crew_Chest_Bathrobe.fbx", "family": "garments", "tier": "acceptable", "origin": "agent", "in_use": true, "approved_by": "", "date": "", "note": "bathrobe v2, validated worn in the map by Jonathan on 2026-09-26. The slippers are not a reference: nobody has seen them on the body since the axis fix"},
+    {"glob": "UnityProject/Assets/Floreswa/Models/male01_1.fbx", "family": "garments", "tier": "canonical", "origin": "pack", "in_use": true, "approved_by": "Jonathan", "date": "2026-09-27", "note": "the crew body every worn piece is fitted to"},
+    {"glob": "UnityProject/Assets/_Project/Art/Crew/SM_Crew_Chest_Bathrobe.fbx", "family": "garments", "tier": "acceptable", "origin": "agent", "in_use": true, "approved_by": "Jonathan", "date": "2026-09-27", "note": "bathrobe v2, validated worn in the map by Jonathan on 2026-09-26. The slippers are not a reference: nobody has seen them on the body since the axis fix"},
     {"glob": "UnityProject/Assets/_Project/Art/GrandmaKit/**/SM_*.fbx", "family": "house_props", "tier": "acceptable", "origin": "agent", "in_use": true, "approved_by": "", "date": "", "note": "only the furniture and props that _ArtSource/house_objects.txt places in Map01_PierreKit_House; unplaced pieces are not references"},
     {"glob": "UnityProject/Assets/_Project/Art/GrandmaKit/Architecture/SM_*.fbx", "family": "pierrekit_structure", "tier": "legacy", "origin": "agent", "in_use": false, "approved_by": "", "date": "", "note": "replaced by the PierreKit"},
     {"glob": "UnityProject/Assets/_Project/Art/GrandmaKit/Veranda/SM_*.fbx", "family": "pierrekit_structure", "tier": "legacy", "origin": "agent", "in_use": false, "approved_by": "", "date": "", "note": "replaced by the PierreKit veranda pieces"},
@@ -96,7 +98,7 @@
     {"glob": "UnityProject/Assets/BrokenVector/LowPolyTreePack/**/*.dae", "family": "house_props", "tier": "acceptable", "origin": "pack", "in_use": true, "approved_by": "", "date": "", "note": "the garden trees"},
     {"glob": "UnityProject/Assets/BrokenVector/LowPolyDungeon/**/*.fbx", "family": "*", "tier": "do_not_copy", "origin": "pack", "in_use": false, "approved_by": "", "date": "", "note": "read wrong for a house: Tutorial_01's first pass used it and was remapped on 2026-09-17"},
     {"glob": "UnityProject/Assets/Low Poly Pistol Weapon Pack 1/**/*.fbx", "family": "*", "tier": "do_not_copy", "origin": "pack", "in_use": false, "approved_by": "", "date": "", "note": "not this game's world"},
-    {"rev": "b64b648", "glob": "_ArtSource/bathrobe_*.png", "family": "garments", "tier": "anti", "origin": "agent", "in_use": false, "approved_by": "", "date": "", "note": "bathrobe v1, judged samurai armour on 2026-09-20; its five faults are listed in _ArtSource/references/bathrobe/SOURCE.md. The v2 shaded flat (2026-09-25) failed too: flat vertical facets read as lamellar plates"}
+    {"rev": "b64b648", "glob": "_ArtSource/bathrobe_*.png", "family": "garments", "tier": "anti", "origin": "agent", "in_use": false, "approved_by": "Jonathan", "date": "2026-09-27", "note": "bathrobe v1, judged samurai armour on 2026-09-20; its five faults are listed in _ArtSource/references/bathrobe/SOURCE.md. The v2 shaded flat (2026-09-25) failed too: flat vertical facets read as lamellar plates"}
   ],
   "export_presets": {
     "rigid": {
