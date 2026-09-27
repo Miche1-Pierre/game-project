@@ -204,7 +204,7 @@ namespace Movers
         // that fits this shut, unlocked door.
         public static string WithLockHint(string verb, CrewMember who)
         {
-            bool pad = who != null && who.Input != null && !(who.Input.Source is KeyboardMouseSource);
+            bool pad = who != null && who.Input != null && !LocalDevicesSource.IsKeyboard(who.Input.Source);
             string button = pad ? PadAlt : KeyboardAlt;
             if (!ReferenceEquals(verb, hintVerb) || !ReferenceEquals(button, hintButton))
             {

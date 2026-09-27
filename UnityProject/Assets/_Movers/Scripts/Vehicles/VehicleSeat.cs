@@ -507,6 +507,7 @@ namespace Movers
         static string InteractLabel(ICrewInputSource source)
         {
             if (source is KeyboardMouseSource keys) return keys.interactKey.ToString();
+            if (source is LocalDevicesSource local && !local.PadActive) return local.Keyboard.interactKey.ToString();
             return "X";
         }
     }

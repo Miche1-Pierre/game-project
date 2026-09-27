@@ -15,9 +15,14 @@ namespace Movers
             if (input == null) return false;
             var src = input.Source;
             if (src is KeyboardMouseSource) return Input.GetKeyDown(KeyCode.Tab);
-            if (src is GamepadSource pad)
-                return Input.GetKeyDown((KeyCode)((int)KeyCode.Joystick1Button0 + (pad.joystick - 1) * 20 + PadBack));
+            if (src is GamepadSource pad) return PadBackDown(pad);
+            // Online, the one local player holds the keyboard and the first pad at once.
+            if (src is LocalDevicesSource local)
+                return Input.GetKeyDown(KeyCode.Tab) || (local.Pad != null && PadBackDown(local.Pad));
             return false;
         }
+
+        static bool PadBackDown(GamepadSource pad) =>
+            Input.GetKeyDown((KeyCode)((int)KeyCode.Joystick1Button0 + (pad.joystick - 1) * 20 + PadBack));
     }
 }

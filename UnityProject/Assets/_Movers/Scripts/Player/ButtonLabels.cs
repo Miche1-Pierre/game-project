@@ -6,7 +6,7 @@ namespace Movers
     {
         public static string For(ICrewInputSource source, CrewButton b)
         {
-            return source is GamepadSource ? Pad(b) : Keyboard(b);
+            return LocalDevicesSource.IsPad(source) ? Pad(b) : Keyboard(b);
         }
 
         public static string For(CrewInput input, CrewButton b)

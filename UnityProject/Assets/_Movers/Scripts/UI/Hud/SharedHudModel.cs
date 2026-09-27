@@ -288,7 +288,7 @@ namespace Movers
             {
                 var input = all[i] != null ? all[i].Input : null;
                 if (input == null || input.Source is NullInputSource) continue;
-                mask |= input.Source is GamepadSource ? 2 : 1;
+                mask |= LocalDevicesSource.IsPad(input.Source) ? 2 : 1;
             }
             return mask == 0 ? 1 : mask;
         }
