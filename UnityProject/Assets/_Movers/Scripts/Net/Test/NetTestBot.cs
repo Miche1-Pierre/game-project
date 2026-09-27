@@ -670,7 +670,13 @@ namespace Movers
             Check(NetStats.DroppedOversize == 0, "5-oversize", NetStats.DroppedOversize + " oversize records dropped here");
             if (!isHost) Check(localRaises == 0, "5-no-double-raise", localRaises + " WorldEvents raised locally on the client");
             Check(errors == 0, "9-console-errors", errors + " console errors here");
-            Info("9-bandwidth: read the NETSTATS lines (down < 80 KB/s peak and < 10 KB/s steady, up < 10 KB/s)");
+            // Down is host to client: the host's out, the client's in.
+            float downPeak = (isHost ? NetStats.PeakOut : NetStats.PeakIn) / 1024f;
+            float downSteady = (isHost ? NetStats.SteadyOut : NetStats.SteadyIn) / 1024f;
+            float up = (isHost ? NetStats.SteadyIn : NetStats.SteadyOut) / 1024f;
+            Check(downPeak < 80f, "9-bandwidth-down-peak", downPeak.ToString("0.0") + " KB/s (limit 80)");
+            Check(downSteady < 10f, "9-bandwidth-down-steady", downSteady.ToString("0.0") + " KB/s over the last 5 s (limit 10)");
+            Check(up < 10f, "9-bandwidth-up", up.ToString("0.0") + " KB/s over the last 5 s (limit 10)");
         }
 
         bool IntroShowing()

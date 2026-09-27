@@ -309,6 +309,14 @@ namespace Movers
         static float peakOut, peakIn;
         static bool loadWindow;
         static float longestFrame, lastLongest;
+        static float steadyOut, steadyIn;                      // the last 5 s window, bytes/s
+
+        // Read-only, for NetTestBot's check 9 (bytes/s): the 1 s peaks since Reset, and the
+        // rates of the last 5 s window written to the NETSTATS line.
+        public static float PeakOut => peakOut;
+        public static float PeakIn => peakIn;
+        public static float SteadyOut => steadyOut;
+        public static float SteadyIn => steadyIn;
 
         public static void CountOut(int len) { outBytes += len + OverheadPerMessage; outMsgs++; }
         public static void CountIn(int len) { inBytes += len + OverheadPerMessage; inMsgs++; }
@@ -341,6 +349,8 @@ namespace Movers
             if (now - logStart >= 5f)
             {
                 float span = now - logStart;
+                steadyOut = logOut / span;
+                steadyIn = logIn / span;
                 NetLog.Write("NETSTATS " + (Net.IsHost ? "host" : "client") +
                              " out " + (logOut / span / 1024f).ToString("0.0") + " KB/s (peak " + (peakOut / 1024f).ToString("0.0") +
                              ") in " + (logIn / span / 1024f).ToString("0.0") + " KB/s (peak " + (peakIn / 1024f).ToString("0.0") +
@@ -354,7 +364,7 @@ namespace Movers
         {
             windowStart = logStart = Time.unscaledTime;
             outBytes = inBytes = outMsgs = inMsgs = logOut = logIn = 0;
-            peakOut = peakIn = 0f;
+            peakOut = peakIn = steadyOut = steadyIn = 0f;
             loadWindow = false;
             longestFrame = lastLongest = 0f;
             DroppedOversize = 0;
