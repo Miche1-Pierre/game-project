@@ -30,8 +30,24 @@ namespace Movers
     // The rig (the hands' parent under the camera) carries the sway, and HeldPose uses it as the
     // frame of its in-hand poses, so the held item sways with the hand holding it.
     //
+    // With a crew body (every player of the house), these arms ARE the body's arms: one skeleton
+    // for your own view, your shadow and the other player's view, so none of them can disagree.
+    //   - The body's Animator moves the arms (idle, walk, run, the crouch, the jump, and the
+    //     Actions layer's throw, pocket, wear, smoke and drink).
+    //   - What the hands hold or reach for (the carry, the small usable in the right hand, the
+    //     pin, the snatch) is worked out here as before, then put on the body's arms with LimbIK:
+    //     your shadow holds the cigarette where you see it held.
+    //   - These forearms, hands and upper arms are then laid on the body's bones, for your own
+    //     camera only (the body itself is hidden from it, FirstPersonBody).
+    // So at rest the hands hang by the thighs, out of view unless you look down, and they swing
+    // with the run as the shadow does; they come into view when they hold or reach. The throw
+    // and pocket gestures below are the Actions layer's clips on the body then, not a second
+    // animation here. A player with no body (the tutorial's capsule) keeps the arms in the view's
+    // corners, as before.
+    //
     // LateUpdate after CameraShake (1000) and ViewOffset (1010): the camera already has this
-    // frame's picture offsets, so the hands and the item HeldPose draws at render agree.
+    // frame's picture offsets, so the hands and the item HeldPose draws at render agree. It also
+    // comes after CrewAnimator, which has crouched the body, so the arms start from the final torso.
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(1020)]
     public sealed class FirstPersonHands : MonoBehaviour
@@ -71,6 +87,11 @@ namespace Movers
         public float snatchSeconds = 0.38f;
         public float pocketSeconds = 0.45f;
 
+        [Header("On the body")]
+        [Tooltip("Seconds for a hand to go from the body's animation to what it holds, and back.")]
+        public float reachSeconds = 0.14f;
+        public float letGoSeconds = 0.2f;
+
         enum Gesture { None, Throw, Shove, Snatch, Pocket }
 
         // One hand's target for this frame, in the rig's space.
@@ -93,6 +114,13 @@ namespace Movers
             public float thumb = 0.3f;
             public float exact;   // 0..1, how locked to the item it is
             public bool placed;
+            // On a body: its arm, and how far what the hand does overrides the body's animation.
+            public Transform upper, lower, end;
+            public float weight;
+            // The hand bone's axes turned into FirstPersonArm's hand space (+Z along the fingers,
+            // +Y the back of the hand), read the way HandSockets reads them: the fingers toward
+            // the bone's "_end" child, the palm the bone's +X on the right and -X on the left.
+            public Quaternion boneToHand = Quaternion.identity;
         }
 
         CrewMember member;
@@ -100,7 +128,10 @@ namespace Movers
         HeldPose pose;
         CrewInput input;
         PlayerController controller;
+        CrewAnimator crew;
+        KnockdownTumble tumble;
         Camera eyes;
+        Animator body;
 
         Transform rig;
         readonly Hand right = new Hand { side = 1f };
@@ -141,6 +172,11 @@ namespace Movers
 
         public Transform Rig => rig;
         public bool Showing => showing;
+        // The hands are the body's arms (a humanoid crew body), not the view's own.
+        public bool OnBody => body != null && right.end != null && left.end != null;
+        // How far each hand is doing something else than the body's animation (0..1).
+        public float RightWeight => right.weight;
+        public float LeftWeight => left.weight;
 
         void Awake()
         {
@@ -154,11 +190,48 @@ namespace Movers
             if (pose == null) pose = GetComponent<HeldPose>();
             if (input == null) input = GetComponent<CrewInput>();
             if (controller == null) controller = GetComponent<PlayerController>();
+            if (crew == null) crew = GetComponent<CrewAnimator>();
+            if (tumble == null) tumble = GetComponent<KnockdownTumble>();
             if (eyes == null)
             {
                 if (member != null && member.View != null) eyes = member.View;
                 else if (controller != null && controller.cam != null) eyes = controller.cam.GetComponent<Camera>();
             }
+        }
+
+        // The humanoid body under this player, and its two arms. CrewSpawner may have swapped the
+        // body before anything woke, so it is looked up here, not remembered from the scene.
+        void ResolveBody()
+        {
+            body = null;
+            right.upper = right.lower = right.end = null;
+            left.upper = left.lower = left.end = null;
+            var a = GetComponentInChildren<Animator>(true);
+            if (a == null || !a.isHuman || a.avatar == null || a.transform == transform) return;
+            right.upper = a.GetBoneTransform(HumanBodyBones.RightUpperArm);
+            right.lower = a.GetBoneTransform(HumanBodyBones.RightLowerArm);
+            right.end = a.GetBoneTransform(HumanBodyBones.RightHand);
+            left.upper = a.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+            left.lower = a.GetBoneTransform(HumanBodyBones.LeftLowerArm);
+            left.end = a.GetBoneTransform(HumanBodyBones.LeftHand);
+            if (right.upper != null && right.lower != null && right.end != null
+                && left.upper != null && left.lower != null && left.end != null) body = a;
+            if (body == null) return;
+            right.boneToHand = BoneToHand(right.end, 1f);
+            left.boneToHand = BoneToHand(left.end, -1f);
+        }
+
+        static Quaternion BoneToHand(Transform hand, float side)
+        {
+            Vector3 finger = Vector3.back;
+            for (int i = 0; i < hand.childCount; i++)
+            {
+                Transform c = hand.GetChild(i);
+                if (c.name.EndsWith("_end") && c.localPosition.sqrMagnitude > 1e-6f) { finger = c.localPosition.normalized; break; }
+            }
+            Vector3 back = Vector3.ProjectOnPlane(Vector3.right * -side, finger);
+            if (back.sqrMagnitude < 1e-6f) back = Vector3.ProjectOnPlane(Vector3.up, finger);
+            return Quaternion.LookRotation(finger, back.normalized);
         }
 
         void OnEnable()
@@ -176,6 +249,7 @@ namespace Movers
             SetVisible(false);
             depth = 0;
             right.placed = left.placed = false;
+            right.weight = left.weight = 0f;
             if (pose != null && pose.handsFrame == rig) pose.handsFrame = null;
         }
 
@@ -211,10 +285,23 @@ namespace Movers
             cuffMat = Matte(Color.Lerp(builtColor, Color.black, 0.22f));
             skinMat = Matte(skin);
 
-            right.arm = new FirstPersonArm(rig, 1f, sleeveMat, cuffMat, skinMat, meshes, renderers);
-            left.arm = new FirstPersonArm(rig, -1f, sleeveMat, cuffMat, skinMat, meshes, renderers);
+            ResolveBody();
+            right.arm = BuildArm(right);
+            left.arm = BuildArm(left);
             visible = false;
             if (pose != null) pose.handsFrame = rig;
+        }
+
+        // Sized on the body's own bones when there is one: they are laid on them.
+        FirstPersonArm BuildArm(Hand h)
+        {
+            float fore = 0f, upper = 0f;
+            if (OnBody)
+            {
+                fore = Vector3.Distance(h.lower.position, h.end.position);
+                upper = Vector3.Distance(h.upper.position, h.lower.position);
+            }
+            return new FirstPersonArm(rig, h.side, sleeveMat, cuffMat, skinMat, meshes, renderers, fore, upper);
         }
 
         static Material Matte(Color c)
@@ -258,6 +345,8 @@ namespace Movers
         void OnWorldEvent(WorldEvent e)
         {
             if (member == null || e.instigator != member.index) return;
+            // On a body the throw and the pocket are the Actions layer's clips, seen on its arm.
+            if (OnBody) return;
             switch (e.type)
             {
                 case WorldEventType.ObjectThrown:
@@ -312,9 +401,14 @@ namespace Movers
 
             bool driving = member != null && member.IsDriving;
             showing = !driving && eyes != null && eyes.isActiveAndEnabled && rig.gameObject.activeInHierarchy;
-            if (!showing)
+            // On a body the arms are posed even when this player's own view is off (online, the
+            // other machine's player has no camera here): the body everyone else sees still
+            // holds what it holds. Only the drawing of these arms needs the view.
+            bool posing = showing || (!driving && eyes != null && OnBody);
+            if (!posing)
             {
                 right.placed = left.placed = false;
+                right.weight = left.weight = 0f;
                 lookKnown = false;
                 return;
             }
@@ -337,6 +431,130 @@ namespace Movers
                 if (gestureClock >= GestureSeconds(gesture)) { gestureClock = -1f; gesture = Gesture.None; }
             }
 
+            if (OnBody) PoseOnBody(dt, held, small);
+            else PoseInView(dt, held, small);
+
+            lastHeld = held;
+            lastSmall = small;
+        }
+
+        // ---- with a body: what the hands do goes on its arms, and the arms are drawn on it ----
+
+        void PoseOnBody(float dt, MovableObject held, bool small)
+        {
+            Target r = Rest(1f), l = Rest(-1f);
+            float rWant = 0f, lWant = 0f;
+            bool rEased = false, lEased = false;   // the gesture's envelope already eases it
+            // Lying on the floor, getting up or tumbling: the Animator's fall, nothing held out.
+            bool free = (crew == null || !crew.IsDown) && (tumble == null || !tumble.IsTumbling);
+            if (free)
+            {
+                if (held != null && !small)
+                {
+                    Carry(held, out l, out r);
+                    rWant = lWant = 1f;
+                }
+                else if (small && pose.TryGetPicture(eyes, out Vector3 at, out Quaternion turn))
+                {
+                    r = InHand(at, turn);
+                    rWant = 1f;
+                    float tug = pose.PinTug;
+                    if (tug > 0f) { l = PinYank(at); lWant = tug; lEased = true; }
+                }
+                if (gestureClock >= 0f && gesture == Gesture.Snatch)
+                {
+                    r = SnatchTarget();
+                    rWant = Envelope(0.12f);
+                    rEased = true;
+                }
+            }
+
+            Follow(right, r, rWant, rEased, dt);
+            Follow(left, l, lWant, lEased, dt);
+            // Paused, the Animator does not rewrite the arms: solving again would add up.
+            if (dt > 0f)
+            {
+                PutOnBody(right);
+                PutOnBody(left);
+            }
+            LayOnBody(right);
+            LayOnBody(left);
+        }
+
+        // The hand's target, sprung as before, and how much it overrides the animation. A reach
+        // starts from where the body's hand really is.
+        void Follow(Hand h, Target t, float want, bool eased, float dt)
+        {
+            bool wasFree = h.weight <= 0f || !h.placed;
+            if (eased) h.weight = Mathf.Clamp01(want);
+            else
+            {
+                float seconds = want > h.weight ? reachSeconds : letGoSeconds;
+                h.weight = Mathf.MoveTowards(h.weight, want, seconds > 0.001f ? dt / seconds : 1f);
+            }
+            h.exact = Mathf.MoveTowards(h.exact, t.exact ? 1f : 0f, dt / 0.15f);
+
+            float step = dt * 7f;
+            h.fingers = Vector4.MoveTowards(h.fingers, t.fingers, step);
+            h.thumb = Mathf.MoveTowards(h.thumb, t.thumb, step);
+
+            if (wasFree)
+            {
+                h.wrist = rig.InverseTransformPoint(h.end.position);
+                h.rotation = Quaternion.Inverse(rig.rotation) * h.end.rotation * BoneToHand(h);
+                h.velocity = Vector3.zero;
+                h.placed = true;
+            }
+            if (h.weight <= 0f || dt <= 0f) return;
+
+            float follow = gestureClock >= 0f ? 0.035f : followSeconds;
+            Vector3 sprung = Vector3.SmoothDamp(h.wrist, t.wrist, ref h.velocity, follow, Mathf.Infinity, dt);
+            Quaternion turned = Quaternion.Slerp(h.rotation, t.rotation, 1f - Mathf.Exp(-dt / Mathf.Max(0.01f, follow * 0.8f)));
+            // On an item HeldPose draws, the hand is exactly where the item is.
+            h.wrist = Vector3.Lerp(sprung, t.wrist, h.exact);
+            h.rotation = Quaternion.Slerp(turned, t.rotation, h.exact);
+            if (h.exact >= 1f) h.velocity = Vector3.zero;
+        }
+
+        // The body's arm to the hand's target, by h.weight: the elbow down, out and a little back,
+        // in the body's frame (not the view's, or looking up would lift the elbows).
+        void PutOnBody(Hand h)
+        {
+            if (h.weight <= 0f) return;
+            Vector3 target = rig.TransformPoint(h.wrist);
+            Quaternion turn = rig.rotation * h.rotation * Quaternion.Inverse(BoneToHand(h));
+            Vector3 pole = transform.TransformDirection(new Vector3(elbowPole.x * h.side, elbowPole.y, elbowPole.z));
+            Quaternion animated = h.end.rotation;
+            LimbIK.Solve(h.upper, h.lower, h.end, target, pole, h.weight);
+            h.end.rotation = Quaternion.Slerp(animated, turn, h.weight);
+        }
+
+        // These arms on the body's bones, in the rig's space. On an item the hand stays on it even
+        // where the body's shorter arm falls a few centimetres short.
+        void LayOnBody(Hand h)
+        {
+            if (h.arm == null) return;
+            Vector3 shoulderAt = rig.InverseTransformPoint(h.upper.position);
+            Vector3 elbowAt = rig.InverseTransformPoint(h.lower.position);
+            Vector3 wristAt = rig.InverseTransformPoint(h.end.position);
+            Quaternion handAt = Quaternion.Inverse(rig.rotation) * h.end.rotation * BoneToHand(h);
+            float k = h.exact * h.weight;
+            if (k > 0f)
+            {
+                wristAt = Vector3.Lerp(wristAt, h.wrist, k);
+                handAt = Quaternion.Slerp(handAt, h.rotation, k);
+            }
+            h.arm.Curl(h.fingers.x, h.fingers.y, h.fingers.z, h.fingers.w, h.thumb);
+            h.arm.Place(wristAt, handAt, elbowAt);
+            h.arm.PlaceUpper(shoulderAt, elbowAt, handAt * Vector3.up);
+        }
+
+        static Quaternion BoneToHand(Hand h) => h.boneToHand;
+
+        // ---- without a body: the arms live in the view, as they did ----
+
+        void PoseInView(float dt, MovableObject held, bool small)
+        {
             Target r = Rest(1f), l = Rest(-1f);
             if (held != null && !small)
             {
@@ -354,9 +572,6 @@ namespace Movers
             left.exact = Mathf.MoveTowards(left.exact, l.exact ? 1f : 0f, dt / 0.15f);
             Drive(right, r, dt);
             Drive(left, l, dt);
-
-            lastHeld = held;
-            lastSmall = small;
         }
 
         void Recolour(Color c)
@@ -548,6 +763,19 @@ namespace Movers
             };
         }
 
+        // The right hand snatching at the air in front, closing as it goes.
+        Target SnatchTarget()
+        {
+            float close = Mathf.SmoothStep(0f, 1f, gestureClock / 0.16f);
+            return new Target
+            {
+                wrist = new Vector3(0.07f, -0.12f, 0.5f),
+                rotation = Quaternion.LookRotation(new Vector3(-0.15f, 0.05f, 1f), new Vector3(0.3f, 1f, 0f)),
+                fingers = Vector4.one * Mathf.Lerp(0.02f, 0.9f, close),
+                thumb = Mathf.Lerp(0.05f, 0.8f, close),
+            };
+        }
+
         float GestureSeconds(Gesture g)
         {
             switch (g)
@@ -604,18 +832,8 @@ namespace Movers
                     break;
                 }
                 case Gesture.Snatch:
-                {
-                    float close = Mathf.SmoothStep(0f, 1f, gestureClock / 0.16f);
-                    var grabAt = new Target
-                    {
-                        wrist = new Vector3(0.07f, -0.12f, 0.5f),
-                        rotation = Quaternion.LookRotation(new Vector3(-0.15f, 0.05f, 1f), new Vector3(0.3f, 1f, 0f)),
-                        fingers = Vector4.one * Mathf.Lerp(0.02f, 0.9f, close),
-                        thumb = Mathf.Lerp(0.05f, 0.8f, close),
-                    };
-                    r = Blend(r, grabAt, Envelope(0.12f));
+                    r = Blend(r, SnatchTarget(), Envelope(0.12f));
                     break;
-                }
                 case Gesture.Pocket:
                 {
                     var dip = new Target
@@ -687,7 +905,7 @@ namespace Movers
 
             h.arm.Curl(h.fingers.x, h.fingers.y, h.fingers.z, h.fingers.w, h.thumb);
             Vector3 pole = new Vector3(elbowPole.x * h.side, elbowPole.y, elbowPole.z);
-            h.arm.Place(h.wrist, h.rotation, Elbow(sh, h.wrist, upperArmLength, forearmLength, pole));
+            h.arm.Place(h.wrist, h.rotation, LimbIK.Joint(sh, h.wrist, upperArmLength, forearmLength, pole));
         }
 
         // The wrist stays where the hand shows: within the sides of the view and not below its
@@ -699,22 +917,6 @@ namespace Movers
             p.x = Mathf.Clamp(p.x, -mx, mx);
             p.y = Mathf.Max(p.y, -z * tanV * 1.02f);
             return p;
-        }
-
-        // Two bones, shoulder to elbow to wrist, the elbow bent toward the pole.
-        static Vector3 Elbow(Vector3 shoulderAt, Vector3 wrist, float a, float b, Vector3 pole)
-        {
-            Vector3 d = wrist - shoulderAt;
-            float len = d.magnitude;
-            if (len < 1e-4f) return shoulderAt + pole.normalized * a;
-            Vector3 dir = d / len;
-            len = Mathf.Clamp(len, Mathf.Abs(a - b) + 1e-3f, a + b - 1e-3f);
-            float cos = Mathf.Clamp((a * a + len * len - b * b) / (2f * a * len), -1f, 1f);
-            float sin = Mathf.Sqrt(Mathf.Max(0f, 1f - cos * cos));
-            Vector3 bend = pole - dir * Vector3.Dot(pole, dir);
-            if (bend.sqrMagnitude < 1e-6f) bend = Vector3.down - dir * Vector3.Dot(Vector3.down, dir);
-            bend.Normalize();
-            return shoulderAt + dir * (a * cos) + bend * (a * sin);
         }
 
         // The held object's box in its own space, from its renderers (or its colliders).

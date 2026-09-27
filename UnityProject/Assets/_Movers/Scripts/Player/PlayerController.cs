@@ -128,6 +128,8 @@ namespace Movers
             netVelocity = pose.velocity;
             netGrounded = pose.grounded;
             netThrowHeld = pose.throwHeld;
+            // Its air time counts from the last pose that stood (Update never runs for it).
+            if (pose.grounded) lastGroundedTime = Time.time;
         }
 
         // This body's pose as the net sends it (9.2, 9.4): sampled by NetPlayerDriver in its
@@ -146,6 +148,17 @@ namespace Movers
                 velocity = cc != null && cc.enabled ? cc.velocity : Vector3.zero,
             };
         }
+
+        // Seconds since the capsule last stood on something, 0 while it does. A jump clears the
+        // ground on purpose, so right after one it is already large. For the animation driver:
+        // a step down a stair leaves the ground for a few hundredths, a jump or a fall for longer.
+        // A puppet goes by the grounded flag that came with its pose: its capsule never moves.
+        public float AirTime => cc != null && cc.enabled && !Grounded ? Time.time - lastGroundedTime : 0f;
+
+        // 0 standing, 1 fully down, following the capsule as it shrinks and grows (stanceSpeed),
+        // so the body can crouch exactly as far as the eyes have gone.
+        public float CrouchAmount => cc != null && standHeight - crouchHeight > 0.01f
+            ? Mathf.Clamp01((standHeight - cc.height) / (standHeight - crouchHeight)) : 0f;
 
         public CrewInput Input => input;
 

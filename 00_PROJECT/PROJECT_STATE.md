@@ -37,6 +37,8 @@ Crew scaled to 1.80 m the same day, see the note in `05_ART/ASSET_STATUS.md`. Th
 - **Kit fixes:** the kit's normals and holed walls are fixed, and the windows have real sashes.
 - **Animation:** 22 humanoid clips.
 
+**Hot-fix 2026-09-27, body and shadow in sync:** one skeleton now drives the crew. The first-person arms are drawn on the body's bones, so the shadow and the other player's view show the same arms. What the hands hold is put on the body by IK. Walk and sprint play at their real ground speed, jumps tuck, and the crouch goes as low as the eyes. Measured in Play (hands 0.000 m apart, head at the eyes crouched), not played by a person. At rest your hands now hang out of view, as the shadow's do: a change from the "hands visible" pass, to confirm with Pierre. Detail in `changelog/CHANGELOG.md`.
+
 Every automated Play test block passes in the shared editor, 0 console errors. The one exception is a blast-frame target, tuned since. Nobody has played it with two people yet: that remains the only test that matters. Detail in `changelog/CHANGELOG.md` (2026-09-26).
 
 **Online co-op, 2026-09-27 (ADR-012, `07_MULTIPLAYER/NETCODE_SLICE.md`).** Built on `feat/online-coop`, merged into main the same day.

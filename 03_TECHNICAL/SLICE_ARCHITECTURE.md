@@ -126,7 +126,7 @@ The instigator is always filled when known. For breakage caused by a thrown or c
   - **F1** swaps the keyboard to the other player, and **F2** cycles the layout: split, solo P1, solo P2.
 - **Holding is exclusive,** through `MovableObject.holder`.
 - **Heavy objects:** above the carry limit (`canCarry` false, or too heavy), the grab drags the object along the floor (push and pull) instead of lifting it.
-- **Crew bodies:** they stand on the floor, feet at the capsule bottom. The Animator gets `Speed` and `Crouch`, and a carry layer weight. A player's own camera does not render the inside of its own head.
+- **Crew bodies:** they stand on the floor, feet at the capsule bottom. The Animator gets `Speed`, `MoveScale`, `Crouch` and `Grounded`, and a carry layer weight. A player's own camera does not render the inside of its own head; it draws the body's arms (section 13).
 
 ## 8. The grandmother
 - **Components:** `GrandmaBrain` (the state machine), `GrandmaMover` (NavMesh built at Play, CharacterController movement, door opening), `GrandmaSenses` (vision cone and hearing), `GrandmaMood` (patience), `GrandmaActivities` with `ActivitySpot` markers in the scene, `GrandmaSpeech` (bubbles and voice), `GrandmaHUD` (the patience bar top right in each viewport) and `GrandmaTalk` (Interactable).
@@ -217,9 +217,14 @@ Full-screen cards (intro title, end screen) are drawn by GAMELOOP over both view
 `Grandma_Idle` and `Anim_Carry_Idle` already exist.
 
 **`AC_Crew_Slice`** (built by the integrator):
-- **Parameters:** `Speed` (float, m/s) and `Crouch` (bool).
-- **Base layer:** the `Locomotion` blend tree (Crew_Idle 0, Crew_Walk 1.2, Crew_Run 3.7) and the `Crouch` blend tree.
-- **Layer 1, `Carry`:** override, arms mask, Anim_Carry_Idle. Its weight is set by code.
+- **Parameters:** `Speed` (float, m/s), `Crouch` (bool), `Grounded` (bool, default true) and `MoveScale` (float, default 1).
+- **Base layer:** the `Locomotion` blend tree (Crew_Idle 0, Crew_Walk 1.2, Crew_Run 3.7), the `Crouch` blend tree, and `Air` (Crew_CrouchIdle). `MoveScale` is the speed multiplier of Locomotion and Crouch: past a clip's authored ground speed the cycle plays faster instead of the feet sliding (walk 4.5 m/s plays the run at x1.22, the sprint at the cap of x1.8). `Air` is entered when `Grounded` is false and left on landing.
+- **Layer 1, `Carry`:** override, arms mask, Anim_Carry_Idle. Its weight is set by code, 0 while a small item is held in one hand.
+
+**One skeleton (hot-fix 2026-09-27).** The body's Animator is the only source of the crew's movement; everything else is posed on its bones after it:
+- `CrewAnimator` lifts the body by 0.22 m in `Air` (a tuck, the feet come up), and crouches it as low as the eyes (GREYBOX_SPEC: eye 0.80 m): hips down and back, the spine folded until the head is at the eyes, the legs refolded on the feet by `LimbIK`.
+- `FirstPersonHands` puts the body's hands where they hold, carry or reach (`LimbIK`), then draws the first-person forearms, hands and upper arms on those bones for the owner's camera only. The shadow, the other player's view and your own arms are the same arms. At rest the hands hang out of view, as the shadow's do.
+- The body always animates (`AlwaysAnimate`), since your own arms are drawn on it.
 
 **`AC_Grandma_Slice`:**
 - **Parameter:** `Speed`.

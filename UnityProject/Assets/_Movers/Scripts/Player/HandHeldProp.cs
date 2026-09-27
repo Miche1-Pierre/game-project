@@ -7,10 +7,11 @@ namespace Movers
     // the bottle in your fist, going to your mouth with the hand (Crew_Smoke, Crew_Drink). Goes
     // on the player root, next to HeldPose.
     //
-    // The real cigarette cannot be in two places. For its owner it sits at the lips, in front
-    // of a camera that is inside the body's head (HeldPose); its rigidbody stays out on the
-    // carry. From the other side of the room neither place is a hand. So, while the thing is at
-    // your mouth (HeldPose.InHand), every camera but yours:
+    // The real cigarette cannot be in two places. For its owner it sits in the hand or at the
+    // lips, in front of a camera that is inside the body's head (HeldPose); its rigidbody stays
+    // out on the carry. From the other side of the room neither place is a hand. So, while the
+    // thing is in your hand (HeldPose.HoldsSmall, where FirstPersonHands puts the body's right
+    // hand too) or at your mouth (HeldPose.InHand), every camera but yours:
     //   - does not draw the real item (its renderers are switched off just for that camera);
     //   - draws a copy of it parented to the body's right-hand socket (HandSockets), so it goes
     //     wherever the animated hand goes.
@@ -108,7 +109,7 @@ namespace Movers
         void LateUpdate()
         {
             if (pose == null || sockets == null || sockets.Right == null) return;
-            bool want = pose.InHand && pose.Current != null && ReferenceEquals(pose.Current, copied)
+            bool want = (pose.InHand || pose.HoldsSmall) && pose.Current != null && ReferenceEquals(pose.Current, copied)
                         && copy != null && !(member != null && member.IsDriving);
 
             if (want != shown)
