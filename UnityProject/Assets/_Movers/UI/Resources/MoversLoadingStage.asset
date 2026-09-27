@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e03e9a8be9045045af291ce8229a0d8, type: 3}
+  m_Name: MoversLoadingStage
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.LoadingStageSettings
+  crewBodies:
+  - {fileID: 6859956861991581627, guid: c2506400e2a6df842ace2e856d8dc645, type: 3}
+  - {fileID: 2258820606498780867, guid: ef8e45c3ebc8e1c468b7859afb404976, type: 3}
+  - {fileID: 3248510154235161293, guid: a960341142f902e4c95732bcb3850a52, type: 3}
+  - {fileID: 9185948781888842796, guid: b6c5943c7a8934247a1ec612a4186edb, type: 3}
+  run: {fileID: -2346599224599323259, guid: 5bd81616639b8644fb36f709a96147c3, type: 3}
+  fall: {fileID: 5258633498383955642, guid: 95ba76e08762e3b4b94542616441f686, type: 3}
+  knockedDown: {fileID: -2792690982336588863, guid: 2bd290a47cfcbc94e8b8e329321b7959, type: 3}
+  getUp: {fileID: -1734860335447047134, guid: 8ed1c7123320f1740b5e75e753780753, type: 3}
+  trees:
+  - {fileID: 115020, guid: a0c53a09e4a37b5409b1248ebce2c376, type: 3}
+  - {fileID: 117604, guid: 9469bb1d3aa88ca40aa4079e96a27f8e, type: 3}
+  - {fileID: 198980, guid: 55ca4401075700d46a23ae8179a79579, type: 3}
+  - {fileID: 188972, guid: 7641c7e8354e2c44cab6432d9d2c6d1b, type: 3}
+  - {fileID: 159322, guid: b1b1573cfe717c04caad3e631288f7e9, type: 3}
+  fence: {fileID: 1187910745026401963, guid: b0893ce288d07ff4380c04244241eb20, type: 3}
+  template: {fileID: 2100000, guid: 549fe2b9278ee9a4caaa340adcd8c568, type: 2}
+  fallSpeed: 1.1
+  knockedDownSpeed: 1.3
+  getUpSpeed: 1.25
+  runSpeed: 3.7

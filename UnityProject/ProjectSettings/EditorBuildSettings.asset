@@ -4,6 +4,12 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/_Movers/Scenes/MainMenu.unity
+    guid: 8a0586e1f4d5ede4fa7617e24596de23
+  - enabled: 1
+    path: Assets/_Movers/Scenes/Map01_PierreKit_House.unity
+    guid: f6dcfcca6bec3574bac4f39c74b49843
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
