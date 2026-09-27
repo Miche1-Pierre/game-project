@@ -50,3 +50,5 @@ This is what Meccha Chameleon ships, and the trade-offs are visible in its playe
 Unchanged. Testable in hot-seat or on two PCs, without final netcode. Do not integrate any networking SDK before the loop is proven.
 
 _Status: direction decided (ADR-003, accepted). Authority model, physics sync and disconnect behaviour still open._
+
+**Update 2026-09-27 (ADR-011):** for the slice, the greybox rule above is lifted by Pierre's decision. Online co-op for `Map01_PierreKit_House` uses NGO for connection and messaging only, over Unity Relay (free tier) or direct IP. It is host-authoritative, and the host is P1. The authority model, physics sync and disconnect behaviour are now decided for the slice in `NETCODE_SLICE.md`. Steam networking at launch (ADR-004) is unchanged.
