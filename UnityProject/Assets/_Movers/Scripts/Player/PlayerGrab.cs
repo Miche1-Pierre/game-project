@@ -206,6 +206,8 @@ namespace Movers
         // walk read. The look goes to the object with the same rule as the carry.
         void ReplicaUpdate()
         {
+            // A replica held object the host broke (Props Destroyed) goes before its Flags record.
+            if (held != null && (!held.gameObject.activeInHierarchy || held.destroyed)) ClearReplica();
             rotating = held != null && !dragging && holdOrientation && input.Held(CrewButton.Rotate);
             if (controller != null)
             {
