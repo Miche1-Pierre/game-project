@@ -231,6 +231,19 @@ namespace Movers
             CurrentPhase = Phase.None;
         }
 
+        // Online client (GrandmaSync Activity): what she is doing, for the voice and activity
+        // audio and the debug overlay. No clips, props or slides: those come on their own records.
+        public void ApplyReplica(ActivitySpot spot, Phase phase)
+        {
+            if (phase == Phase.None)
+            {
+                if (Current != null) Previous = Current;
+                Current = null;
+            }
+            else Current = spot;
+            CurrentPhase = phase;
+        }
+
         bool SeatMoved(ActivitySpot spot, out MovableObject seat)
         {
             seat = spot.Seat;

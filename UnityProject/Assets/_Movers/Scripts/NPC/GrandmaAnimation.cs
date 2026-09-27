@@ -141,7 +141,36 @@ namespace Movers
                 var cur = animator.GetCurrentAnimatorStateInfo(layer);
                 if (cur.shortNameHash == hash || cur.fullPathHash == hash) return;
             }
+            if (Net.IsHost) GrandmaSync.SendAnim(layer, hash);
             animator.CrossFadeInFixedTime(hash, crossFade, layer);
+        }
+
+        // Online client (GrandmaSync Anim): the host's cross-fade, with the same early-outs.
+        public void ApplyCrossFade(int hash, int layer)
+        {
+            if (!Usable || hash == 0 || layer < 0 || layer >= animator.layerCount) return;
+            CrossFade(hash, layer);
+        }
+
+        // Online client, snapshot: straight into a state at a point of its clip.
+        public void Play(int hash, int layer, float normalizedTime)
+        {
+            if (!Usable || hash == 0 || layer < 0 || layer >= animator.layerCount || !animator.HasState(layer, hash)) return;
+            animator.Play(hash, layer, normalizedTime);
+        }
+
+        public int LayerCount => Usable ? animator.layerCount : 0;
+
+        // Host, snapshot: the state a layer is in (or fading to) and how far through it.
+        public bool CurrentState(int layer, out int hash, out float normalizedTime)
+        {
+            hash = 0;
+            normalizedTime = 0f;
+            if (!Usable || layer < 0 || layer >= animator.layerCount) return false;
+            var info = animator.IsInTransition(layer) ? animator.GetNextAnimatorStateInfo(layer) : animator.GetCurrentAnimatorStateInfo(layer);
+            hash = info.fullPathHash;
+            normalizedTime = info.loop ? Mathf.Repeat(info.normalizedTime, 1f) : Mathf.Clamp01(info.normalizedTime);
+            return hash != 0;
         }
 
         public void SetSpeed(float metresPerSecond)

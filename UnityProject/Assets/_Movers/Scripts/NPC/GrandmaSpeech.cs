@@ -74,6 +74,7 @@ namespace Movers
                 if (i >= lastVariant[(int)line]) i++;
             }
             lastVariant[(int)line] = i;
+            if (Net.IsHost) GrandmaSync.SendSpeech(line, i, arg);
             string s = variants[i];
             if (s.Contains("{0}")) s = string.Format(s, string.IsNullOrEmpty(arg) ? (french ? "truc" : "thing") : arg);
             return SayText(s);
@@ -90,8 +91,25 @@ namespace Movers
             return seconds;
         }
 
+        // Online client (GrandmaSync Speech): the variant the host picked, in this machine's
+        // language. No Random. secondsLeft >= 0 (the snapshot) keeps the host's remaining time.
+        public float SayVariant(Line line, int variant, string arg, float secondsLeft = -1f)
+        {
+            string[] variants = GrandmaLines.Variants(line, french);
+            if (variants == null || variants.Length == 0) return 0f;
+            int i = Mathf.Clamp(variant, 0, variants.Length - 1);
+            lastVariant[(int)line] = i;
+            string s = variants[i];
+            if (s.Contains("{0}")) s = string.Format(s, string.IsNullOrEmpty(arg) ? (french ? "truc" : "thing") : arg);
+            float seconds = SayText(s);
+            if (secondsLeft < 0f || seconds <= 0f) return seconds;
+            until = Time.time + secondsLeft;
+            return secondsLeft;
+        }
+
         public void Hush()
         {
+            if (Net.IsHost) GrandmaSync.SendHush();
             until = -1f;
             blipsLeft = 0;
         }

@@ -81,6 +81,7 @@ namespace Movers
         public float LastStimulusTime { get; private set; } = -99f;
         public GrandmaStats Stats => stats;
         public bool CanTalk => AIEnabled && !sessionOver && State != GrandmaState.GiveKeys;
+        public bool SessionOver => sessionOver;
         public bool HasWitnessed(MovableObject item) => senses != null && senses.HasWitnessed(item);
         // Where she waits for the crew: her position and facing when the scene starts.
         public Vector3 IntroPosition => introPosition;
@@ -182,6 +183,7 @@ namespace Movers
         // GrandmaTalk: a player pressed E on her.
         public void OnTalk(int player)
         {
+            if (!Net.HasAuthority) return;   // online client: the host's P2 talks to her
             if (!CanTalk || Time.time - lastTalk < talkCooldown) return;
             lastTalk = Time.time;
             // The handover is what the whole intro waits for, so it wins over whatever lesser
@@ -237,6 +239,8 @@ namespace Movers
 
         void Update()
         {
+            // Online client: the host runs her mind; here she only walks as she is streamed.
+            if (!Net.HasAuthority) { anim.SetSpeed(mover.CurrentSpeed); return; }
             float dt = Time.deltaTime;
             // An activity being left (standing up) finishes whatever she is doing now.
             if (activities.IsBusy && (State != GrandmaState.PerformActivity || !AIEnabled || sessionOver)) activities.Tick(dt);
@@ -837,6 +841,7 @@ namespace Movers
 
         void OnWorldEvent(WorldEvent e)
         {
+            if (!Net.HasAuthority) return;
             if (e.type != WorldEventType.SessionStateChanged) return;
             var st = (SessionState)Mathf.RoundToInt(e.magnitude);
             if (st == SessionState.ContractStarted || st == SessionState.InProgress)
@@ -849,6 +854,17 @@ namespace Movers
                 sessionOverPending = true;
                 endedAs = st;
             }
+        }
+
+        // Online client (GrandmaSync Flags): the host's state and flags, no side effects.
+        public void ApplyReplica(GrandmaState state, bool keysGiven, bool policeCalled, bool aiEnabled, bool isSessionOver)
+        {
+            if (State != state) stateStart = Time.time;
+            State = state;
+            KeysGiven = keysGiven;
+            PoliceCalled = policeCalled;
+            AIEnabled = aiEnabled;
+            sessionOver = isSessionOver;
         }
 
         void HandleSession()
