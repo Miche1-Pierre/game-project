@@ -11,7 +11,14 @@ namespace Movers
     // CharacterController hovers on) and feeds the Animator what the controller built for the
     // slice expects (SLICE_ARCHITECTURE, animation contract, and CHARACTERS' Actions layer):
     //   Speed        float, m/s over the ground
+    //   MoveScale    float, the speed multiplier of the Locomotion and Crouch states: past the
+    //                ground speed a clip was authored at, its cycle plays faster instead of the
+    //                feet sliding (the walk is 4.5 m/s, the sprint 7.2, Crew_Run was made at 3.7)
     //   Crouch       bool
+    //   Grounded     bool, false once the capsule has been off the ground for airDelay (a jump,
+    //                a fall), not for the hundredths a stair step takes: the base layer's Air
+    //                state, Crew_CrouchIdle with the body lifted by its hip drop, so the knees
+    //                come up instead of the head going down; landing blends back through it
     //   layer "Carry", whose weight follows whether the hands are full (and are not busy holding
     //                something to the mouth, which the Actions layer shows instead)
     //   Smoking, Drinking            bool, while the held cigarette or bottle is being used
@@ -33,6 +40,16 @@ namespace Movers
     // reason, the body is not walking: Speed and Crouch go to rest. A switched-off
     // CharacterController keeps reporting the last velocity it moved at, so reading it there
     // would play a run cycle in the driver's seat.
+    //
+    // After the Animator, the body crouches as low as the eyes went. The capsule goes from 1.80
+    // to 1.00 m and the eyes to 0.80 (GREYBOX_SPEC), while Crew_CrouchIdle only lowers the hips
+    // by 22 cm: the head stayed half a metre above the view and the shadow barely crouched. So
+    // the hips go down and back, the spine folds until the head is at the eyes, the head comes
+    // back up to look where you look, and the legs fold (LimbIK) to keep the feet where the clip
+    // put them. It follows the capsule (PlayerController.CrouchAmount), so it cannot drift from
+    // what the player really does. The arms are FirstPersonHands' business, after this.
+    // The body always animates (AlwaysAnimate): your own forearms are drawn on its bones even
+    // when nobody sees the body itself.
     [DisallowMultipleComponent]
     public sealed class CrewAnimator : MonoBehaviour
     {
@@ -55,8 +72,37 @@ namespace Movers
         public float knockDownSpeed = 5.5f;
         public float uprightSeconds = 0.3f;   // the body turning back to the player's heading after getting up
 
+        [Header("Gait")]
+        // The ground speeds the clips were authored at (author_clips.py: Crew_Run 3.71 m/s,
+        // Crew_CrouchWalk 1.39 m/s), the top thresholds of the two blend trees.
+        public float runClipSpeed = 3.7f;
+        public float crouchWalkClipSpeed = 1.39f;
+        // A sprint at 7.2 m/s would need the run cycle at 1.95: capped, the rest slides a little.
+        public float maxMoveScale = 1.8f;
+
+        [Header("Jump")]
+        [Tooltip("Seconds off the ground before the body tucks: a step down a stair is not a jump.")]
+        public float airDelay = 0.12f;
+        [Tooltip("Metres the body rises in the Air state: Crew_CrouchIdle's hip drop, so the feet come up.")]
+        public float airLift = 0.22f;
+        public float airBlendSeconds = 0.12f;
+        public float landSeconds = 0.05f;     // the lift goes at once on landing, the pose blends out: the knees give
+
+        [Header("Crouch")]
+        // A deep squat sat back over the heels: with these the spine folds about 57 degrees to
+        // bring the head to the eyes (0.80 m), measured 2026-09-27.
+        public float crouchHipDrop = 0.36f;
+        public float crouchHipBack = 0.22f;
+        [Tooltip("Metres from the head bone up to the eyes, standing (measured 0.068 on the crew body).")]
+        public float eyeAboveHead = 0.07f;
+        public float maxSpineFlex = 60f;
+        [Tooltip("Share of the spine's fold the neck and head give back, so the face looks where you look.")]
+        public float headCounter = 0.7f;
+
         static readonly int SpeedId = Animator.StringToHash("Speed");
+        static readonly int MoveScaleId = Animator.StringToHash("MoveScale");
         static readonly int CrouchId = Animator.StringToHash("Crouch");
+        static readonly int GroundedId = Animator.StringToHash("Grounded");
         static readonly int SmokingId = Animator.StringToHash("Smoking");
         static readonly int DrinkingId = Animator.StringToHash("Drinking");
         static readonly int SmokeTimeId = Animator.StringToHash("SmokeTime");
@@ -71,7 +117,7 @@ namespace Movers
 
         // Which parameters the bound controller has, one bit each.
         const int PSmoking = 1, PDrinking = 2, PSmokeTime = 4, PDrinkTime = 8, PThrow = 16, PPocket = 32,
-                  PWear = 64, PWave = 128, PKnocked = 256;
+                  PWear = 64, PWave = 128, PKnocked = 256, PMoveScale = 512, PGrounded = 1024;
 
         PlayerController controller;
         PlayerGrab grab;
@@ -83,6 +129,7 @@ namespace Movers
         int has;
         int carryLayer = -1, actionsLayer = -1;
         float carryWeight, actionsWeight;
+        float airWeight;
         float smokedUntil = -1f, drankUntil = -1f;
         HeldPose.Use lastWanted;
         int wornCount = -1;
@@ -109,7 +156,9 @@ namespace Movers
 
         public float ActionsWeight => actionsWeight;
         public float CarryWeight => carryWeight;
+        public float AirWeight => airWeight;
         public bool IsDown { get; private set; }
+        public Animator Body => animator;
 
         void Awake()
         {
@@ -151,6 +200,9 @@ namespace Movers
         void Resolve()
         {
             if (animator == null) animator = GetComponentInChildren<Animator>(true);
+            // Posed after the Animator every frame (the crouch, the arms), and read for your own
+            // forearms: a culled body would stop being rewritten and the adjustments would pile up.
+            if (animator != null && animator.transform != transform) animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             if (animator != null && equip == null) equip = animator.GetComponent<CrewEquip>();
             if (animator != null && !bodyRestKnown && animator.transform != transform)
             {
@@ -197,25 +249,44 @@ namespace Movers
             float dt = Time.deltaTime;
             bool driving = member != null && member.IsDriving;
             bool walking = controller != null && controller.isActiveAndEnabled && !driving;
+            bool crouched = walking && controller.crouching;
             if (hasSpeed)
             {
                 Vector3 v = walking ? controller.Velocity : Vector3.zero;
                 v.y = 0f;
                 animator.SetFloat(SpeedId, v.magnitude, speedDampSeconds, dt);
+                if ((has & PMoveScale) != 0)
+                {
+                    float clip = crouched ? crouchWalkClipSpeed : runClipSpeed;
+                    float speed = animator.GetFloat(SpeedId);
+                    animator.SetFloat(MoveScaleId, clip > 0.01f ? Mathf.Clamp(speed / clip, 1f, maxMoveScale) : 1f);
+                }
             }
-            if (hasCrouch) animator.SetBool(CrouchId, walking && controller.crouching);
+            if (hasCrouch) animator.SetBool(CrouchId, crouched);
 
             // Lying on the floor or getting up: no arms held out for a box, no cigarette.
             var baseNow = animator.GetCurrentAnimatorStateInfo(0);
             IsDown = baseNow.tagHash == DownTag || (animator.IsInTransition(0) && animator.GetNextAnimatorStateInfo(0).tagHash == DownTag);
 
+            // Off the ground: a jump at once (it leaves the ground climbing), a fall after airDelay.
+            bool airborne = walking && !IsDown && (has & PGrounded) != 0
+                            && (controller.AirTime > airDelay || (controller.AirTime > 0f && controller.Velocity.y > 1f));
+            if ((has & PGrounded) != 0) animator.SetBool(GroundedId, !airborne);
+            float airSeconds = airborne ? airBlendSeconds : landSeconds;
+            airWeight = Mathf.MoveTowards(airWeight, airborne ? 1f : 0f, airSeconds > 0.001f ? dt / airSeconds : 1f);
+
             DriveHands(dt, driving);
             FireTriggers(driving);
             HoldBodyWhileDown(dt);
+            // Paused (timeScale 0) the Animator does not rewrite the pose: posing it again would
+            // pile the crouch up frame after frame.
+            if (dt > 0f) Posture(walking);
 
             if (carryLayer >= 0)
             {
-                bool inHand = pose != null && pose.InHand;
+                // A cigarette, a bottle or a grenade is held in one hand (FirstPersonHands puts
+                // the body's right hand on it): the other arm hangs, it does not carry a box.
+                bool inHand = pose != null && (pose.InHand || pose.HoldsSmall);
                 float target = grab != null && grab.IsCarrying && !inHand && !IsDown ? 1f : 0f;
                 float step = carryBlendSeconds > 0.001f ? dt / carryBlendSeconds : 1f;
                 carryWeight = Mathf.MoveTowards(carryWeight, target, step);
@@ -235,6 +306,65 @@ namespace Movers
         }
 
         static bool Busy(AnimatorStateInfo s) => s.shortNameHash != EmptyState;
+
+        // ---- after the Animator: the tuck and the crouch ----
+
+        void Posture(bool walking)
+        {
+            Transform body = animator.transform;
+            if (body == transform) return;
+            // The tuck: the Air state plays the crouch, the body rises by its hip drop.
+            if (!float.IsNaN(PlacedAtLocalY))
+            {
+                var p = body.localPosition;
+                body.localPosition = new Vector3(p.x, PlacedAtLocalY + airWeight * airLift, p.z);
+            }
+            if (walking && !IsDown && animator.isHuman) CrouchAsLowAsTheEyes();
+        }
+
+        void CrouchAsLowAsTheEyes()
+        {
+            float k = controller.CrouchAmount;
+            if (k <= 0.001f || controller.cam == null) return;
+            Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
+            Transform spine = animator.GetBoneTransform(HumanBodyBones.Spine);
+            Transform neck = animator.GetBoneTransform(HumanBodyBones.Neck);
+            Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
+            Transform lThigh = animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg);
+            Transform lShin = animator.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
+            Transform lFoot = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
+            Transform rThigh = animator.GetBoneTransform(HumanBodyBones.RightUpperLeg);
+            Transform rShin = animator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
+            Transform rFoot = animator.GetBoneTransform(HumanBodyBones.RightFoot);
+            if (hips == null || spine == null || head == null || lThigh == null || lShin == null || lFoot == null
+                || rThigh == null || rShin == null || rFoot == null) return;
+
+            Vector3 up = transform.up, fwd = transform.forward, right = transform.right;
+            Vector3 leftFoot = lFoot.position, rightFoot = rFoot.position;
+
+            // Down and back, as a deep crouch sits back over the heels.
+            hips.position += (-fwd * crouchHipBack - up * crouchHipDrop) * k;
+
+            // The spine folds forward about its base until the head is at the eyes.
+            Vector3 d = head.position - spine.position;
+            float f = Vector3.Dot(d, fwd), u = Vector3.Dot(d, up);
+            float r = Mathf.Sqrt(f * f + u * u);
+            float want = Vector3.Dot(controller.cam.position - spine.position, up) - eyeAboveHead;
+            if (r > 1e-3f && u > want)
+            {
+                float now = Mathf.Atan2(u, f) * Mathf.Rad2Deg;
+                float then = Mathf.Asin(Mathf.Clamp(want / r, -1f, 1f)) * Mathf.Rad2Deg;
+                float fold = Mathf.Clamp(now - then, 0f, maxSpineFlex * k);
+                spine.rotation = Quaternion.AngleAxis(fold, right) * spine.rotation;
+                float back = -fold * headCounter * 0.5f;
+                if (neck != null) neck.rotation = Quaternion.AngleAxis(back, right) * neck.rotation;
+                head.rotation = Quaternion.AngleAxis(back, right) * head.rotation;
+            }
+
+            // The knees go forward and a little out; the feet stay where the clip put them.
+            LimbIK.Solve(lThigh, lShin, lFoot, leftFoot, fwd - right * 0.35f, 1f);
+            LimbIK.Solve(rThigh, rShin, rFoot, rightFoot, fwd + right * 0.35f, 1f);
+        }
 
         // Whether an event's subject (the cigarette, the beer) is the thing HeldPose is following
         // in this player's hands, whose use it reports itself.
@@ -374,6 +504,8 @@ namespace Movers
                 if (h == WearId && type == AnimatorControllerParameterType.Trigger) has |= PWear;
                 if (h == WaveId && type == AnimatorControllerParameterType.Trigger) has |= PWave;
                 if (h == KnockedDownId && type == AnimatorControllerParameterType.Trigger) has |= PKnocked;
+                if (h == MoveScaleId && type == AnimatorControllerParameterType.Float) has |= PMoveScale;
+                if (h == GroundedId && type == AnimatorControllerParameterType.Bool) has |= PGrounded;
             }
             carryLayer = animator.GetLayerIndex("Carry");
             carryWeight = carryLayer >= 0 ? animator.GetLayerWeight(carryLayer) : 0f;

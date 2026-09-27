@@ -15,6 +15,11 @@ namespace Movers
     //
     // A little bigger than a real hand on purpose: at 40 cm from the eyes a true-size hand reads
     // thin next to the house's chunky props.
+    //
+    // On a crew body the arm is drawn on the body's own bones (FirstPersonHands), so it is built
+    // to the body's lengths: the forearm sleeve ends at the elbow, and an upper-arm sleeve runs
+    // from there to the shoulder (upper-arm space: the origin is the elbow, +Z runs from the
+    // shoulder to it).
     public sealed class FirstPersonArm
     {
         // ---- dimensions (metres, right hand) ----
@@ -37,6 +42,7 @@ namespace Movers
 
         public readonly Transform forearm;
         public readonly Transform hand;
+        public readonly Transform upperArm;   // null without a body to measure
         readonly float side;
         readonly Transform[] knuckle = new Transform[4];
         readonly Transform[] middle = new Transform[4];
@@ -72,8 +78,11 @@ namespace Movers
 
         // ---- building ----
 
+        // `forearmLength` and `upperArmLength` are the body's, wrist to elbow and elbow to shoulder;
+        // 0 for an arm with no body behind it, whose sleeve runs on past where the elbow would be.
         public FirstPersonArm(Transform parent, float side, Material sleeve, Material cuff, Material skin,
-                              List<Mesh> meshes, List<Renderer> renderers)
+                              List<Mesh> meshes, List<Renderer> renderers,
+                              float forearmLength = 0f, float upperArmLength = 0f)
         {
             this.side = side >= 0f ? 1f : -1f;
             string n = this.side > 0f ? "Right" : "Left";
@@ -81,8 +90,17 @@ namespace Movers
             forearm = new GameObject(n + "Forearm").transform;
             forearm.SetParent(parent, false);
             // Past the elbow at the back, so the cut end never shows; a rolled cuff at the wrist.
-            Block(forearm, "Sleeve", Prism(8, -0.34f, new Vector2(0.050f, 0.044f), -0.06f, new Vector2(0.043f, 0.037f), meshes),
+            // On a body the upper arm takes over at the elbow, a little overlap closes the joint.
+            float sleeveEnd = forearmLength > 0.05f ? -(forearmLength + 0.02f) : -0.34f;
+            Block(forearm, "Sleeve", Prism(8, sleeveEnd, new Vector2(0.050f, 0.044f), -0.06f, new Vector2(0.043f, 0.037f), meshes),
                   Vector3.zero, Quaternion.identity, sleeve, renderers);
+            if (upperArmLength > 0.05f)
+            {
+                upperArm = new GameObject(n + "UpperArm").transform;
+                upperArm.SetParent(parent, false);
+                Block(upperArm, "Sleeve", Prism(8, -(upperArmLength + 0.01f), new Vector2(0.060f, 0.054f), 0.035f, new Vector2(0.052f, 0.046f), meshes),
+                      Vector3.zero, Quaternion.identity, sleeve, renderers);
+            }
             Block(forearm, "Cuff", Prism(8, -0.088f, new Vector2(0.050f, 0.044f), -0.034f, new Vector2(0.049f, 0.043f), meshes),
                   Vector3.zero, Quaternion.identity, cuff, renderers);
             Block(forearm, "Wrist", Prism(8, -0.06f, new Vector2(0.031f, 0.025f), 0.014f, new Vector2(0.029f, 0.022f), meshes),
@@ -150,6 +168,19 @@ namespace Movers
             if (Vector3.Cross(along, up).sqrMagnitude < 1e-6f) up = handRotation * Vector3.forward;
             forearm.localPosition = wrist;
             forearm.localRotation = Quaternion.LookRotation(along, up);
+        }
+
+        // The upper arm, shoulder to elbow, in the rig's space; `up` rolls the sleeve (the hand's
+        // back will do: the sleeve is nearly round).
+        public void PlaceUpper(Vector3 shoulder, Vector3 elbow, Vector3 up)
+        {
+            if (upperArm == null) return;
+            Vector3 along = elbow - shoulder;
+            if (along.sqrMagnitude < 1e-6f) return;
+            if (Vector3.Cross(along, up).sqrMagnitude < 1e-6f) up = Vector3.up;
+            if (Vector3.Cross(along, up).sqrMagnitude < 1e-6f) up = Vector3.forward;
+            upperArm.localPosition = elbow;
+            upperArm.localRotation = Quaternion.LookRotation(along, up);
         }
 
         // ---- pieces ----
