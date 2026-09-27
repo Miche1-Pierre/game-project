@@ -33,13 +33,20 @@ namespace Movers
                 // existed, and without it the delivery board at the truck (an Interactable)
                 // never shows "[E] Deliver" to it.
                 if (!player.TryGetComponent(out PlayerInteract _)) player.AddComponent<PlayerInteract>();
+                // Using what you hold, seen from inside your head: the cigarette to the lips, the
+                // bottle tipped back, the grenade wound up (CHARACTERS).
+                if (!player.TryGetComponent(out HeldPose _)) player.AddComponent<HeldPose>();
             }
+            // A blast that throws you tumbles your view to the floor and back (CHARACTERS).
+            if (!player.TryGetComponent(out KnockdownTumble _)) player.AddComponent<KnockdownTumble>();
 
             var body = player.GetComponentInChildren<Animator>(true);
             if (body != null)
             {
                 if (!player.TryGetComponent(out CrewAnimator _)) player.AddComponent<CrewAnimator>();
                 if (!player.TryGetComponent(out FirstPersonBody _)) player.AddComponent<FirstPersonBody>();
+                // The cigarette or bottle in the body's hand, for everyone else's camera (CHARACTERS).
+                if (!player.TryGetComponent(out HandHeldProp _)) player.AddComponent<HandHeldProp>();
             }
 
             member.Resolve();
