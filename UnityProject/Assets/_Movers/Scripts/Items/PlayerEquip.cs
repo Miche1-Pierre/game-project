@@ -50,6 +50,7 @@ namespace Movers
 
         void Update()
         {
+            if (!Net.HasAuthority) return;   // online client: worn state arrives as Items Worn
             var held = grab.Held;
             if (!ReferenceEquals(held, lastHeld))
             {

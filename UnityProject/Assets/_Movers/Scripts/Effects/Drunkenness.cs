@@ -52,9 +52,24 @@ namespace Movers
             amount = Mathf.Clamp01(amount + a);
         }
 
+        // Online client: the host's amount for this body (Players Drunk). The host decays it,
+        // this only sways the body the client drives. Adds the component on first need, as a
+        // bottle does on the host.
+        public static void NetSetAmount(GameObject player, float a)
+        {
+            if (player == null) return;
+            var d = player.GetComponent<Drunkenness>();
+            if (d == null)
+            {
+                if (a <= 0f) return;   // sober and never drank: nothing to install
+                d = player.AddComponent<Drunkenness>();
+            }
+            d.amount = Mathf.Clamp01(a);
+        }
+
         void Update()
         {
-            if (soberSeconds > 0.01f)
+            if (soberSeconds > 0.01f && Net.HasAuthority)   // online, only the host sobers anyone up
                 amount = Mathf.MoveTowards(amount, 0f, Time.deltaTime / soberSeconds);
 
             // Eased, so a mouthful is a wobble and the whole bottle is a problem. Linear would

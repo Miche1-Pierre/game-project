@@ -270,6 +270,10 @@ namespace Movers
             if (input == null) input = GetComponent<CrewInput>();
             bool armed = grenade != null && grenade.IsArmed && !grenade.HasExploded;
             bool pressing = input != null && input.Held(CrewButton.Throw);
+            // Online client, the other player's body: its source is empty, the press came with
+            // its pose (9.4), so its grenade wind-up still shows.
+            if (Net.IsClient && member != null && !Net.IsLocal(member) && !Net.Drives(member) && controller != null)
+                pressing = controller.NetThrowHeld;
             if (armed && !wasArmed)
             {
                 pinClock = 0f;

@@ -179,6 +179,8 @@ namespace Movers
         {
             // Cheap, and it lets the pocket be moved from the Inspector during Play.
             pocketRoot.localPosition = pocketLocalPosition;
+            // Online client: the host's pockets arrive as Items Pockets (NetApply).
+            if (!Net.HasAuthority) return;
 
             // A grenade can go off in a pocket; what is left of it is nothing. Checked by what
             // the grenade says, not only by null: the fuse clock may have set it off earlier
@@ -218,13 +220,14 @@ namespace Movers
 
             if (held != null && (!Fits(held) || grab.IsDragging))
             {
+                if (Net.IsHost) ItemSync.SendPocketHint(grab.Actor, ItemSync.HintHandsFull, slot);
                 Hint("Hands full");
                 return;
             }
 
             if (held == null)
             {
-                if (inPocket == null) { Hint("Pocket " + ButtonLabels.For(input, SlotButtons[slot]) + " is empty"); return; }
+                if (inPocket == null) { if (Net.IsHost) ItemSync.SendPocketHint(grab.Actor, ItemSync.HintPocketEmpty, slot); Hint("Pocket " + ButtonLabels.For(input, SlotButtons[slot]) + " is empty"); return; }
                 slots[slot] = null;
                 TakeOut(inPocket, slot, playingWhenPocketed[slot]);
                 return;
@@ -280,6 +283,7 @@ namespace Movers
             item.transform.SetParent(pocketRoot, true);
             item.transform.localPosition = Vector3.zero;
             item.inPocket = true;
+            NetTransforms.Snap(item.gameObject);
 
             slots[slot] = item;
             if (announce)
@@ -297,6 +301,7 @@ namespace Movers
             item.transform.SetParent(null, true);
             item.transform.position = TakeOutPoint();
             item.gameObject.SetActive(true);
+            NetTransforms.Snap(item.gameObject);
 
             for (int i = 0; i < record.Count; i++)
                 if (record[i] != null && !record[i].isPlaying) record[i].Play();
@@ -351,6 +356,82 @@ namespace Movers
             hintUntil = Time.time + hintSeconds;
         }
 
+        // ---- online client (NETCODE_SLICE 11.2) ----
+
+        readonly MovableObject[] netPrevious = new MovableObject[SlotCount];
+        readonly List<ParticleSystem>[] netRecords = new List<ParticleSystem>[SlotCount];
+
+        // The host's pockets for this player (Items Pockets). The same moves as Stow and TakeOut,
+        // and nothing else: no hands, no truck, no events. Whatever left a pocket appears in
+        // front of the eyes; the transform stream takes it from there.
+        public void NetApply(MovableObject[] items, int outSlot)
+        {
+            MovableObject leftOutSlot = null;
+            for (int i = 0; i < SlotCount; i++)
+            {
+                netPrevious[i] = slots[i];
+                if (netRecords[i] == null) netRecords[i] = new List<ParticleSystem>();
+                netRecords[i].Clear();
+                netRecords[i].AddRange(playingWhenPocketed[i]);
+            }
+
+            // Out: in a pocket here, in none of the host's.
+            for (int i = 0; i < SlotCount; i++)
+            {
+                var had = netPrevious[i];
+                if (had == null || System.Array.IndexOf(items, had) >= 0) continue;
+                if (i == outSlot) leftOutSlot = had;
+                NetTakeOut(had, netRecords[i]);
+            }
+
+            // In: kept (maybe in another pocket, with its record), or put away now.
+            for (int i = 0; i < SlotCount; i++)
+            {
+                var want = i < items.Length ? items[i] : null;
+                playingWhenPocketed[i].Clear();
+                slots[i] = want;
+                if (want == null) continue;
+                int was = System.Array.IndexOf(netPrevious, want);
+                if (was >= 0) playingWhenPocketed[i].AddRange(netRecords[was]);
+                else NetStow(want, playingWhenPocketed[i]);
+            }
+
+            if (outSlot < 0 || outSlot >= SlotCount) { ForgetOutOfPocket(); return; }
+            if (leftOutSlot != null) outOfPocket = leftOutSlot;
+            else if (outOfPocket == null) outOfPocket = grab.Held;
+            outOfPocketSlot = outSlot;
+        }
+
+        void NetStow(MovableObject item, List<ParticleSystem> record)
+        {
+            if (grab.Held == item) grab.ClearReplica();
+            foreach (var ps in item.GetComponentsInChildren<ParticleSystem>())
+                if (ps.isPlaying) record.Add(ps);
+            item.gameObject.SetActive(false);
+            item.transform.SetParent(pocketRoot, true);
+            item.transform.localPosition = Vector3.zero;
+            item.inPocket = true;
+        }
+
+        void NetTakeOut(MovableObject item, List<ParticleSystem> record)
+        {
+            item.inPocket = false;
+            item.transform.SetParent(null, true);
+            item.transform.position = TakeOutPoint();
+            item.gameObject.SetActive(true);
+            for (int i = 0; i < record.Count; i++)
+                if (record[i] != null && !record[i].isPlaying) record[i].Play();
+            record.Clear();
+        }
+
+        // The host's bar message for this player (Items PocketHint), in this machine's words.
+        public void NetHint(byte code, int slot)
+        {
+            if (code == ItemSync.HintHandsFull) Hint("Hands full");
+            else if (code == ItemSync.HintPocketEmpty && slot >= 0 && slot < SlotCount)
+                Hint("Pocket " + ButtonLabels.For(input, SlotButtons[slot]) + " is empty");
+        }
+
         // ---- the slot bar, bottom right of this player's view ----
 
         void OnGUI()
@@ -372,7 +453,7 @@ namespace Movers
             barStyle.fontSize = size;
             hintStyle.fontSize = size;
 
-            bool forPad = input.Source is GamepadSource;
+            bool forPad = LocalDevicesSource.IsPad(input.Source);
             int key = BarKey();
             if (key != barKey || forPad != barForPad || sizeChanged)
             {

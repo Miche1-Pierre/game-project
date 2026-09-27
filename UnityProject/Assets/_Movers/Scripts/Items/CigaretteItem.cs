@@ -191,6 +191,10 @@ namespace Movers
 
         void Update()
         {
+            // Online client: the host says when it is smoked (Items Cigarette); the drag runs on
+            // here between its updates, so the ember and the picture keep moving.
+            if (!Net.HasAuthority) { NetClientTick(Time.deltaTime); return; }
+            if (Net.IsHost) NetHostTick();
             Burn(Time.deltaTime);
             if (latePuffs <= 0 || Time.time < nextLatePuff) return;
             // The clouds form past the tip, so the breath only comes out while the smoker still
@@ -228,15 +232,63 @@ namespace Movers
             // this honest if nobody's camera is known (a scripted test).
             Vector3 dir = mouthCam != null ? mouthCam.forward : transform.up;
             Vector3 at = Tip + dir * (puffAhead + index * exhaleStep) + Random.insideUnitSphere * puffScatter;
-            SmokeCloud.Spawn(at, dir, cloudLifetime, puffStrength);
+            bool hasMouth = mouthCam != null;
+            Vector3 mouth = hasMouth ? mouthCam.TransformPoint(mouthOffset) : Vector3.zero;
+            int wisps = index == 0 ? 7 : 4;
+            PlayPuffFx(at, dir, cloudLifetime, puffStrength, hasMouth, mouth, wisps);
+            if (Net.IsHost) ItemSync.SendSmokePuff(this, actor, at, dir, cloudLifetime, puffStrength, hasMouth, mouth, wisps);
+            WorldEvents.Raise(WorldEventType.PlayerSmoking, at, actor, 0f, 0f, 0, this);
+        }
 
-            // The breath: out of the mouth and blown at the cloud, so the two read as one exhale.
-            if (mouthCam != null)
+        // What a puff leaves in the world: the cloud that blinds, then the breath blown at it
+        // (out of the mouth, so the two read as one exhale). The host's puffs play here on the
+        // client too (Items SmokePuff), each machine with its own clouds.
+        public void PlayPuffFx(Vector3 at, Vector3 dir, float lifetime, float strength, bool hasMouth, Vector3 mouth, int wisps)
+        {
+            SmokeCloud.Spawn(at, dir, lifetime, strength);
+            if (hasMouth)
             {
                 if (exhale == null) exhale = new ExhaleStream();
-                exhale.Emit(mouthCam.TransformPoint(mouthOffset), at, index == 0 ? 7 : 4);
+                exhale.Emit(mouth, at, wisps);
             }
-            WorldEvents.Raise(WorldEventType.PlayerSmoking, at, actor, 0f, 0f, 0, this);
+        }
+
+        // ---- online (NETCODE_SLICE 11.2) ----
+
+        const float NetStateEvery = 0.25f;   // 4 Hz while smoking
+        bool netSentSmoking;
+        float netNextState;
+
+        // Host: the smoking edges, and the drag's phase while it lasts.
+        void NetHostTick()
+        {
+            if (smoking == netSentSmoking && (!smoking || Time.unscaledTime < netNextState)) return;
+            if (!ItemSync.SendCigarette(this, smoking, phase)) return;
+            netSentSmoking = smoking;
+            netNextState = Time.unscaledTime + NetStateEvery;
+        }
+
+        void NetClientTick(float dt)
+        {
+            if (smoking)
+            {
+                phase = Mathf.Repeat(phase + dt / Mathf.Max(0.2f, SmokeTimeline.CycleSeconds), 1f);
+                SetGlow(Mathf.Lerp(HeldGlow, 1f, SmokeTimeline.Draw(phase)));
+            }
+            Burn(dt);
+        }
+
+        // Client: the host's state (Items Cigarette). No puff, no event: those come on their own.
+        public void NetApply(bool isSmoking, float dragPhase)
+        {
+            if (isSmoking && !smoking) SetWisp(WispDragRate);
+            if (!isSmoking && smoking)
+            {
+                SetGlow(RestGlow);
+                SetWisp(WispRestRate);
+            }
+            smoking = isSmoking;
+            phase = Mathf.Repeat(dragPhase, 1f);
         }
 
         // ---- the object ----

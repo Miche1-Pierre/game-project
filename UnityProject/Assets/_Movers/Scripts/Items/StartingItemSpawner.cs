@@ -29,6 +29,7 @@ namespace Movers
 
         void Update()
         {
+            if (!Net.HasAuthority) return;   // online client: the host's fresh ones arrive as spawns
             // current goes null two ways: thrown (NotifyDiscarded clears it and the object
             // lives on as litter) or destroyed (a broken bottle). Both mean: put another one out.
             if (current == null && Time.time >= dueAt) Spawn();
@@ -54,6 +55,8 @@ namespace Movers
             current.spawner = this;
             current.transform.SetParent(transform.parent, true);   // keep the hierarchy tidy
             dueAt = 0f;
+            // After the NetIds sweep, the host tells the client (the first ones are scene ids).
+            if (Net.IsHost) NetSpawns.Announce(current.gameObject, kind == Kind.Beer ? NetSpawnKind.Beer : NetSpawnKind.Cigarette);
         }
 
         void OnDrawGizmos()
