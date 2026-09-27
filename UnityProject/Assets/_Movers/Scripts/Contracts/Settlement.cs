@@ -177,6 +177,16 @@ namespace Movers
             return s;
         }
 
+        // Online client (NETCODE_SLICE 11.7): the host's lines, verbatim (SettlementText parses
+        // the English strings). The total is their sum, as on the host.
+        public static Settlement FromReplica(bool completed, FailReason failure, IReadOnlyList<Line> lines)
+        {
+            var s = new Settlement { Completed = completed, Failure = failure };
+            if (lines != null)
+                for (int i = 0; i < lines.Count; i++) s.Add(lines[i].label, lines[i].detail, lines[i].amount);
+            return s;
+        }
+
         // "Sofa, Armchair, Lamp and 4 more". Built once per settlement, never per frame.
         sealed class Names
         {
