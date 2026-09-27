@@ -4,6 +4,39 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 
 ## 2026-09-27
 
+### Online co-op (ADR-011)
+
+- **DESIGN, Pierre's decision, ADR-011:** the slice can be played from two PCs, so Jonathan can join from home. It is an exception to CLAUDE.md section 12, taken knowingly. Spec: `07_MULTIPLAYER/NETCODE_SLICE.md`.
+  - 2 players online: the host is P1, the client P2, one player per PC.
+  - Each local player uses keyboard, mouse and the first pad at once (Pierre's call, replacing "keyboard and mouse only on the client").
+  - Kept defaults: pause does not stop the world, either player skips the intro and replays for both, the client's Menu leaves alone, the host's ends it for both, a dropped player stays as an idle body.
+- **TECH:**
+  - Netcode for GameObjects for connection and two named messages only, over Unity Relay (free tier, join code) or direct IP. Only `Net/NetSession.cs` touches NGO or Unity Services.
+  - Host-authoritative: the host simulates everything, the client runs its own body and draws kinematic copies from a 20 Hz transform stream, a reliable state stream and a snapshot on join and after each replay.
+  - Stable ids from the hierarchy after setup, with a digest that refuses two different builds.
+  - Built in 8 tracks: CORE first with compiling stubs, six gameplay tracks in parallel git worktrees, then one integrator merging in the editor.
+  - Offline play is unchanged: every hook is a static-bool gate, and no net object exists offline.
+  - Step 0 on main (1bd50e5): the Input System package from the Convai import is gone, legacy input is back. `ProjectVersion.txt` is never committed.
+- **MENU:** "Jouer en ligne" on the title screen: host (the code as key caps, "Copier le code"), join (paste or type the code, "Coller" for the pad), a lobby of two, and "Héberger en IP directe" in development builds. Net errors are named on the status line, including "payment required".
+- **TESTING, automated, two builds on one PC** (`-netbot host` / `-netbot client`):
+  - direct IP: host 12 of 12 checks, client 21 of 21: handshake, door, chair and pane from the client's aim, knockback, transforms at rest, replay for both, host killed;
+  - client killed: host 16 of 16 (toast, P2 idle, the run continues);
+  - Relay: host 12 of 12, client 21 of 21, no payment asked;
+  - editor host against a build client: same ids and digest;
+  - offline smoke in split screen: 0 errors, no net object.
+- **MEASURED:** 541 ids and 126 tracked bodies. PeerReady 2.4 to 2.5 s after the load. Down 13 to 17 KB/s peak, 2 to 3 KB/s steady; up about 1 KB/s. 70 to 90 ms RTT over Relay.
+- **FIXED on the way:**
+  - the id digest hashed the positions of falling bodies and the grandmother, so two copies of one build refused each other;
+  - the wall mirror threw every frame in a player build (no `Unlit/Texture`);
+  - the client's hold did not let go of an object the host broke;
+  - the client's exit facing from the truck seat.
+- **NOT DONE, noted:**
+  - the session from two homes, and its 60 fps check;
+  - a real pad online, the client driving the truck, typing the code in the join field, a wrong code, a pulled cable;
+  - solo P1, solo P2 and the older CLIs were not rerun;
+  - the test bot's pane throw is flaky (2 runs of 5): it stands too close;
+  - nothing pushed.
+
 ### Pierre's first playthrough, first round of fixes
 
 - **MAP:**
