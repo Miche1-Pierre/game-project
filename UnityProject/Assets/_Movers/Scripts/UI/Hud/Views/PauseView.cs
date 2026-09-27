@@ -49,7 +49,8 @@ namespace Movers
             rows.Add(Button(menu, HudPauseMenu.MainRow.Resume, Loc.T("pause.resume"), InputGlyphs.For(src, CrewButton.Pause)));
             rows.Add(Button(menu, HudPauseMenu.MainRow.Options, Loc.T("pause.options"), default));
             rows.Add(Button(menu, HudPauseMenu.MainRow.Controls, Loc.T("pause.controls"), default));
-            rows.Add(Button(menu, HudPauseMenu.MainRow.Menu, Loc.T("pause.menu"), default));
+            // Online the row leaves the session (NetSession.LeaveToMenu), and says so.
+            rows.Add(Button(menu, HudPauseMenu.MainRow.Menu, Loc.T(Net.IsOnline ? "pause.leave" : "pause.menu"), default));
             rows.Add(Footer(src));
             return new Column(rows, 10f, MainAxisAlignment.Start, CrossAxisAlignment.Center);
         }
@@ -89,8 +90,10 @@ namespace Movers
                               GameSettings.LookSensitivity.ToString("0.0") + " x"));
             rows.Add(ValueRow(menu, HudPauseMenu.OptionRow.InvertY, "opt.invertY", Loc.T(GameSettings.InvertY ? "opt.on" : "opt.off")));
             rows.Add(ValueRow(menu, HudPauseMenu.OptionRow.Language, "opt.language", Loc.T(GameSettings.Language == Language.French ? "lang.fr" : "lang.en")));
-            rows.Add(ValueRow(menu, HudPauseMenu.OptionRow.Layout, "opt.layout",
-                              Loc.T(GameSettings.Layout == SplitLayout.SideBySide ? "layout.sideBySide" : "layout.stacked")));
+            // Online there is no split screen: no Layout row (HudPauseMenu steps over it).
+            if (!Net.IsOnline)
+                rows.Add(ValueRow(menu, HudPauseMenu.OptionRow.Layout, "opt.layout",
+                                  Loc.T(GameSettings.Layout == SplitLayout.SideBySide ? "layout.sideBySide" : "layout.stacked")));
             rows.Add(ValueRow(menu, HudPauseMenu.OptionRow.Hints, "opt.hints", Loc.T(GameSettings.HintsShown ? "opt.on" : "opt.off")));
 
             var th = UiKit.Theme;

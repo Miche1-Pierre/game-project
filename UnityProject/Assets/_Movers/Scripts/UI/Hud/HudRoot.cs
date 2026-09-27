@@ -51,6 +51,8 @@ namespace Movers
         readonly MutedInputReader endKeys = new MutedInputReader();
         bool built, started, subscribed, sharedFailed;
         int shownCard = -1;
+        System.Action<string> onNotice;
+        bool noticeSubscribed;
 
         // UI Toolkit's own keyboard and pad navigation, switched off on this panel (see
         // BlockNavigation). Cached delegates: registered once per panel, no garbage.
@@ -127,6 +129,14 @@ namespace Movers
             CrewRoster.Left += OnLeft;
             GameSettings.Changed += OnSettingsChanged;
             subscribed = true;
+            // Online only: NetSession's notices ("your partner left") become toasts.
+            if (Net.IsOnline)
+            {
+                NetText.Ensure();
+                if (onNotice == null) onNotice = OnNetNotice;
+                NetSession.Notice += onNotice;
+                noticeSubscribed = true;
+            }
 
             var crew = CrewRoster.All;
             for (int i = 0; i < crew.Count; i++) Add(crew[i]);
@@ -151,6 +161,11 @@ namespace Movers
                 CrewRoster.Left -= OnLeft;
                 GameSettings.Changed -= OnSettingsChanged;
                 subscribed = false;
+            }
+            if (noticeSubscribed)
+            {
+                NetSession.Notice -= onNotice;
+                noticeSubscribed = false;
             }
             for (int i = 0; i < views.Count; i++) Release(views[i]);
             views.Clear();
@@ -178,6 +193,11 @@ namespace Movers
         static void IgnorePicking(VisualElement container)
         {
             for (int i = 0; i < container.childCount; i++) container[i].pickingMode = PickingMode.Ignore;
+        }
+
+        void OnNetNotice(string key)
+        {
+            if (!string.IsNullOrEmpty(key)) shared.Toasts.Push(Loc.T(key), UiSprites.IconWarning, UiTheme.Current.warn);
         }
 
         // ---- the crew ----
@@ -378,7 +398,12 @@ namespace Movers
             }
             // Pause (Esc, Start) on the end screen goes back to the menu; E/X is the session's
             // own "play again".
-            if (card == (int)CardKind.End && endKeys.Pressed(CrewButton.Pause)) SceneFlow.LoadMenu();
+            // Online the host's leave ends the run for both, the client's leaves alone.
+            if (card == (int)CardKind.End && endKeys.Pressed(CrewButton.Pause))
+            {
+                if (Net.IsOnline) NetSession.LeaveToMenu();
+                else SceneFlow.LoadMenu();
+            }
         }
 
         // Lays the container on the camera's viewport, in panel units. A view shorter or
