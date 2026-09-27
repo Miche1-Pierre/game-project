@@ -9,6 +9,7 @@ namespace Movers
     // living landscape behind it (MenuLand, the truck, the crew) runs on its own.
     //
     //   Jouer seul / Jouer à deux   SceneFlow.LoadGame(1 or 2): the loading screen takes over
+    //   Jouer en ligne              host or join by code (NETCODE_SLICE 3.3); NetSession loads
     //   Options                     volumes, look, language, split layout, key hints
     //   Contrôles                   the controls sheet, keyboard or gamepad
     //   Quitter                     SceneFlow.Quit
@@ -37,12 +38,15 @@ namespace Movers
         PanelSettings panel;
         System.Action<int> onActivate;
         System.Action<int, int> onChange;
+        System.Action<string> onSubmitCode;
         Vector3 lastMouse;
         float nextPadCheck;
+        bool focusFieldPending, wasTyping;
 
         void Awake()
         {
             MenuText.Ensure();
+            NetText.Ensure();
             document = GetComponent<UIDocument>();
             // A panel of its own, made here: nothing to set up in the scene but the document.
             if (document.panelSettings == null)
@@ -52,6 +56,7 @@ namespace Movers
             }
             onActivate = Activate;
             onChange = Change;
+            onSubmitCode = _ => Connect();
         }
 
         void OnEnable()
@@ -100,7 +105,7 @@ namespace Movers
             root.Add(container);
             try
             {
-                mount = Framework.Mount(MainMenuView.Build(model, onActivate, onChange), container);
+                mount = Framework.Mount(MainMenuView.Build(model, onActivate, onChange, onSubmitCode), container);
                 for (int i = 0; i < container.childCount; i++) container[i].pickingMode = PickingMode.Ignore;
             }
             catch (System.Exception e)
@@ -113,8 +118,28 @@ namespace Movers
         {
             if (mount == null) Mount();
             block.Attach(container);
-            block.DropStrayFocus();
+            // Typing a code: the field keeps its focus, and only Esc is read (it leaves the page).
+            bool typing = model.Page == MenuPage.Joining && model.CodeFocus.IsFocused.Value;
+            if (!typing) block.DropStrayFocus();
+            PollNet();
             if (model.Leaving) return;
+            if (focusFieldPending && (model.Page != MenuPage.Joining || model.CodeFocus.RequestFocus())) focusFieldPending = false;
+            if (typing)
+            {
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    BlurField();
+                    UiAudio.Click();
+                    Back();
+                }
+                wasTyping = true;
+                return;
+            }
+            if (wasTyping)
+            {
+                wasTyping = false;
+                nav.Reset();   // the keys typed into the field are not menu moves
+            }
 
             if (Time.unscaledTime >= nextPadCheck)
             {
@@ -150,7 +175,7 @@ namespace Movers
                 model.Step(-nav.Vertical);
                 UiAudio.Hover();
             }
-            if (nav.Horizontal != 0 && model.Page != MenuPage.Title)
+            if (nav.Horizontal != 0 && (model.Page == MenuPage.Options || model.Page == MenuPage.Controls))
             {
                 UiAudio.Click();
                 Change(model.Selected, nav.Horizontal);
@@ -180,6 +205,7 @@ namespace Movers
                     {
                         case MainMenuModel.TitleRow.Solo: StartGame(1); break;
                         case MainMenuModel.TitleRow.Duo: StartGame(2); break;
+                        case MainMenuModel.TitleRow.Online: Show(MenuPage.Online); break;
                         case MainMenuModel.TitleRow.Options: Show(MenuPage.Options); break;
                         case MainMenuModel.TitleRow.Controls: Show(MenuPage.Controls); break;
                         case MainMenuModel.TitleRow.Quit: SceneFlow.Quit(); break;
@@ -189,6 +215,9 @@ namespace Movers
                     if (row == (int)MainMenuModel.OptionRow.Back) Back();
                     else Change(row, 1);
                     break;
+                case MenuPage.Online: ActivateOnline((MainMenuModel.OnlineRow)row); break;
+                case MenuPage.Hosting: ActivateHosting((MainMenuModel.HostRow)row); break;
+                case MenuPage.Joining: ActivateJoining((MainMenuModel.JoinRow)row); break;
                 default:
                     Back();
                     break;
@@ -216,6 +245,18 @@ namespace Movers
         {
             if (model.Page == MenuPage.Options) Show(MenuPage.Title, (int)MainMenuModel.TitleRow.Options);
             else if (model.Page == MenuPage.Controls) Show(MenuPage.Title, (int)MainMenuModel.TitleRow.Controls);
+            else if (model.Page == MenuPage.Online) Show(MenuPage.Title, (int)MainMenuModel.TitleRow.Online);
+            else if (model.Page == MenuPage.Hosting)
+            {
+                NetSession.Cancel();
+                Show(MenuPage.Online, (int)MainMenuModel.OnlineRow.Host);
+            }
+            else if (model.Page == MenuPage.Joining)
+            {
+                BlurField();
+                NetSession.Cancel();
+                Show(MenuPage.Online, (int)MainMenuModel.OnlineRow.Join);
+            }
             else if (model.Selected != (int)MainMenuModel.TitleRow.Quit) model.Select((int)MainMenuModel.TitleRow.Quit);
         }
 
@@ -233,6 +274,92 @@ namespace Movers
             if (model.Leaving || SceneFlow.IsLoading) return;
             model.Leave();
             SceneFlow.LoadGame(players);
+        }
+
+        // ---- online (NETCODE_SLICE 3.3) ----
+
+        void ActivateOnline(MainMenuModel.OnlineRow row)
+        {
+            switch (row)
+            {
+                case MainMenuModel.OnlineRow.Host:
+                    NetSession.HostRelay();
+                    Show(MenuPage.Hosting);
+                    break;
+                case MainMenuModel.OnlineRow.HostDirect:
+                    if (!Debug.isDebugBuild) return;
+                    NetSession.HostDirect();
+                    Show(MenuPage.Hosting);
+                    break;
+                case MainMenuModel.OnlineRow.Join:
+                    // With the keys, the field takes them at once; a pad starts on "Coller".
+                    bool keys = model.Device == MenuDevice.Keyboard;
+                    Show(MenuPage.Joining, (int)(keys ? MainMenuModel.JoinRow.Connect : MainMenuModel.JoinRow.Paste));
+                    focusFieldPending = keys;
+                    break;
+                default: Back(); break;
+            }
+        }
+
+        void ActivateHosting(MainMenuModel.HostRow row)
+        {
+            switch (row)
+            {
+                case MainMenuModel.HostRow.Copy:
+                    if (string.IsNullOrEmpty(model.JoinCode)) return;
+                    GUIUtility.systemCopyBuffer = model.JoinCode;
+                    model.SetCopied();
+                    break;
+                case MainMenuModel.HostRow.Start:
+                    if (Net.PeerConnected) NetSession.StartGame();
+                    break;
+                default: Back(); break;
+            }
+        }
+
+        void ActivateJoining(MainMenuModel.JoinRow row)
+        {
+            switch (row)
+            {
+                case MainMenuModel.JoinRow.Field: model.CodeFocus.RequestFocus(); break;
+                case MainMenuModel.JoinRow.Paste:
+                    string clip = GUIUtility.systemCopyBuffer;
+                    if (!string.IsNullOrEmpty(clip)) model.Code.Value = clip.Trim();
+                    break;
+                case MainMenuModel.JoinRow.Connect: Connect(); break;
+                default: Back(); break;
+            }
+        }
+
+        // "Se connecter", or Enter in the field. Ignored while an attempt is on its way.
+        void Connect()
+        {
+            if (model.Leaving || model.Page != MenuPage.Joining) return;
+            var s = NetSession.Status;
+            if (s == NetStatus.Connecting || s == NetStatus.Lobby || s == NetStatus.Loading) return;
+            string code = model.Code.Value;
+            if (string.IsNullOrWhiteSpace(code)) return;
+            NetSession.Join(code);
+        }
+
+        // Reads NetSession's static state (never creates a session). Offline it stays Idle and
+        // changes nothing. The load itself is NetSession's: here the menu only stops answering.
+        void PollNet()
+        {
+            NetStatus status = NetSession.Status;
+            model.SetNet(status, NetSession.Error, NetSession.JoinCode, Net.PeerConnected);
+            if (status == NetStatus.Loading && !model.Leaving) model.Leave();
+            if (model.Page == MenuPage.Title)
+            {
+                string message = NetSession.TakeMenuMessage();
+                if (message != null) model.SetMessage(message);
+            }
+        }
+
+        void BlurField()
+        {
+            var focus = container != null && container.panel != null ? container.panel.focusController : null;
+            if (focus != null && focus.focusedElement is VisualElement f) f.Blur();
         }
 
         void OnSettingsChanged()
