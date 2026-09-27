@@ -11,6 +11,10 @@ namespace Movers
     // Flames and a warm flickering light, built from code the first time it is lit so the
     // scene carries no asset for it. It burns for burnSeconds, then goes out and she can light
     // it again. Greybox: it hurts nobody and sets nothing on fire.
+    //
+    // While it burns, soft grey smoke rises from chimneyTop (an empty object at the top of the
+    // chimney, outside the house's hierarchy so the destruction never hands it to the debris):
+    // from the garden you can tell she is home and the fire is lit.
     [DisallowMultipleComponent]
     public sealed class FireplaceFire : MonoBehaviour
     {
@@ -22,8 +26,16 @@ namespace Movers
         public Color lightColor = new Color(1f, 0.55f, 0.2f);
         public float lightIntensity = 1.8f;
         public float lightRange = 5f;
+        [Tooltip("Where the smoke leaves the chimney. Empty: no smoke.")]
+        public Transform chimneyTop;
+        public Color smokeColor = new Color(0.82f, 0.8f, 0.78f, 1f);
+        [Tooltip("Wind drift of the smoke, metres per second, world space.")]
+        public Vector3 smokeWind = new Vector3(0.45f, 0f, 0.2f);
 
         ParticleSystem flames;
+        ParticleSystem smoke;
+        Material smokeMaterial;
+        Texture2D smokeTexture;
         Light glow;
         Material material;
         Texture2D texture;
@@ -38,6 +50,8 @@ namespace Movers
             litUntil = Time.time + burnSeconds;
             if (flames != null && !flames.isPlaying) flames.Play(true);
             if (glow != null) glow.enabled = true;
+            BuildSmoke();
+            if (smoke != null && !smoke.isPlaying) smoke.Play(true);
         }
 
         public void Extinguish()
@@ -45,6 +59,8 @@ namespace Movers
             litUntil = -1f;
             if (flames != null) flames.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             if (glow != null) glow.enabled = false;
+            // The last puffs drift away on their own.
+            if (smoke != null) smoke.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         }
 
         void Update()
@@ -116,6 +132,99 @@ namespace Movers
             glow.enabled = false;
         }
 
+        // Slow, soft puffs out of the chimney: they rise, drift with the wind, swell and fade.
+        void BuildSmoke()
+        {
+            if (smoke != null || chimneyTop == null) return;
+            var go = new GameObject("ChimneySmoke");
+            go.transform.SetParent(chimneyTop, false);
+            smoke = go.AddComponent<ParticleSystem>();
+            smoke.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            var main = smoke.main;
+            main.playOnAwake = false;
+            main.loop = true;
+            main.duration = 2f;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(5f, 7.5f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.55f, 0.95f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.5f, 0.85f);
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+            main.startColor = smokeColor;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.maxParticles = 70;
+            main.gravityModifier = -0.01f;
+
+            var emission = smoke.emission;
+            emission.rateOverTime = 9f;
+
+            // A narrow cone pointing up out of the flue.
+            var shape = smoke.shape;
+            shape.shapeType = ParticleSystemShapeType.Cone;
+            shape.angle = 9f;
+            shape.radius = 0.16f;
+            shape.rotation = new Vector3(-90f, 0f, 0f);
+
+            var velocity = smoke.velocityOverLifetime;
+            velocity.enabled = true;
+            velocity.space = ParticleSystemSimulationSpace.World;
+            velocity.x = new ParticleSystem.MinMaxCurve(smokeWind.x * 0.6f, smokeWind.x * 1.3f);
+            velocity.y = new ParticleSystem.MinMaxCurve(0f, 0.1f);
+            velocity.z = new ParticleSystem.MinMaxCurve(smokeWind.z * 0.6f, smokeWind.z * 1.3f);
+
+            var rotation = smoke.rotationOverLifetime;
+            rotation.enabled = true;
+            rotation.z = new ParticleSystem.MinMaxCurve(-0.4f, 0.4f);
+
+            var colour = smoke.colorOverLifetime;
+            colour.enabled = true;
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(new Color(0.9f, 0.9f, 0.92f), 1f) },
+                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(0.75f, 0.12f), new GradientAlphaKey(0.4f, 0.6f), new GradientAlphaKey(0f, 1f) });
+            colour.color = new ParticleSystem.MinMaxGradient(gradient);
+
+            var sizeOverLife = smoke.sizeOverLifetime;
+            sizeOverLife.enabled = true;
+            sizeOverLife.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(new Keyframe(0f, 0.6f), new Keyframe(1f, 3.2f)));
+
+            var renderer = go.GetComponent<ParticleSystemRenderer>();
+            smokeMaterial = MakeSmokeMaterial();
+            if (smokeMaterial != null) renderer.sharedMaterial = smokeMaterial;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+        }
+
+        // An alpha-blended soft round puff (not additive: smoke dims the sky a little).
+        Material MakeSmokeMaterial()
+        {
+            Shader shader = Shader.Find("Legacy Shaders/Particles/Alpha Blended");
+            if (shader == null) shader = Shader.Find("Particles/Standard Unlit");
+            if (shader == null) shader = Shader.Find("Sprites/Default");
+            if (shader == null) return null;
+            smokeTexture = SoftDot("SmokePuff", 2.2f);
+            var m = new Material(shader) { name = "ChimneySmoke" };
+            m.mainTexture = smokeTexture;
+            if (m.HasProperty("_TintColor")) m.SetColor("_TintColor", new Color(0.55f, 0.55f, 0.55f, 0.6f));
+            return m;
+        }
+
+        static Texture2D SoftDot(string name, float power)
+        {
+            const int n = 32;
+            var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, name = name };
+            var pixels = new Color32[n * n];
+            for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+            {
+                float dx = (x + 0.5f) / n * 2f - 1f, dy = (y + 0.5f) / n * 2f - 1f;
+                float a = Mathf.Clamp01(1f - Mathf.Sqrt(dx * dx + dy * dy));
+                pixels[y * n + x] = new Color32(255, 255, 255, (byte)(255f * Mathf.Pow(a, power)));
+            }
+            t.SetPixels32(pixels);
+            t.Apply(false, true);
+            return t;
+        }
+
         // An additive soft dot. The legacy particle shader is part of the Built-in pipeline;
         // the fallbacks keep the flames visible if a build strips it.
         Material MakeMaterial()
@@ -149,6 +258,8 @@ namespace Movers
         {
             if (material != null) Destroy(material);
             if (texture != null) Destroy(texture);
+            if (smokeMaterial != null) Destroy(smokeMaterial);
+            if (smokeTexture != null) Destroy(smokeTexture);
         }
     }
 }
