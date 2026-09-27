@@ -8,9 +8,10 @@ namespace Movers
 {
     // What is going on, in words. The banner, top centre under the compass tape, says what
     // matters now (get the keys, the police are coming, everything is loaded) with this
-    // player's own key in it. The toasts, under the grandmother's panel on the right, tell the
-    // story (who pocketed what, what broke, what she saw). The left column is the contract's,
-    // so the two never overlap in a half-width split view.
+    // player's own key in it. The toasts, at the foot of the right column (PlayerHudView: the
+    // grandmother, the key hints, then these), tell the story (who pocketed what, what broke,
+    // what she saw). The left column is the contract's, so the two never overlap in a
+    // half-width split view.
     public static class MessagesView
     {
         public const float BannerWidth = 300f;
@@ -24,7 +25,7 @@ namespace Movers
         // compile-time link to that track; with the markers off the sign hangs a little lower.
         public const float BannerTop = 68f;
         static readonly UiPlace BannerPlace = UiPlace.TopCenter(BannerTop);
-        static readonly UiPlace ToastPlace = new UiPlace(100f, 0f, 100f, 0f, -18f, 136f);
+        static readonly EdgeInsets Below = new EdgeInsets(0f, 8f, 0f, 0f);
 
         public static Widget Banner(SharedHudModel m, PlayerHudModel p) =>
             UiKit.With(BannerPlace, new ReactiveBuilder<int>(m.Banner, b => BannerFor((BannerKind)b, m, p)));
@@ -63,8 +64,9 @@ namespace Movers
             });
         }
 
+        // Unplaced: the right column places it.
         public static Widget Toasts(SharedHudModel m) =>
-            UiKit.With(ToastPlace, new ReactiveBuilder<int>(m.Toasts.Version, _ => Column(m.Toasts)));
+            new ReactiveBuilder<int>(m.Toasts.Version, _ => Column(m.Toasts));
 
         static Widget Column(ToastFeed feed)
         {
@@ -77,7 +79,7 @@ namespace Movers
                 Widget toast = UiKit.Toast(e.text, e.icon, e.color, ToastWidth);
                 items[i] = new AnimatedOpacity(toast, e.opacity, TimeSpan.FromMilliseconds(ToastFeed.FadeSeconds * 1000f)).WithKey(e.key);
             }
-            return new Column(items, 6f, MainAxisAlignment.Start, CrossAxisAlignment.End);
+            return new Padding(new Column(items, 6f, MainAxisAlignment.Start, CrossAxisAlignment.End), Below);
         }
     }
 }

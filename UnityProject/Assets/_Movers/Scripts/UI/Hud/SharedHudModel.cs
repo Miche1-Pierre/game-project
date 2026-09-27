@@ -25,6 +25,10 @@ namespace Movers
         public int RowCount;
         public bool HasContract;
         public int DestroyedCount;
+        // The board is on screen: there is a contract and the grandmother has handed it over
+        // (the run left the Intro, by her keys or by a way in without them). Before that the
+        // crew has not talked to her yet, so it has no list (Pierre, feedback 1).
+        public readonly State<bool> ContractShown = new State<bool>(false);
 
         public readonly State<string> Clock = new State<string>("");
         // Kinds are kept as ints: a State<enum> would box in its equality check on some runtimes.
@@ -76,6 +80,7 @@ namespace Movers
                 UpdateContract(session);
                 Devices.Value = DeviceMask();
             }
+            ContractShown.Value = HasContract && Session.State != SessionState.Intro;
             UpdateGrandma();
             UpdateBanner(session);
             UpdateCards(session);

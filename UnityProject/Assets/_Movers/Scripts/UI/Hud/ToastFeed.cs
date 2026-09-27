@@ -83,7 +83,8 @@ namespace Movers
             switch (e.type)
             {
                 case WorldEventType.KeysHandedOver:
-                    Push(Loc.F("toast.keys", Who(e.instigator)), UiSprites.IconKey, t.good);
+                    // The contract board slides in at the same moment (ContractBoardView).
+                    Push(Loc.T("toast.keysList"), UiSprites.IconKey, t.good);
                     break;
                 case WorldEventType.SessionStateChanged:
                 {

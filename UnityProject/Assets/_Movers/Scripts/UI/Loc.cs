@@ -220,7 +220,7 @@ namespace Movers
             Add("state.damaged", "Abîmé", "Damaged");
 
             // Banners
-            Add("banner.intro", "Parle à la mamie pour avoir les clés", "Talk to the grandmother to get the keys");
+            Add("banner.intro", "Parle à Mamie pour avoir la liste et les clés", "Talk to Grandma to get the list and the keys");
             Add("banner.police", "LA POLICE ARRIVE  {0}", "THE POLICE ARE COMING  {0}");
             Add("banner.ready", "Tout est chargé : livre au panneau jaune du camion", "All loaded: deliver at the truck's yellow board");
             Add("police.short", "POLICE {0}", "POLICE {0}");
@@ -236,6 +236,7 @@ namespace Movers
 
             // Toasts
             Add("toast.keys", "{0} a les clés. Le chrono tourne !", "{0} has the keys. The clock is running!");
+            Add("toast.keysList", "Mamie vous confie la liste et les clés. Le chrono tourne !", "Grandma hands you the list and the keys. The clock is running!");
             Add("toast.breakIn", "Effraction ! {0} a cassé {1}. Le chrono tourne.", "Break-in! {0} broke {1}. The clock is running.");
             Add("toast.startedHow", "{0} {1} avant les clés. Le chrono tourne.", "{0} {1} before the keys. The clock is running.");
             Add("toast.pocketed", "{0} a empoché : {1} ({2})", "{0} pocketed the {1} ({2})");
@@ -343,8 +344,10 @@ namespace Movers
                 "Anything else of hers that leaves with you is yours to sell, as long as she never sees you take it.");
             Add("intro.patience", "Casse, bruit, lenteur : elle perd patience. À bout, elle appelle la police.",
                 "Break things, make noise, dawdle: she loses patience. At the end of it, she calls the police.");
-            Add("intro.cta", "Parle à la mamie pour avoir les clés", "Talk to the grandmother to get the keys");
+            Add("intro.cta", "Parle à Mamie : elle vous donnera la liste et les clés", "Talk to Grandma: she will give you the list and the keys");
             Add("intro.start", "C'est parti", "Let's go");
+            Add("intro.press", "Appuie sur", "Press");
+            Add("intro.continue", "pour continuer", "to continue");
 
             // End screen
             Add("end.complete", "CONTRAT TERMINÉ", "CONTRACT COMPLETE");

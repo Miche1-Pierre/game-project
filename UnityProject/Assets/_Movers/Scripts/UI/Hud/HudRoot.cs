@@ -23,6 +23,10 @@ namespace Movers
     {
         public static HudRoot Active { get; private set; }
 
+        // Each player's view container is named with this and the player's name; UiZoom finds
+        // its frame by it.
+        public const string ViewNamePrefix = "hud-view-";
+
         [Tooltip("Layouts are designed for a view this many panel units wide; a narrower or shorter view is scaled down, never below minScale.")]
         public Vector2 designSize = new Vector2(900f, 1000f);
         [Range(0.5f, 1f)] public float minScale = 0.7f;
@@ -198,7 +202,7 @@ namespace Movers
             if (m == null) return;
             for (int i = 0; i < views.Count; i++) if (views[i].model.member == m) return;
             var v = new View { model = new PlayerHudModel(m) };
-            v.container = new VisualElement { name = "hud-view-" + m.DisplayName, pickingMode = PickingMode.Ignore };
+            v.container = new VisualElement { name = ViewNamePrefix + m.DisplayName, pickingMode = PickingMode.Ignore };
             v.container.style.position = Position.Absolute;
             v.container.style.overflow = Overflow.Hidden;
             v.container.style.transformOrigin = new TransformOrigin(0f, 0f);

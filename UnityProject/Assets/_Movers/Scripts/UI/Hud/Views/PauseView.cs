@@ -8,10 +8,12 @@ namespace Movers
     // One player's pause menu, over their own view only: the game behind is dimmed, a sign
     // with a leafy branch says whose pause it is, and wooden buttons (or the options board, or
     // the controls sheet) sit under it. The selected row is lit for the pad and the keys; the
-    // mouse clicks the same buttons.
+    // mouse clicks the same buttons. Every page is drawn 1.3 times its size (UiZoom), less when
+    // the view is too small for that (a stacked split view): it is read from the couch.
     public static class PauseView
     {
         static readonly UiPlace Place = UiPlace.Center();
+        const float FooterKey = 32f;
 
         public static Widget Build(PlayerHudModel p) =>
             new ReactiveBuilder<int>(p.pause.Version, _ => p.pause.IsOpen ? Overlay(p) : UiKit.Empty);
@@ -26,7 +28,7 @@ namespace Movers
                 case HudPausePage.Controls: page = Controls(p); break;
                 default: page = Main(p); break;
             }
-            return new Stack(new[] { UiPlace.Fill.Widget, th.Skins.Scrim.Widget, UiKit.With(Place, page) });
+            return new Stack(new[] { UiPlace.Fill.Widget, th.Skins.Scrim.Widget, UiKit.With(Place, UiKit.With(UiZoom.Centered, page)) });
         }
 
         static Widget Title(PlayerHudModel p, string words)
@@ -62,11 +64,11 @@ namespace Movers
             var tx = th.Text;
             Widget row = new Row(new[]
             {
-                UiKit.Key(InputGlyphs.Move(src), 26f), UiKit.Label(Loc.T("pause.select"), tx.SmallBold, false),
-                UiKit.Gap(6f),
-                UiKit.Key(InputGlyphs.For(src, CrewButton.Jump), 26f), UiKit.Label(Loc.T("pause.ok"), tx.SmallBold, false),
-                UiKit.Gap(6f),
-                UiKit.Key(InputGlyphs.For(src, CrewButton.Pause), 26f), UiKit.Label(Loc.T("pause.back"), tx.SmallBold, false),
+                UiKit.Key(InputGlyphs.Move(src), FooterKey), UiKit.Label(Loc.T("pause.select"), tx.BodyBold, false),
+                UiKit.Gap(8f),
+                UiKit.Key(InputGlyphs.For(src, CrewButton.Jump), FooterKey), UiKit.Label(Loc.T("pause.ok"), tx.BodyBold, false),
+                UiKit.Gap(8f),
+                UiKit.Key(InputGlyphs.For(src, CrewButton.Pause), FooterKey), UiKit.Label(Loc.T("pause.back"), tx.BodyBold, false),
             }, 6f, MainAxisAlignment.Center, CrossAxisAlignment.Center);
             return UiKit.Skinned(th.Skins.Chip, row, EdgeInsets.Symmetric(12f, 6f));
         }

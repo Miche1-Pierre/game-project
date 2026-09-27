@@ -10,6 +10,7 @@ namespace Movers
         Pulse,      // breathes forever: the police countdown, a ticking grenade
         Wobble,     // a short shake: something went wrong
         Sway,       // hangs and sways slowly forever: the title logo, a hanging sign
+        SlideIn,    // slides in from the left edge and settles: the contract, handed over
     }
 
     // A small animation on the element that contains it, played natively: the probe writes
@@ -27,6 +28,7 @@ namespace Movers
         public static readonly UiMotion PulseFast = new UiMotion(MotionKind.Pulse, 0.45f);
         public static readonly UiMotion Shake = new UiMotion(MotionKind.Wobble, 0.4f);
         public static readonly UiMotion Hang = new UiMotion(MotionKind.Sway, 3.2f);
+        public static readonly UiMotion SlideLeft = new UiMotion(MotionKind.SlideIn, 0.6f);
 
         public readonly MotionKind kind;
         public readonly float seconds;
@@ -137,6 +139,14 @@ namespace Movers
                     case MotionKind.Sway:
                     {
                         s.rotate = new Rotate(new Angle(Mathf.Sin(t * Mathf.PI * 2f) * 1.6f));
+                        break;
+                    }
+                    case MotionKind.SlideIn:
+                    {
+                        // From one and a bit of its own width to the left, with a small overshoot.
+                        float k = BackOut(Mathf.Clamp01(t));
+                        s.translate = new Translate(Length.Percent(Mathf.LerpUnclamped(-115f, 0f, k)), 0f);
+                        s.opacity = Mathf.Clamp01(t * 2.5f);
                         break;
                     }
                 }

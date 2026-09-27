@@ -298,9 +298,12 @@ namespace Movers
         {
             var n = Numbers;
             float age = IntroCardAge;
-            // Read every frame, so the edge is fresh; honoured only after the short delay.
+            // Read every frame, so the edge is fresh; honoured only after the short delay. The
+            // card waits for that press (Pierre, feedback 1: the job is read, then validated),
+            // unless the tuning turns the wait off.
             bool skip = skipInput.Pressed(CrewButton.Interact, CrewButton.Jump) && age >= n.introCardSkipAfter;
-            if (skip || age >= n.introCardSeconds) HideIntroCard();
+            bool timedOut = !n.introCardWaitsForKey && age >= n.introCardSeconds;
+            if (skip || timedOut) HideIntroCard();
         }
 
         void HideIntroCard()

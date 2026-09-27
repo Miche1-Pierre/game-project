@@ -8,8 +8,9 @@ using Container = LumaFlow.Container;
 namespace Movers
 {
     // The two full-screen cards, over every view: the intro, a sheet of paper that states the
-    // job, and the end screen, the settlement line by line with Rejouer and Menu. Both name
-    // the keys of every device the crew holds (E and X in a mixed crew).
+    // job and stays until a player presses the key it names ("Appuie sur [E] pour continuer"),
+    // and the end screen, the settlement line by line with Rejouer and Menu. Both name the keys
+    // of every device the crew holds (E and X in a mixed crew).
     public static class CardsView
     {
         public const float SheetWidth = 900f;
@@ -46,9 +47,11 @@ namespace Movers
             }, 12f, MainAxisAlignment.Start, CrossAxisAlignment.Stretch);
 
             Widget cta = UiKit.Sign(Loc.T("intro.cta"), tx.LabelBold, UiMotion.Drop);
+            // Shown once a key can close the card (a second after it opened), then breathing:
+            // nothing else on the card moves, so the eye finds what to do.
             Widget start = new ReactiveBuilder<bool>(m.CardSkippable, ok => ok
-                ? UiKit.With(UiMotion.Pop, new ReactiveBuilder<int>(m.Devices, d => DeviceKeys(d, CrewButton.Interact, Loc.T("intro.start"))))
-                : UiKit.Gap(34f));
+                ? UiKit.With(UiMotion.Pop, UiKit.With(UiMotion.PulseSlow, new ReactiveBuilder<int>(m.Devices, PressToContinue)))
+                : UiKit.Gap(PromptKey));
 
             Widget sheet = new Column(new[]
             {
@@ -70,16 +73,20 @@ namespace Movers
                            14f, MainAxisAlignment.Start, CrossAxisAlignment.Center);
         }
 
-        // "[E] / [X] Let's go": one key per device the crew holds.
-        static Widget DeviceKeys(int devices, CrewButton button, string words)
+        const float PromptKey = 36f;
+
+        // "Appuie sur [E] / [X] pour continuer": the interact key of each device the crew holds
+        // (Jump closes the card too, GameSession; one key is enough to name).
+        static Widget PressToContinue(int devices)
         {
             var th = UiKit.Theme;
-            var parts = new List<Widget>(4);
-            if ((devices & 1) != 0) parts.Add(UiKit.Key(InputGlyphs.ForKeyboard(button), 32f));
-            if ((devices & 3) == 3) parts.Add(UiKit.Label("/", th.Text.LabelBold, false));
-            if ((devices & 2) != 0) parts.Add(UiKit.Key(InputGlyphs.ForPad(button), 32f));
-            parts.Add(UiKit.Label(words, th.Text.LabelBold, false));
-            return new Row(parts, 8f, MainAxisAlignment.Center, CrossAxisAlignment.Center);
+            var style = th.Text.LabelBold;
+            var parts = new List<Widget>(5) { UiKit.Label(Loc.T("intro.press"), style, false) };
+            if ((devices & 1) != 0) parts.Add(UiKit.Key(InputGlyphs.ForKeyboard(CrewButton.Interact), PromptKey));
+            if ((devices & 3) == 3) parts.Add(UiKit.Label("/", style, false));
+            if ((devices & 2) != 0) parts.Add(UiKit.Key(InputGlyphs.ForPad(CrewButton.Interact), PromptKey));
+            parts.Add(UiKit.Label(Loc.T("intro.continue"), style, false));
+            return new Row(parts, 10f, MainAxisAlignment.Center, CrossAxisAlignment.Center);
         }
 
         // ---- end screen ----

@@ -8,16 +8,18 @@ namespace Movers
     // Every control of the game for one device, on a wooden board in two columns: on foot,
     // the hands, at the wheel. Shown by the controls key (Tab, or Back on a pad) and by the
     // pause menu's "Controls". The main menu can show it too (MENU): it only needs a source.
+    // Whoever shows it zooms it (UiZoom): the sheet itself is laid at its design size.
     public static class HudControlsSheet
     {
-        const float Key = 30f;
+        const float Key = 32f;
+        const float PocketKey = 28f;
         static readonly UiPlace Place = UiPlace.Center();
 
         // The toggleable overlay in a player's view.
         public static Widget Overlay(PlayerHudModel p) =>
-            UiKit.With(Place, new ReactiveBuilder<bool>(p.ControlsOpen, open => open && !p.pause.IsOpen
+            UiKit.With(Place, UiKit.With(UiZoom.Centered, new ReactiveBuilder<bool>(p.ControlsOpen, open => open && !p.pause.IsOpen
                 ? UiKit.Panel(Board(p.Source, true), UiKit.Theme.Skins.Wood, 12f, UiMotion.Pop)
-                : UiKit.Empty));
+                : UiKit.Empty)));
 
         // The sheet itself, for any device. withToggle adds the line that closes it.
         public static Widget Board(ICrewInputSource src, bool withToggle)
@@ -91,10 +93,10 @@ namespace Movers
             var th = UiKit.Theme;
             Widget keys = new Row(new Widget[]
             {
-                UiKit.Key(InputGlyphs.PocketSlot(src, 0), 26f), UiKit.Key(InputGlyphs.PocketSlot(src, 1), 26f),
-                UiKit.Key(InputGlyphs.PocketSlot(src, 2), 26f), UiKit.Key(InputGlyphs.PocketSlot(src, 3), 26f),
+                UiKit.Key(InputGlyphs.PocketSlot(src, 0), PocketKey), UiKit.Key(InputGlyphs.PocketSlot(src, 1), PocketKey),
+                UiKit.Key(InputGlyphs.PocketSlot(src, 2), PocketKey), UiKit.Key(InputGlyphs.PocketSlot(src, 3), PocketKey),
             }, 3f, MainAxisAlignment.End, CrossAxisAlignment.Center);
-            return new Row(new Widget[] { new SizedBox(keys, 120f), new Flexible(UiKit.Label(Loc.T("ctrl.pockets"), th.Text.Body)) },
+            return new Row(new Widget[] { new SizedBox(keys, 132f), new Flexible(UiKit.Label(Loc.T("ctrl.pockets"), th.Text.Body)) },
                            10f, MainAxisAlignment.Start, CrossAxisAlignment.Center);
         }
     }

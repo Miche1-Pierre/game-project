@@ -9,13 +9,20 @@ namespace Movers
     // The contract, top left: a cardboard box lid with packing tape, the clock on a little
     // wooden tag, each thing on the list with where it is, then what is loaded, what handing
     // the truck over now would pay, and what the crew has of hers so far.
+    //
+    // Not there during the Intro: the grandmother hands the list over with her keys, and the
+    // board slides in from the left edge at that moment (with ToastFeed's line saying so).
     public static class ContractBoardView
     {
         public const float Width = 310f;
         static readonly UiPlace Place = UiPlace.TopLeft(18f);
 
+        // The slide is on its own element, made when the board appears: a change of the list
+        // rebuilds the board inside it and does not slide it again.
         public static Widget Build(SharedHudModel m) =>
-            UiKit.With(Place, new ReactiveBuilder<int>(m.ContractVersion, _ => Board(m)));
+            UiKit.With(Place, new ReactiveBuilder<bool>(m.ContractShown, shown => shown
+                ? UiKit.With(UiMotion.SlideLeft, new ReactiveBuilder<int>(m.ContractVersion, _ => Board(m)))
+                : UiKit.Empty));
 
         static Widget Board(SharedHudModel m)
         {

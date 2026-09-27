@@ -13,7 +13,9 @@ namespace Movers
         public float defaultTimeLimit = 600f;
         [Tooltip("Seconds between the grandmother's call and the end of the run. Long enough to hear her make the call and read it on screen, too short to finish the job.")]
         public float policeCountdown = 8f;
-        [Tooltip("Seconds the intro card stays up with everyone frozen, unless a player skips it. 0: no card and nobody frozen (for a session of Play-mode tests; GAMELOOP test 10 needs the card).")]
+        [Tooltip("The intro card stays up, everyone frozen, until a player presses Interact or Jump (E or Space, X or A on a pad): the job is read, then validated. Off: it also goes by itself after introCardSeconds.")]
+        public bool introCardWaitsForKey = true;
+        [Tooltip("Seconds the intro card stays up when it does not wait for a key (introCardWaitsForKey off). 0: no card and nobody frozen, whatever the switch above (for a session of Play-mode tests; GAMELOOP test 10 needs the card).")]
         public float introCardSeconds = 6f;
         [Tooltip("Seconds before the intro card can be skipped, so a key still down from the last run does not skip it.")]
         public float introCardSkipAfter = 1f;

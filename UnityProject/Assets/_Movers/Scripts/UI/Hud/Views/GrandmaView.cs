@@ -6,11 +6,11 @@ namespace Movers
 {
     // The grandmother, top right: her face for her mood, her name and the mood word, and her
     // patience as a tape measure running from green to red. It shakes when her mood changes
-    // for the worse, so the one number the crew must watch catches the eye by itself.
+    // for the worse, so the one number the crew must watch catches the eye by itself. Unplaced:
+    // it heads PlayerHudView's right column, above the key hints and the toasts.
     public static class GrandmaView
     {
         public const float Width = 290f;
-        static readonly UiPlace Place = UiPlace.TopRight(18f);
 
         // One entrance per mood, so a change of mood replays it (a shared probe would not).
         static readonly UiMotion[] Entrances =
@@ -21,7 +21,7 @@ namespace Movers
         };
 
         public static Widget Build(SharedHudModel m, PlayerHudModel p) =>
-            UiKit.With(Place, new ReactiveBuilder<int>(m.Mood, tier => tier < 0 ? UiKit.Empty : Meter((MoodTier)tier, p)));
+            new ReactiveBuilder<int>(m.Mood, tier => tier < 0 ? UiKit.Empty : Meter((MoodTier)tier, p));
 
         static Widget Meter(MoodTier tier, PlayerHudModel p)
         {

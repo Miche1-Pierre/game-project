@@ -9,7 +9,13 @@ namespace Movers
     // branches, a paper tag with the tagline, the wooden buttons, a tag under them saying what
     // the selected button does (or whether player 2 has a gamepad), the key hints for the
     // device in hand, and the options board and the controls sheet on their own pages. All on
-    // the left third of the screen: the living landscape keeps the rest.
+    // the left of the screen: the living landscape keeps the rest.
+    //
+    // The column and the key hints are drawn 1.3 times their laid-out size (UiZoom), so the
+    // boards, the words and the keys read from the couch. The column's zoom gives way when a
+    // page would reach the key hints at the bottom: at 1920x1080 and 1280x720 alike (the panel
+    // scales with the screen height), the title page and the options fit at 1.3, the controls
+    // sheet a little under it.
     //
     // Rebuilt only when the model's Version changes.
     public static class MainMenuView
@@ -17,9 +23,16 @@ namespace Movers
         const float Left = 84f;
         const float Top = 48f;
         const float ButtonWidth = 400f;
+        const float FooterMargin = 30f;
+        const float FooterKey = 34f;
+        // The key hints' height once zoomed (a 34 key in a 7 + 7 padded chip, times 1.3), plus
+        // their margin and a gap: the part of the screen the column leaves them.
+        const float FooterRoom = FooterMargin + (FooterKey + 14f) * UiZoom.MenuFactor + 16f;
 
         static readonly UiPlace ColumnPlace = new UiPlace(0f, 0f, 0f, 0f, Left, Top);
-        static readonly UiPlace FooterPlace = UiPlace.BottomLeft(30f);
+        static readonly UiPlace FooterPlace = UiPlace.BottomLeft(FooterMargin);
+        static readonly UiZoom ColumnZoom = new UiZoom(UiZoom.MenuFactor, 0f, 0f, Left + 40f, Top + FooterRoom);
+        static readonly UiZoom FooterZoom = new UiZoom(UiZoom.MenuFactor, 0f, 100f, FooterMargin * 2f, FooterMargin * 2f);
         static readonly UiPlace BuildPlace = UiPlace.BottomRight(26f);
         static readonly UiTransform TagTilt = new UiTransform(-2.2f);
         static readonly UiName ColumnName = new UiName("menu-column");
@@ -39,8 +52,8 @@ namespace Movers
             return new Stack(new[]
             {
                 UiPlace.Fill.Widget,
-                UiKit.With(ColumnPlace, ColumnName, page),
-                UiKit.With(FooterPlace, Footer(m)),
+                UiKit.With(ColumnPlace, ColumnName, UiKit.With(ColumnZoom, page)),
+                UiKit.With(FooterPlace, UiKit.With(FooterZoom, Footer(m))),
                 UiKit.With(BuildPlace, BuildTag()),
             });
         }
@@ -217,15 +230,15 @@ namespace Movers
             var tx = th.Text;
             var parts = new List<Widget>(9)
             {
-                UiKit.Key(MoveGlyph(m.Device), 28f), UiKit.Label(Loc.T("pause.select"), tx.SmallBold, false),
-                UiKit.Gap(8f),
-                UiKit.Key(SubmitGlyph(m.Device), 28f), UiKit.Label(Loc.T("pause.ok"), tx.SmallBold, false),
+                UiKit.Key(MoveGlyph(m.Device), FooterKey), UiKit.Label(Loc.T("pause.select"), tx.BodyBold, false),
+                UiKit.Gap(10f),
+                UiKit.Key(SubmitGlyph(m.Device), FooterKey), UiKit.Label(Loc.T("pause.ok"), tx.BodyBold, false),
             };
             if (m.Page != MenuPage.Title)
             {
-                parts.Add(UiKit.Gap(8f));
-                parts.Add(UiKit.Key(BackGlyph(m.Device), 28f));
-                parts.Add(UiKit.Label(Loc.T("pause.back"), tx.SmallBold, false));
+                parts.Add(UiKit.Gap(10f));
+                parts.Add(UiKit.Key(BackGlyph(m.Device), FooterKey));
+                parts.Add(UiKit.Label(Loc.T("pause.back"), tx.BodyBold, false));
             }
             Widget row = new Row(parts, 6f, MainAxisAlignment.Start, CrossAxisAlignment.Center);
             return UiKit.Skinned(th.Skins.Chip, row, EdgeInsets.Symmetric(14f, 7f));
