@@ -14,6 +14,7 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 - **MENU:** movers carry absurd loads alone (piano, fridge, bathtub, clock, a tower of boxes, sofa). More woods, and three towns on the horizon for the future maps, with a signpost.
 - **UI:**
   - Everything is about a third larger.
+  - Pressing Play in the editor always starts on the title menu, like the built game. Untick "The Movers/Play From Main Menu" to play the open scene directly.
   - The intro sign waits for a key.
   - The contract appears only when the grandmother hands over the list and the keys.
   - The object card moves to the top right.
