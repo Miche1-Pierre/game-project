@@ -43,6 +43,7 @@ namespace Movers.EditorTools
         static EnterPlayModeOptions savedOptions;
         static bool savedRunInBackground;
         static bool touchedRunInBackground;
+        static SceneAsset savedStartScene;
 
         [MenuItem("The Movers/Wear Test (enters Play for ~10s)")]
         public static void Run()
@@ -70,6 +71,9 @@ namespace Movers.EditorTools
             EditorSettings.enterPlayModeOptionsEnabled = true;
             EditorSettings.enterPlayModeOptions =
                 EnterPlayModeOptions.DisableDomainReload | EnterPlayModeOptions.DisableSceneReload;
+            // PlayFromMainMenu starts every Play on the title menu; this test needs the house itself.
+            savedStartScene = EditorSceneManager.playModeStartScene;
+            EditorSceneManager.playModeStartScene = null;
 
             step = 0; t0 = 0f; failed = false; warnings = 0; errors = 0; touchedRunInBackground = false;
             player = null; body = null; item = null; crewAnimator = null;
@@ -404,6 +408,7 @@ namespace Movers.EditorTools
             EditorApplication.ExitPlaymode();
             EditorSettings.enterPlayModeOptionsEnabled = savedOptionsEnabled;
             EditorSettings.enterPlayModeOptions = savedOptions;
+            EditorSceneManager.playModeStartScene = savedStartScene;
             if (touchedRunInBackground)
             {
                 Application.runInBackground = savedRunInBackground;
