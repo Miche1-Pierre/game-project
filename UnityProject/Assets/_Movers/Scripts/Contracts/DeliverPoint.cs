@@ -78,7 +78,7 @@ namespace Movers
 
         public override void Interact(PlayerInteract by)
         {
-            if (!CanInteract) return;
+            if (!Net.HasAuthority || !CanInteract) return;
             var member = by != null ? by.GetComponent<CrewMember>() : null;
             int actor = member != null ? member.index : 0;
             var s = GameSession.Current;

@@ -134,6 +134,38 @@ namespace Movers
             }
         }
 
+        // ---- online client (NETCODE_SLICE 11.7): the host's entries, applied as they are ----
+        // No events and no scan: SessionSync writes what the host's ledger holds. The worth of
+        // a damaged entry follows the replicated broken flag, like the host's.
+
+        public void ApplyPut(MovableObject item, int thief, TheftRoute route, int value, bool witnessed)
+        {
+            if (item == null) return;
+            if (!byItem.TryGetValue(item, out var en))
+            {
+                en = new TheftEntry { item = item, since = Time.time };
+                entries.Add(en);
+                byItem.Add(item, en);
+            }
+            en.thief = thief;
+            en.route = route;
+            en.value = value;
+            en.witnessed = witnessed;
+            if (witnessed) seenTaken.Add(item);
+            Changed();
+        }
+
+        public void ApplyDrop(MovableObject item)
+        {
+            if (item != null && byItem.TryGetValue(item, out var en)) Remove(en);
+        }
+
+        public void ApplyFinal()
+        {
+            IsFinal = true;
+            Changed();
+        }
+
         void Put(MovableObject item, int thief, TheftRoute route)
         {
             if (byItem.TryGetValue(item, out var en))

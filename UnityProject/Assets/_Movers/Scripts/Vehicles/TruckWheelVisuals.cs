@@ -64,7 +64,9 @@ namespace Movers
                 if (w == null || source[i] == null) continue;
                 // rpm is positive rolling forward; a positive turn about the truck's right axis
                 // moves the top of the wheel forward.
-                angle[i] = Mathf.Repeat(angle[i] + source[i].rpm * 6f * dt, 360f);
+                // The client's truck is kinematic: its colliders do not roll, the host's speed does.
+                float rpm = Net.IsClient ? vehicle.ForwardSpeed / (2f * Mathf.PI * Mathf.Max(0.05f, source[i].radius)) * 60f : source[i].rpm;
+                angle[i] = Mathf.Repeat(angle[i] + rpm * 6f * dt, 360f);
                 w.rotation = rootRotation
                            * Quaternion.AngleAxis(steers[i] ? steer : 0f, Vector3.up)
                            * Quaternion.AngleAxis(angle[i], Vector3.right)

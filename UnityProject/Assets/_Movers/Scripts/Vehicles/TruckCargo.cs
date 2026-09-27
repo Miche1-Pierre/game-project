@@ -51,7 +51,7 @@ namespace Movers
 
         public float LoadedKg { get; private set; }
         public float LoadedVolume { get; private set; }
-        public int LoadedCount => loaded.Count;
+        public int LoadedCount => Net.HasAuthority ? loaded.Count : replicaCount;
         public bool OverCapacity => LoadedKg > capacityKg;
         public bool Contains(MovableObject m) => m != null && loaded.Contains(m);
 
@@ -78,6 +78,7 @@ namespace Movers
         int stamp;
         float nextCheck;
         bool warnedFull;
+        int replicaCount;
 
         void Awake()
         {
@@ -95,6 +96,7 @@ namespace Movers
 
         void FixedUpdate()
         {
+            if (!Net.HasAuthority) return;   // the client's totals come from TruckSync, `loaded` from Items
             if (box == null || Time.time < nextCheck) return;
             nextCheck = Time.time + checkInterval;
             Check();
@@ -260,6 +262,15 @@ namespace Movers
             }
             LoadedKg = kg;
             LoadedVolume = volume;
+        }
+
+        // Online client: the host's totals (TruckSync Cargo).
+        public void ApplyReplica(float kg, float volume, int count)
+        {
+            if (Net.HasAuthority) return;
+            LoadedKg = kg;
+            LoadedVolume = volume;
+            replicaCount = count;
         }
 
         void StartRiding(MovableObject m, Track t)

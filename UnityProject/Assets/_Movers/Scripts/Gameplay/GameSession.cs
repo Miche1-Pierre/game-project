@@ -150,6 +150,13 @@ namespace Movers
                 releaseFrame = -1;
                 if (!Session.IsOver) SetCrewFrozen(false);
             }
+            // Online client (NETCODE_SLICE 11.7): the host runs the session. Here only the display
+            // clock ticks; the E that restarts travels in the raw input frame to the host.
+            if (!Net.HasAuthority)
+            {
+                TickReplicaClock();
+                return;
+            }
 
             switch (Session.State)
             {
@@ -187,6 +194,7 @@ namespace Movers
         // The DeliverPoint, once everything left on the list is in the truck.
         public bool Deliver(int by, Vector3 at)
         {
+            if (!Net.HasAuthority) return false;
             if (!Session.IsRunning || PoliceCalled) return false;
             if (contract == null || !contract.AllRequiredLoaded()) return false;
             Complete(by, at);
@@ -196,16 +204,17 @@ namespace Movers
         // F6: settle now, whatever is loaded.
         public void ForceComplete()
         {
-            if (Session.IsOver) return;
+            if (!Net.HasAuthority || Session.IsOver) return;
             Complete(Actors.World, contract != null && contract.truck != null ? contract.truck.transform.position : transform.position);
         }
 
         public void Fail(FailReason reason)
         {
-            if (Session.IsOver) return;
+            if (!Net.HasAuthority || Session.IsOver) return;
             HideIntroCard();
             Session.Failure = reason;
             Result = Settlement.ForFailure(reason, Ledger);
+            if (Net.IsHost) SessionSync.SendSettlement(this);
             SetState(SessionState.Failed);
         }
 
@@ -223,12 +232,14 @@ namespace Movers
                 contract.money = Result.Total;
                 contract.complete = true;
             }
+            if (Net.IsHost) SessionSync.SendSettlement(this);
             WorldEvents.Raise(WorldEventType.ContractDelivered, at, by, 0f, 0f, Result.Total, this);
             SetState(SessionState.Completed);
         }
 
         void OnWorldEvent(WorldEvent e)
         {
+            if (!Net.HasAuthority) return;   // the client's session is a replica (ApplyReplica)
             if (Current != this || Session.IsOver) return;
             Ledger.Handle(e);
             switch (e.type)
@@ -244,7 +255,11 @@ namespace Movers
                     if (Session.State == SessionState.Intro) OnWayInBeforeKeys(e);
                     break;
                 case WorldEventType.GrandmaCalledPolice:
-                    if (!PoliceCalled) policeAt = Time.time + Numbers.policeCountdown;
+                    if (!PoliceCalled)
+                    {
+                        policeAt = Time.time + Numbers.policeCountdown;
+                        if (Net.IsHost) SessionSync.SendState(this);
+                    }
                     break;
             }
         }
@@ -296,6 +311,8 @@ namespace Movers
 
         void UpdateIntroCard()
         {
+            // Online, the card stays up until the client has the world (NETCODE_SLICE 3.3).
+            if (Net.IsHost && Net.PeerConnected && !Net.PeerReady) return;
             var n = Numbers;
             float age = IntroCardAge;
             // Read every frame, so the edge is fresh; honoured only after the short delay. The
@@ -315,6 +332,7 @@ namespace Movers
             // after the session: unmuted now, Space would also jump and E would also use
             // whatever is under the crosshair. Next frame the key is only held.
             if (!Session.IsOver) releaseFrame = Time.frameCount + 1;
+            if (Net.IsHost) SessionSync.SendState(this);
         }
 
         void SetState(SessionState s)
@@ -327,6 +345,7 @@ namespace Movers
                 releaseFrame = -1;
                 SetCrewFrozen(true);
             }
+            if (Net.IsHost) SessionSync.SendState(this);
             Announce();
         }
 
@@ -360,7 +379,7 @@ namespace Movers
         // Test hook, called with SendMessage: brings the clock close to the end.
         void DebugSetTimeLeft(float seconds)
         {
-            if (Session.IsRunning) Session.TimeLeft = Mathf.Max(0f, seconds);
+            if (Net.HasAuthority && Session.IsRunning) Session.TimeLeft = Mathf.Max(0f, seconds);
         }
 
         // Test hook, called with SendMessage (tests/skip_intro_card.cs): the card goes and the
@@ -369,10 +388,75 @@ namespace Movers
         // one-frame wait). The run stays in the Intro. Also settles a release still pending.
         void DebugSkipIntroCard()
         {
-            if (Session.IsOver || (!cardShowing && releaseFrame < 0)) return;
+            if (!Net.HasAuthority || Session.IsOver || (!cardShowing && releaseFrame < 0)) return;
             cardShowing = false;
             releaseFrame = -1;
             SetCrewFrozen(false);
+            if (Net.IsHost) SessionSync.SendState(this);
+        }
+
+        // ---- online client replica (NETCODE_SLICE 11.7) ----
+
+        // The settlement's word for a break-in and the toast's for the way in, as SessionSync
+        // sends them (an enum on the wire). Keep in step with StartContract's strings: an unknown
+        // one travels as "".
+        internal static readonly string[] BreakInWords = { "", "a window", "a door", "a wall" };
+        internal static readonly string[] StartedHowWords =
+            { "", "broke a window", "broke a door", "broke through a wall", "brought part of the house down", "opened a window" };
+
+        // The host's clock between two Clock records. It never fails the run: the host does.
+        void TickReplicaClock()
+        {
+            if (!Session.IsRunning || Session.TimeLimit <= 0f) return;
+            Session.TimeLeft = Mathf.Max(0f, Session.TimeLeft - Time.deltaTime);
+        }
+
+        internal void ApplyClock(float timeLeft)
+        {
+            if (Net.HasAuthority) return;
+            Session.TimeLeft = Mathf.Max(0f, timeLeft);
+        }
+
+        internal void ApplyResult(Settlement result)
+        {
+            if (Net.HasAuthority || result == null) return;
+            Result = result;
+        }
+
+        // The host's State record, written into the same fields the host has, in the host's
+        // order: the card first (HideIntroCard), then the state (SetState). Local times are
+        // stamped here. SessionStateChanged is raised once per transition, never forwarded.
+        internal void ApplyReplica(in SessionReplica r)
+        {
+            if (Net.HasAuthority || Current != this) return;
+            HasIntro = r.hasIntro;
+            BrokeIn = r.brokeIn;
+            BreakInBy = r.breakInBy;
+            BreakInWhat = r.breakInWhat ?? "";
+            StartedBy = r.startedBy;
+            StartedHow = r.startedHow ?? "";
+            policeAt = r.policeRemaining >= 0f ? Time.time + r.policeRemaining : -1f;
+            Session.Failure = r.failure;
+            Session.TimeLimit = r.timeLimit;
+            Session.TimeLeft = r.timeLeft;
+
+            if (r.cardShowing && !cardShowing && !Session.IsOver)
+            {
+                cardShowing = true;
+                cardSince = Time.unscaledTime;
+                SetCrewFrozen(true);
+            }
+            else if (!r.cardShowing) HideIntroCard();
+
+            if (r.state == Session.State) return;
+            if (r.state == SessionState.Completed && contract != null)
+            {
+                contract.Tracker.MarkDelivered();      // from the replicated loaded flags
+                if (Result != null) contract.money = Result.Total;
+                contract.complete = true;
+            }
+            if (r.state == SessionState.ContractStarted) startedFrame = Time.frameCount;
+            SetState(r.state);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
