@@ -43,6 +43,9 @@ namespace Movers
 
         void OnCollisionEnter(Collision c)
         {
+            // Online the host hears the impact and sends it (AudioSync); the client's replicated
+            // bodies are kinematic and never make their own.
+            if (!Net.HasAuthority) return;
             float now = Time.time;
             if (!enabled || now < armedAt || now < nextTime || c.contactCount == 0) return;
             // Its own carrier's hands are not an impact.
@@ -53,7 +56,9 @@ namespace Movers
             nextTime = now + Cooldown;
             float volume = Mathf.Clamp01((hit - 0.8f) / 4.5f) * weight;
             if (mo != null && mo.holder != null) volume *= 0.6f;   // bumped while carried
-            AudioDirector.PlayAt(kind, p.point, SoundPreset.Impact, volume, pitchBase * Random.Range(0.94f, 1.06f));
+            float pitch = pitchBase * Random.Range(0.94f, 1.06f);
+            AudioDirector.PlayAt(kind, p.point, SoundPreset.Impact, volume, pitch);
+            if (Net.IsHost) AudioSync.PropImpact(kind, p.point, volume, pitch);
             Impacts++;
         }
 
