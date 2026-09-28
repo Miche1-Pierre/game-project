@@ -17,7 +17,9 @@ namespace Movers
     // health), Fractured (darker, at 25 %: still in place, holds what is above it, no longer
     // holds anything beside it), then gone: it breaks off as a real piece of debris. The wall is
     // Damaged once a chunk is hurt, Fractured once one is gone, and Destroyed (collapsed) when
-    // under a third of it is left, at which point the rest comes down.
+    // under a third of it is left, at which point the rest comes down. Hits too small to break
+    // the wall up are stored on the intact wall (tinted once Damaged) and add up: worn down to
+    // the fracture share, it breaks up anyway (DEV 2, 3.3).
     //
     // What hangs in the wall goes when no chunk is left around it: a pane breaks, a door leaf
     // shatters, and a window sash frame (INTERACTION hangs it on a hinge under the module)
@@ -200,6 +202,14 @@ namespace Movers
         public float FractureThreshold =>
             (Spec != null ? Spec.ChunkHealth : MaxHealth) * DestructionMaterialTable.Current.fractureAtShare;
 
+        // The damage stored on the intact wall reached the share that a single hit would need
+        // to break it up (fractureOnAccumulated).
+        bool WornThrough()
+        {
+            var table = DestructionMaterialTable.Current;
+            return table.fractureOnAccumulated && HasChunkSet && health <= MaxHealth * (1f - table.fractureAtShare);
+        }
+
         // Would this much raw damage (before the material) break the wall up?
         public bool WouldFracture(float rawDamage, DamageType type)
         {
@@ -223,9 +233,13 @@ namespace Movers
                     LastHit = e;
                     LastHitTime = Time.time;
                     LastHitChunk = -1;
+                    float had = health;
                     health = Mathf.Max(1f, health - applied);
+                    // Small hits add up: worn down far enough, the wall breaks up into chunks that
+                    // already carry the wear (Fracture shares the health left between them).
+                    if (WornThrough()) Fracture();
                     Refresh(e);
-                    return new DamageResult { applied = applied, before = before, after = State };
+                    return new DamageResult { applied = had - health, before = before, after = State };
                 }
             }
 
@@ -487,6 +501,7 @@ namespace Movers
             if (Spec != null && s > Spec.stateCap) s = Spec.stateCap;
             if (s == State) return 0f;
             State = s;
+            if (!IsFractured) TintBody();
             if (Net.IsHost) StructureSync.ModuleState(this, s);
             Vector3 at = intactBounds.center;
             float kg = 0f;
@@ -500,6 +515,12 @@ namespace Movers
             DestructionEvents.Structure(this, at, s, e.instigator);
             if (s == DestructionState.Destroyed && DestructionEvents.IsDoor(name)) DestructionEvents.Door(this, at, e.instigator);
             return kg;
+        }
+
+        // The intact wall shows its stored damage, like a chunk does: repeated small hits read.
+        void TintBody()
+        {
+            Tint(body, State == DestructionState.Damaged ? DamagedTint : 1f);
         }
 
         bool AnyChunkHurt()
@@ -586,6 +607,8 @@ namespace Movers
             float left = Mathf.Clamp01(health / MaxHealth);
             int structure = DestructionLayers.Structure;
             bool longX = intactBounds.size.x >= intactBounds.size.z;
+            float hpMin = Mathf.Max(0.05f, Mathf.Min(table.chunkHealthClamp.x, table.chunkHealthClamp.y));
+            float hpMax = Mathf.Max(hpMin, Mathf.Max(table.chunkHealthClamp.x, table.chunkHealthClamp.y));
 
             for (int k = 0; k < n; k++)
             {
@@ -605,7 +628,8 @@ namespace Movers
                 int di = dataIndexScratch[k];
                 float share = di >= 0 && data.chunks[di].massShare > 0f ? data.chunks[di].massShare
                             : totalVolume > 0f ? volumeScratch[k] / totalVolume : 1f / n;
-                float maxHp = baseHealth * Mathf.Clamp(share * n, 0.5f, 2f);
+                // Bigger chunks take more, within chunkHealthClamp of the wall's chunkHealth.
+                float maxHp = baseHealth * Mathf.Clamp(share * n, hpMin, hpMax);
                 var chunk = new DestructibleChunk(this, chunks.Count, go.transform, col, r,
                                                   Mathf.Max(5f, volumeScratch[k] * density), maxHp);
                 chunk.Health = maxHp * left;
@@ -919,7 +943,11 @@ namespace Movers
             Tint(c.Renderer, s == DestructionState.Fractured ? FracturedTint : s == DestructionState.Damaged ? DamagedTint : 1f);
         }
 
-        public void NetState(DestructionState s) { State = s; }
+        public void NetState(DestructionState s)
+        {
+            State = s;
+            if (!IsFractured) TintBody();
+        }
 
         // The join snapshot of a fractured wall: its chunks, their looks, which are gone (hidden,
         // no debris) and which frames dropped. Chunks past the 16th are left as they are.
@@ -1017,6 +1045,7 @@ namespace Movers
             if (bodyCollider != null) bodyCollider.enabled = true;
             health = MaxHealth;
             State = DestructionState.Intact;
+            TintBody();
             GraphNode = -1;
             LastHit = default;
             LastHitTime = -1f;
