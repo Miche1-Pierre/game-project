@@ -123,6 +123,9 @@ namespace Movers
             }
             if (current == null || current.seated || p2.IsDriving || p2.Controller == null) return false;
             if (SeatOlder(current.seatEpoch, TruckSync.SeatEpoch)) return false;
+            // Arrested (ADR-013): the body stays where the host caught it. The client is muted
+            // too, but a pose already on its way must not move it on this screen.
+            if (Session.IsArrested(p2.index)) return false;
 
             NetPose pose = current.pose;
             if (queue.Count > 0) pose = Lerp(current.pose, queue[0].pose, Mathf.InverseLerp(current.clientTime, queue[0].clientTime, play));

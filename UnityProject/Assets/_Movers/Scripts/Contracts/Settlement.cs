@@ -21,6 +21,8 @@ namespace Movers
         public IReadOnlyList<Line> Lines => lines;
         public int Total { get; private set; }
         public bool Completed { get; private set; }
+        // Completed through the exit with the police after the crew (EscapeMission), not delivered.
+        public bool Escaped { get; private set; }
         public FailReason Failure { get; private set; }
 
         void Add(string label, string detail, int amount)
@@ -127,6 +129,103 @@ namespace Movers
             return total;
         }
 
+        // Got away from the police (DEV2 8.6). The contract is void; what the truck carries, and
+        // what the members aboard carry of hers, is sold at escapeCargoPayFraction of what a
+        // delivery would pay for it. What she saw taken is confiscated (no fine: the police have
+        // it). The bills stay: the list objects destroyed, the break-in. Each arrested member,
+        // and each one left behind, is fined. So for the same load a clean delivery always pays
+        // about twice as much: calling the police is never the plan.
+        // aboard: bit i, crew member i was aboard at the exit. arrested: how many are fined.
+        public static Settlement ForEscape(ContractTracker tracker, TheftLedger ledger, bool brokeIn,
+                                           string breakInWhat, int aboard, int arrested, GameLoopNumbers n)
+        {
+            var s = new Settlement { Completed = true, Escaped = true, Failure = FailReason.None };
+            var sold = new Names(); var destroyed = new Names(); var seen = new Names();
+            int sale = 0, destroyedBill = 0;
+
+            if (tracker != null)
+            {
+                var list = tracker.Required;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var m = list[i];
+                    ItemCondition c = tracker.ConditionOf(m);
+                    if (c == ItemCondition.Destroyed)
+                    {
+                        destroyedBill -= ListPay(m, c, n);
+                        destroyed.Add(m);
+                        continue;
+                    }
+                    if (!InTruck(tracker.LocationOf(m))) continue;
+                    sale += ListPay(m, c, n);
+                    sold.Add(m);
+                }
+            }
+            if (ledger != null)
+            {
+                var entries = ledger.Entries;
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    var en = entries[i];
+                    if (en.witnessed) { seen.Add(en.item); continue; }
+                    if (!Escapes(en, aboard)) continue;
+                    sale += TheftPay(en, n);
+                    sold.Add(en.item);
+                }
+            }
+
+            s.Add("You got away: the contract is void", "", 0);
+            s.Add("Sold from the truck: " + sold.Count, sold.Text, EscapeShare(sale, n));
+            if (seen.Count > 0) s.Add("Confiscated: " + seen.Count + " she saw you take", seen.Text, 0);
+            if (destroyed.Count > 0) s.Add("Billed: " + destroyed.Count + " on the list destroyed", destroyed.Text, -destroyedBill);
+            if (brokeIn) s.Add("Break-in (" + (string.IsNullOrEmpty(breakInWhat) ? "damage" : breakInWhat) + ")", "", -n.breakInCost);
+            if (arrested > 0) s.Add("Fine: " + arrested + " arrested", "", -n.finePerArrest * arrested);
+            return s;
+        }
+
+        // The HUD's running "Money" during the flee: what ForEscape would pay if the truck reached
+        // the exit now with every free member aboard. Same rules, no allocation.
+        public static int ProjectedEscape(ContractTracker tracker, TheftLedger ledger, bool brokeIn, GameLoopNumbers n)
+        {
+            int sale = 0, bills = 0;
+            if (tracker != null)
+            {
+                var list = tracker.Required;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var m = list[i];
+                    ItemCondition c = tracker.ConditionOf(m);
+                    if (c == ItemCondition.Destroyed) bills += ListPay(m, c, n);
+                    else if (InTruck(tracker.LocationOf(m))) sale += ListPay(m, c, n);
+                }
+            }
+            if (ledger != null)
+            {
+                int free = ~Session.ArrestedMask;
+                var entries = ledger.Entries;
+                for (int i = 0; i < entries.Count; i++)
+                    if (!entries[i].witnessed && Escapes(entries[i], free)) sale += TheftPay(entries[i], n);
+            }
+            int total = EscapeShare(sale, n) + bills;
+            if (brokeIn) total -= n.breakInCost;
+            int arrested = 0;
+            for (int i = 0; i < 8; i++) if (Session.IsArrested(i)) arrested++;
+            return total - n.finePerArrest * arrested;
+        }
+
+        static bool InTruck(ItemLocation l) => l == ItemLocation.Loaded || l == ItemLocation.Delivered;
+
+        // One thing of hers leaves with the escape: in the truck, or on a member aboard.
+        static bool Escapes(TheftEntry en, int aboard)
+        {
+            if (en == null || en.item == null) return false;
+            if (en.route == TheftRoute.Truck) return true;
+            int carrier = TheftLedger.CarrierOf(en.item);
+            return carrier >= 0 && carrier < 31 && (aboard & (1 << carrier)) != 0;
+        }
+
+        static int EscapeShare(int sale, GameLoopNumbers n) => Mathf.RoundToInt(sale * n.escapeCargoPayFraction);
+
         // ---- the rules, in one place ----
 
         // One object on the list: its value delivered intact, a share of it damaged, a bill
@@ -161,12 +260,25 @@ namespace Movers
         }
 
         // Failed: the contract is void and nothing is paid. The lines say what was lost.
-        public static Settlement ForFailure(FailReason reason, TheftLedger ledger)
+        public static Settlement ForFailure(FailReason reason, TheftLedger ledger) => ForFailure(reason, ledger, false);
+
+        // surrounded: an Intercepted run ended by the flee timer (the house surrounded), not by a
+        // car stopping the truck.
+        public static Settlement ForFailure(FailReason reason, TheftLedger ledger, bool surrounded)
         {
             var s = new Settlement { Completed = false, Failure = reason };
-            string why = reason == FailReason.TimeUp ? "Time is up: the contract is void"
-                       : reason == FailReason.PoliceCalled ? "The police came: the contract is void"
-                       : "The contract is void";
+            string why;
+            switch (reason)
+            {
+                case FailReason.TimeUp: why = "Time is up: the contract is void"; break;
+                case FailReason.PoliceCalled: why = "The police came: the contract is void"; break;
+                case FailReason.Intercepted:
+                    why = surrounded ? "The police surrounded the house: the contract is void"
+                                     : "The police stopped the truck: the contract is void";
+                    break;
+                case FailReason.CrewArrested: why = "Everyone was arrested: the contract is void"; break;
+                default: why = "The contract is void"; break;
+            }
             s.Add(why, "", 0);
             if (ledger != null && ledger.Entries.Count > 0)
             {
@@ -179,9 +291,12 @@ namespace Movers
 
         // Online client (NETCODE_SLICE 11.7): the host's lines, verbatim (SettlementText parses
         // the English strings). The total is their sum, as on the host.
-        public static Settlement FromReplica(bool completed, FailReason failure, IReadOnlyList<Line> lines)
+        public static Settlement FromReplica(bool completed, FailReason failure, IReadOnlyList<Line> lines) =>
+            FromReplica(completed, false, failure, lines);
+
+        public static Settlement FromReplica(bool completed, bool escaped, FailReason failure, IReadOnlyList<Line> lines)
         {
-            var s = new Settlement { Completed = completed, Failure = failure };
+            var s = new Settlement { Completed = completed, Escaped = escaped, Failure = failure };
             if (lines != null)
                 for (int i = 0; i < lines.Count; i++) s.Add(lines[i].label, lines[i].detail, lines[i].amount);
             return s;

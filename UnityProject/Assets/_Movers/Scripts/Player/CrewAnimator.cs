@@ -50,6 +50,10 @@ namespace Movers
     // what the player really does. The arms are FirstPersonHands' business, after this.
     // The body always animates (AlwaysAnimate): your own forearms are drawn on its bones even
     // when nobody sees the body itself.
+    //
+    // Arrested by the police (Session.ArrestedMask, both machines): the body falls with the
+    // knocked-down clip and stays down for the rest of the run, pinned near the clip's end so it
+    // never gets up.
     [DisallowMultipleComponent]
     public sealed class CrewAnimator : MonoBehaviour
     {
@@ -71,6 +75,8 @@ namespace Movers
         [Tooltip("Shove speed (m/s) from which the body is thrown off its feet, as KnockdownTumble's view.")]
         public float knockDownSpeed = 5.5f;
         public float uprightSeconds = 0.3f;   // the body turning back to the player's heading after getting up
+        [Tooltip("Arrested: the share of Crew_KnockedDown the body is held at (lying down, before it would get up).")]
+        [Range(0.5f, 0.98f)] public float arrestHoldTime = 0.92f;
 
         [Header("Gait")]
         // The ground speeds the clips were authored at (author_clips.py: Crew_Run 3.71 m/s,
@@ -113,6 +119,8 @@ namespace Movers
         static readonly int WaveId = Animator.StringToHash("Wave");
         static readonly int KnockedDownId = Animator.StringToHash("KnockedDown");
         static readonly int EmptyState = Animator.StringToHash("Empty");
+        static readonly int KnockedDownState = Animator.StringToHash("KnockedDown");
+        static readonly int GetUpState = Animator.StringToHash("GetUp");
         static readonly int DownTag = Animator.StringToHash("Down");
 
         // Which parameters the bound controller has, one bit each.
@@ -125,7 +133,8 @@ namespace Movers
         HeldPose pose;
         CrewEquip equip;
         RuntimeAnimatorController bound;
-        bool hasSpeed, hasCrouch;
+        bool hasSpeed, hasCrouch, hasDownState;
+        bool arrestPosed;
         int has;
         int carryLayer = -1, actionsLayer = -1;
         float carryWeight, actionsWeight;
@@ -276,7 +285,16 @@ namespace Movers
             airWeight = Mathf.MoveTowards(airWeight, airborne ? 1f : 0f, airSeconds > 0.001f ? dt / airSeconds : 1f);
 
             DriveHands(dt, driving);
+            bool arrested = member != null && Session.IsArrested(member.index);
+            if (arrested && !arrestPosed)
+            {
+                // Down once, backwards from where they stood (no blast to be thrown away from).
+                wantKnock = true;
+                knockCentre = transform.position;
+            }
+            arrestPosed = arrested;
             FireTriggers(driving);
+            if (arrested) HoldArrestPose();
             HoldBodyWhileDown(dt);
             // Paused (timeScale 0) the Animator does not rewrite the pose: posing it again would
             // pile the crouch up frame after frame.
@@ -306,6 +324,15 @@ namespace Movers
         }
 
         static bool Busy(AnimatorStateInfo s) => s.shortNameHash != EmptyState;
+
+        // Lying down near the end of Crew_KnockedDown, never on to Crew_GetUp.
+        void HoldArrestPose()
+        {
+            if (!hasDownState) return;
+            var s = animator.GetCurrentAnimatorStateInfo(0);
+            if (s.shortNameHash == GetUpState || (s.shortNameHash == KnockedDownState && s.normalizedTime >= arrestHoldTime))
+                animator.Play(KnockedDownState, 0, arrestHoldTime);
+        }
 
         // ---- after the Animator: the tuck and the crouch ----
 
@@ -483,7 +510,7 @@ namespace Movers
         void Bind()
         {
             bound = animator.runtimeAnimatorController;
-            hasSpeed = hasCrouch = false;
+            hasSpeed = hasCrouch = hasDownState = false;
             has = 0;
             carryLayer = actionsLayer = -1;
             if (bound == null) return;
@@ -507,6 +534,7 @@ namespace Movers
                 if (h == MoveScaleId && type == AnimatorControllerParameterType.Float) has |= PMoveScale;
                 if (h == GroundedId && type == AnimatorControllerParameterType.Bool) has |= PGrounded;
             }
+            hasDownState = animator.HasState(0, KnockedDownState);
             carryLayer = animator.GetLayerIndex("Carry");
             carryWeight = carryLayer >= 0 ? animator.GetLayerWeight(carryLayer) : 0f;
             actionsLayer = animator.GetLayerIndex("Actions");

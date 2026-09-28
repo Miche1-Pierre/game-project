@@ -248,6 +248,17 @@ namespace Movers
             return false;
         }
 
+        // The crew member an item rides on now (in a pocket, worn), or -1. The transform walk
+        // also works for a pocketed item, which is switched off. The escape pays for what the
+        // members aboard carry (Settlement.ForEscape).
+        public static int CarrierOf(MovableObject m)
+        {
+            if (m == null) return -1;
+            for (Transform t = m.transform; t != null; t = t.parent)
+                if (t.TryGetComponent(out CrewMember member)) return member.index;
+            return -1;
+        }
+
         static int Thief(int instigator, MovableObject item)
         {
             if (Actors.IsPlayer(instigator)) return instigator;
@@ -260,8 +271,8 @@ namespace Movers
         {
             if (route != TheftRoute.Truck)
             {
-                for (Transform t = m.transform; t != null; t = t.parent)
-                    if (t.TryGetComponent(out CrewMember member)) return member.index;
+                int carrier = CarrierOf(m);
+                if (carrier >= 0) return carrier;
             }
             return Thief(Actors.World, m);
         }

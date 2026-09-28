@@ -20,7 +20,9 @@ namespace Movers
         const float TurnEpsilon = 0.5f;         // degrees
         const float AwakeResend = 1f;           // s, while the rigidbody is awake
         const float SettleAfter = 0.25f;        // s without change
-        const float TeleportJump = 3f;          // m between two samples
+        const float TeleportJump = 3f;          // m between two samples, at rest...
+        const float TeleportSpeedWindow = 0.15f; // ...plus the body's speed times this (s): a police
+                                                 // car at 100 km/h covers 1.4 m a sample, 4.2 m if one is skipped
         const float AnchoredDelay = 0.05f;
         const float MaxExtrapolation = 0.1f;
         const float LeaveBlend = 0.15f;
@@ -158,7 +160,8 @@ namespace Movers
                                Quaternion.Angle(rot, b.sentRot) > TurnEpsilon;
                 bool asleep = b.rb != null && b.rb.IsSleeping();
                 bool awake = b.rb != null && !b.rb.isKinematic && !asleep;
-                bool teleport = b.snap || (b.hasSent && (pos - b.sentPos).sqrMagnitude > TeleportJump * TeleportJump);
+                float jump = TeleportJump + (b.rb != null && !b.rb.isKinematic ? b.rb.linearVelocity.magnitude * TeleportSpeedWindow : 0f);
+                bool teleport = b.snap || (b.hasSent && (pos - b.sentPos).sqrMagnitude > jump * jump);
 
                 if (changed || teleport || b.wasAnchored || (awake && now - b.sentAt >= AwakeResend))
                 {
