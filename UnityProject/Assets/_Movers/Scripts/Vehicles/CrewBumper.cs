@@ -18,9 +18,11 @@ namespace Movers
     // - someone standing on the truck (in the bed, on the roof): he is not in its way, and
     //   whether the crew rides in the back is an open question (TRUCK report);
     // - the driver;
-    // - someone pinned against a wall: he cannot move, so the truck stops against him;
-    // - the grandmother: she is a CharacterController too, but she is GRANDMA's. She still stops
-    //   the truck like a post (TRUCK report, request to GRANDMA).
+    // - someone pinned against a wall: he cannot move, so the truck stops against him.
+    //
+    // The grandmother (DEV 2, 6.4) is looked ahead the same way, but her body is GRANDMA's: she
+    // gets GrandmaMover.Knock with the truck's closing speed, staggers aside, and perceives being
+    // run over (at runOverMinSpeed and above) or bumped, blamed on the driver.
     //
     // Plain data plus one method, owned by TruckVehicle and called from its FixedUpdate.
     [System.Serializable]
@@ -45,7 +47,14 @@ namespace Movers
         [System.NonSerialized] Collider[] hullColliders;
         [System.NonSerialized] bool remoteWindowOpen;
 
-        public void Tick(Rigidbody body, Bounds hull)
+        // Her knocks: one per GrandmaKnockSeconds, whatever the physics rate.
+        const float GrandmaKnockSeconds = 0.3f;
+        const float GrandmaLookupSeconds = 2f;
+        [System.NonSerialized] GrandmaMover[] grandmas;
+        [System.NonSerialized] float nextGrandmaLookup, grandmaKnockedUntil;
+
+        // driver: the actor to blame for knocking the grandmother (TruckVehicle.DriverActor).
+        public void Tick(Rigidbody body, Bounds hull, int driver = Actors.World)
         {
             if (body == null || hull.size == Vector3.zero) return;
             if (remoteWindowOpen) CloseRemoteWindows();
@@ -72,6 +81,32 @@ namespace Movers
                     shovedFrame[m.index] = Time.frameCount;
                     if (remote) OpenRemoteWindow(body, m.index, capsule);
                 }
+            }
+            KnockGrandma(body, hull, driver);
+        }
+
+        void KnockGrandma(Rigidbody body, Bounds hull, int driver)
+        {
+            float now = Time.time;
+            if (now < grandmaKnockedUntil) return;
+            if ((grandmas == null || grandmas.Length == 0 || grandmas[0] == null) && now >= nextGrandmaLookup)
+            {
+                nextGrandmaLookup = now + GrandmaLookupSeconds;
+                grandmas = Object.FindObjectsByType<GrandmaMover>(FindObjectsSortMode.None);
+            }
+            if (grandmas == null) return;
+            for (int i = 0; i < grandmas.Length; i++)
+            {
+                var g = grandmas[i];
+                if (g == null || !g.isActiveAndEnabled) continue;
+                // Seated, her capsule is off and she is inside the house: out of the truck's reach.
+                if (!g.TryGetComponent(out CharacterController capsule) || !capsule.enabled) continue;
+                if (!Approaching(body, hull, capsule, out Vector3 away, out Vector3 side, out float closing)) continue;
+                Vector3 kick = away + side * sideKick;
+                kick.y = 0f;
+                // The magnitude is the closing speed: GRANDMA reads it for "run over" or "bumped".
+                g.Knock(kick.normalized * closing, driver);
+                grandmaKnockedUntil = now + GrandmaKnockSeconds;
             }
         }
 
@@ -125,6 +160,34 @@ namespace Movers
 
         bool Shove(Rigidbody body, Bounds hull, PlayerController controller, CharacterController capsule, bool remote)
         {
+            if (!Approaching(body, hull, capsule, out Vector3 away, out Vector3 side, out float closing)) return false;
+
+            // Top up to the speed he needs, whatever he is already doing: AddImpulse adds up.
+            // A puppet's capsule never moves by itself: its velocity is the one its client reports.
+            Vector3 current = remote ? controller.Velocity : capsule.velocity;
+            Vector3 shove = Vector3.zero;
+            float need = closing + margin - Vector3.Dot(current, away);
+            if (need > 0f) shove += away * need;
+
+            // Hit by the front or the back: out of the lane.
+            if (side != Vector3.zero && sideKick > 0f)
+            {
+                float sideNeed = closing * sideKick - Vector3.Dot(current, side);
+                if (sideNeed > 0f) shove += side * sideNeed;
+            }
+
+            if (shove == Vector3.zero) return false;
+            controller.AddImpulse(shove);
+            return true;
+        }
+
+        // Whether the hull is about to reach this capsule: the flat direction away from it, the
+        // truck's closing speed, and a sideways direction when the nearest point is on an end
+        // face (hit by the front or the back), else zero.
+        bool Approaching(Rigidbody body, Bounds hull, CharacterController capsule, out Vector3 away, out Vector3 side, out float closing)
+        {
+            away = side = Vector3.zero;
+            closing = 0f;
             Vector3 centre = capsule.bounds.center;
             float radius = capsule.radius;
             float halfHeight = capsule.height * 0.5f;
@@ -137,36 +200,23 @@ namespace Movers
             if (x == local.x && z == local.z) return false;     // standing on the truck, or already inside it
 
             Vector3 near = body.position + rotation * new Vector3(x, Mathf.Clamp(local.y, hull.min.y, hull.max.y), z);
-            Vector3 away = centre - near;
+            away = centre - near;
             away.y = 0f;
             float distance = away.magnitude;
             if (distance < 1e-4f) return false;
             away /= distance;
 
             Vector3 hullVelocity = body.GetPointVelocity(near);
-            float closing = Vector3.Dot(hullVelocity, away);
+            closing = Vector3.Dot(hullVelocity, away);
             if (closing < minClosingSpeed) return false;
             if (distance - radius > closing * lookAhead + 0.05f) return false;   // not yet
 
-            // Top up to the speed he needs, whatever he is already doing: AddImpulse adds up.
-            // A puppet's capsule never moves by itself: its velocity is the one its client reports.
-            Vector3 current = remote ? controller.Velocity : capsule.velocity;
-            Vector3 shove = Vector3.zero;
-            float need = closing + margin - Vector3.Dot(current, away);
-            if (need > 0f) shove += away * need;
-
-            // Hit by the front or the back (the nearest point is on an end face): out of the lane.
-            if (x == local.x && sideKick > 0f)
+            if (x == local.x)
             {
-                Vector3 side = rotation * (local.x >= hull.center.x ? Vector3.right : Vector3.left);
+                side = rotation * (local.x >= hull.center.x ? Vector3.right : Vector3.left);
                 side.y = 0f;
                 side.Normalize();
-                float sideNeed = closing * sideKick - Vector3.Dot(current, side);
-                if (sideNeed > 0f) shove += side * sideNeed;
             }
-
-            if (shove == Vector3.zero) return false;
-            controller.AddImpulse(shove);
             return true;
         }
     }

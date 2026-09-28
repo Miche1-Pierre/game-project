@@ -400,7 +400,7 @@ namespace Movers
             AntiRoll(frontLeft, frontRight);
             AntiRoll(rearLeft, rearRight);
             ram.Tick(this, rb, Hull, t, Time.fixedDeltaTime);
-            crewBumper.Tick(rb, Hull);
+            crewBumper.Tick(rb, Hull, DriverActor);
 
             // Parked with nobody at the wheel: the ramp comes back down for the crew.
             if (Driver == null && ramp != null && ramp.IsStowed && rb.linearVelocity.sqrMagnitude < 0.09f)
