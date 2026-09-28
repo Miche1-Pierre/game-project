@@ -17,7 +17,7 @@ namespace Movers
     // - The clock: whether the house is emptying as fast as the time runs out.
     //
     // Theft: she witnesses it when she sees a player pocket or load one of her things that is
-    // not on the list, or carry one in her sight for more than carryWitnessSeconds.
+    // not on the list, or carry or wear one in her sight for more than carryWitnessSeconds.
     [DisallowMultipleComponent]
     public sealed class GrandmaSenses : MonoBehaviour
     {
@@ -58,6 +58,10 @@ namespace Movers
         readonly float[] carryCharge = new float[MaxPlayers];
         readonly float[] pushTime = new float[MaxPlayers];
         readonly CharacterController[] crewBodies = new CharacterController[MaxPlayers];
+        // What each crew member wears on (CrewEquip), looked up once per member.
+        readonly CrewEquip[] crewEquip = new CrewEquip[MaxPlayers];
+        readonly CrewMember[] crewEquipOf = new CrewMember[MaxPlayers];
+        static readonly EquipSlot[] Slots = (EquipSlot[])Enum.GetValues(typeof(EquipSlot));
         readonly HashSet<MovableObject> witnessed = new HashSet<MovableObject>();
         readonly List<MovableObject> required = new List<MovableObject>();
 
@@ -143,8 +147,10 @@ namespace Movers
                 bool sees = m != null && m.isActiveAndEnabled && CanSee(m);
                 seen[p] = sees;
 
+                // Carried, or worn: her dressing gown on a mover's back is as plain as in his arms.
                 MovableObject held = sees ? m.Held : null;
-                if (held == null || !held.IsTheftTarget)
+                MovableObject hers = held != null && held.IsTheftTarget ? held : sees ? WornTheftTarget(m) : null;
+                if (hers == null)
                 {
                     carrySeen[p] = 0f;
                     carryCharge[p] = 0f;
@@ -155,15 +161,43 @@ namespace Movers
                 carryCharge[p] += elapsed;
                 float witnessAfter = costs != null ? costs.carryWitnessSeconds : 2f;
                 float chargeEvery = costs != null ? Mathf.Max(0.5f, costs.carryingInterval) : 5f;
-                if (carrySeen[p] >= witnessAfter && !witnessed.Contains(held))
-                    Witness(held, p, held.transform.position);
+                if (carrySeen[p] >= witnessAfter && !witnessed.Contains(hers))
+                    Witness(hers, p, hers.transform.position);
                 if (carryCharge[p] >= chargeEvery)
                 {
                     carryCharge[p] -= chargeEvery;
-                    var s = new Stimulus(StimulusKind.CarryingSeen, m.Position, p) { seen = true, item = held };
+                    var s = new Stimulus(StimulusKind.CarryingSeen, m.Position, p) { seen = true, item = hers };
                     Emit(s);
                 }
             }
+        }
+
+        // One of her things (not on the list) the member wears, one she has not witnessed first.
+        MovableObject WornTheftTarget(CrewMember m)
+        {
+            CrewEquip body = EquipOf(m);
+            if (body == null) return null;
+            MovableObject found = null;
+            for (int i = 0; i < Slots.Length; i++)
+            {
+                EquipItem item = body.WornIn(Slots[i]);
+                if (item == null || !item.TryGetComponent(out MovableObject mo) || !mo.IsTheftTarget) continue;
+                if (!witnessed.Contains(mo)) return mo;
+                if (found == null) found = mo;
+            }
+            return found;
+        }
+
+        CrewEquip EquipOf(CrewMember m)
+        {
+            int i = m.index;
+            if (i < 0 || i >= MaxPlayers) return m.GetComponentInChildren<CrewEquip>(true);
+            if (crewEquipOf[i] != m)
+            {
+                crewEquipOf[i] = m;
+                crewEquip[i] = m.GetComponentInChildren<CrewEquip>(true);
+            }
+            return crewEquip[i];
         }
 
         // Cone, range, then a clear line to the eyes or the chest.
