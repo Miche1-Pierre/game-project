@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edab04e81d934eccaf6d44d534fe540f, type: 3}
+  m_Name: TruckTuning
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.TruckTuning
+  maxSpeedKmh: 90
+  governorBand: 0.05
+  motorTorque: 5200
+  enginePowerKw: 260
+  maxReverseKmh: 18
+  reverseTorque: 3500
+  linearDamping: 0.01
+  aeroDrag: 5
+  rollingResistance: 0.012
+  brakeDecel: 7.5
+  brakeBiasFront: 0.6
+  absSlip: 0.4
+  handbrakeTorque: 6000
+  handbrakeSidewaysGrip: 0.7
+  coastBrakeTorque: 300
+  holdBrakeTorque: 3000
+  maxLateralAccel: 6.5
+  maxSteerSlow: 35
+  maxSteerFast: 2.5
+  steerRate: 120
+  forwardGrip: 1.5
+  sidewaysGrip: 1.3
+  substepSpeedThreshold: 5
+  substepsBelow: 12
+  substepsAbove: 20
+  autoRightUpDot: 0.3
+  autoRightSeconds: 2
+  cargoCcdSpeed: 12
+  cargoAboardMaxSpeed: 2
+  runOverMinSpeed: 3
+  ramMinSpeed: 3
+  ramSweepExtra: 0.3
+  ramFrontSlab: 0.3
+  ramJoulesPerHp: 80
+  ramCooldown: 0.3
+  flingMassKg: 80
+  flingUpShare: 0.3
+  flingLateralShare: 0.35
+  flingMaxSpeed: 35
+  flingHandledSeconds: 1
+  audioTopSpeed: 25
+  gearBands: 4
+  cameraExtraDistance: 2
+  cameraExtraFov: 8
+  crashShakeEnergy: 50000

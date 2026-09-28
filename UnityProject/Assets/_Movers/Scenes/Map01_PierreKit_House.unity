@@ -53087,6 +53087,7 @@ MonoBehaviour:
     lookAhead: 0.1
     minClosingSpeed: 0.3
     sideKick: 0.5
+  tuning: {fileID: 11400000, guid: c33083fbb87a4ac99466aaf6294e90d8, type: 2}
 --- !u!208 &1554164724
 NavMeshObstacle:
   m_ObjectHideFlags: 0
