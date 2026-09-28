@@ -4,7 +4,12 @@ using UnityEngine;
 
 namespace Movers
 {
-    public enum ClockKind { None, KeysFirst, Normal, Low, Police }
+    // Flee: the escape clock of the police flee (ESCAPE 1:30). Under FleeRedBelow seconds the
+    // model reports Low instead, which the clock tag already draws red and pulsing.
+    public enum ClockKind { None, KeysFirst, Normal, Low, Police, Flee }
+    // Police is the red, pulsing sign of every urgent line (PoliceText): the police countdown,
+    // the escape, BLOCKED and the grandmother's last warning. One kind, so MessagesView draws
+    // them all and a change of words never rebuilds the sign.
     public enum BannerKind { None, Intro, Police, Ready }
     public enum CardKind { None, Intro, End }
 
@@ -41,6 +46,7 @@ namespace Movers
         // ---- the grandmother ----
         public readonly State<int> Mood = new State<int>(-1);     // MoodTier, -1 without a grandmother
         public float Patience01 = 1f;
+        public readonly State<bool> LastWarning = new State<bool>(false);   // her one warning is running
         public readonly State<string> Speech = new State<string>(null);
         public GrandmaMood GrandmaMood { get; private set; }
         public GrandmaSpeech GrandmaSpeech { get; private set; }
@@ -63,10 +69,11 @@ namespace Movers
         public DeliverPoint Deliver => Contract != null ? Contract.DeliverPoint : null;
 
         const float ListInterval = 0.25f;
+        const float FleeRedBelow = 20f;   // the escape clock turns red: the house is about to be surrounded
         float nextList, nextFind;
         int[] signature = Array.Empty<int>();
         int shownMoney = int.MinValue, shownLoaded = -1, shownTotal = -1, shownUnseen = -1, shownSeen = -1;
-        int shownSecond = -1, shownPolice = -1, shownCountdown = -1, shownBanner = -1;
+        int shownSecond = -1, shownPolice = -1, shownFlee = -1, shownCountdown = -1, shownBanner = -1;
         bool contractSearched;
 
         public void Update()
@@ -92,7 +99,7 @@ namespace Movers
         {
             shownMoney = int.MinValue;
             shownLoaded = shownTotal = shownUnseen = shownSeen = -1;
-            shownSecond = shownPolice = shownCountdown = shownBanner = -1;
+            shownSecond = shownPolice = shownFlee = shownCountdown = shownBanner = -1;
             nextList = 0f;
             ContractVersion.Value++;
         }
@@ -124,27 +131,46 @@ namespace Movers
             if (GrandmaSpeech != null) GrandmaSpeech.french = Loc.French;
         }
 
+        // The clock slot: the job's clock, then once she called the police the countdown to their
+        // arrival (POLICE 01:12), then once they are here the escape (ESCAPE 01:30, red under
+        // 20 s). The mission clock itself stops at the call (GameSession), so it is not shown then.
         void UpdateClock(GameSession session)
         {
+            float flee = session != null && Session.Phase == MissionPhase.PoliceHere ? session.FleeLeft : -1f;
             ClockKind kind;
             if (!HasContract && Contract == null) kind = ClockKind.None;
             else if (Session.State == SessionState.Intro) kind = ClockKind.KeysFirst;
+            else if (flee >= 0f) kind = flee < FleeRedBelow ? ClockKind.Low : ClockKind.Flee;
             else if (session != null && session.PoliceCalled) kind = ClockKind.Police;
             else if (Session.TimeLimit <= 0f) kind = ClockKind.None;
             else kind = Session.TimeLeft <= 60f ? ClockKind.Low : ClockKind.Normal;
 
-            if (kind == ClockKind.Police)
+            // Each source keeps its own "second shown"; the others forget theirs, so coming back
+            // to one always writes its words again.
+            if (flee >= 0f && kind != ClockKind.KeysFirst && kind != ClockKind.None)
             {
+                shownPolice = shownSecond = -1;
+                int s = Mathf.CeilToInt(flee);
+                if (s != shownFlee)
+                {
+                    shownFlee = s;
+                    Clock.Value = Loc.F("flee.short", Loc.Clock(flee));
+                }
+            }
+            else if (kind == ClockKind.Police)
+            {
+                shownFlee = shownSecond = -1;
                 int s = Mathf.CeilToInt(session.PoliceIn);
                 if (s != shownPolice)
                 {
                     shownPolice = s;
-                    Clock.Value = Loc.F("police.short", s);
+                    Clock.Value = Loc.F("police.short", Loc.Clock(session.PoliceIn));
                 }
             }
             else if (kind == ClockKind.KeysFirst) Clock.Value = Loc.T("contract.keysFirst");
             else if (kind != ClockKind.None)
             {
+                shownFlee = shownPolice = -1;
                 int s = Mathf.CeilToInt(Session.TimeLeft);
                 if (s != shownSecond)
                 {
@@ -228,31 +254,60 @@ namespace Movers
             {
                 Mood.Value = -1;
                 Speech.Value = null;
+                LastWarning.Value = false;
                 return;
             }
             Patience01 = Mathf.Clamp01(mood.Patience / 100f);
             Mood.Value = (int)mood.Tier;
+            // GrandmaSync replicates the warning to the client (GrandmaMood.ApplyReplica).
+            LastWarning.Value = mood.InLastWarning && !Session.IsOver;
             var speech = GrandmaSpeech;
             Speech.Value = speech != null && speech.IsSpeaking ? speech.Text : null;
         }
 
+        // The urgent lines, most pressing first: the police about to stop the truck (BLOCKED! 3),
+        // the escape, the countdown to their arrival, the grandmother's last warning. Every
+        // failure of the flee is announced here or on the clock before it happens.
         void UpdateBanner(GameSession session)
         {
             BannerKind b = BannerKind.None;
-            if (session != null && session.PoliceCalled && !Session.IsOver)
+            var mood = GrandmaMood;
+            if (session != null && !Session.IsOver && (session.PoliceCalled || session.InterceptLeft >= 0f))
             {
                 b = BannerKind.Police;
-                int s = Mathf.CeilToInt(session.PoliceIn);
-                if (s != shownBanner)
-                {
-                    shownBanner = s;
-                    PoliceText.Value = Loc.F("banner.police", s);
-                }
+                float intercept = session.InterceptLeft;
+                if (intercept >= 0f) Urgent(UrgentBlocked, Mathf.Max(1, Mathf.CeilToInt(intercept)));
+                else if (Session.Phase == MissionPhase.PoliceHere) Urgent(UrgentFlee, 0);
+                else if (Session.Phase == MissionPhase.PoliceIncoming) Urgent(UrgentIncoming, Mathf.CeilToInt(session.PoliceIn));
+                else Urgent(UrgentPolice, Mathf.CeilToInt(session.PoliceIn));   // no escape in this scene: the run ends
+            }
+            else if (!Session.IsOver && mood != null && mood.isActiveAndEnabled && mood.InLastWarning)
+            {
+                b = BannerKind.Police;
+                Urgent(UrgentWarning, Mathf.CeilToInt(mood.WarningLeft));
             }
             else if (Session.State == SessionState.Intro && session != null && session.HasIntro && !session.IntroCardShowing)
                 b = BannerKind.Intro;
             else if (Deliver != null && Deliver.CanInteract) b = BannerKind.Ready;
             Banner.Value = (int)b;
+        }
+
+        const int UrgentPolice = 1, UrgentIncoming = 2, UrgentFlee = 3, UrgentBlocked = 4, UrgentWarning = 5;
+
+        // The words of the urgent sign, made again only when what it says or its second changes.
+        void Urgent(int what, int seconds)
+        {
+            int key = what * 100000 + Mathf.Clamp(seconds, 0, 99999);
+            if (key == shownBanner) return;
+            shownBanner = key;
+            switch (what)
+            {
+                case UrgentBlocked: PoliceText.Value = Loc.F("banner.blocked", seconds); break;
+                case UrgentFlee: PoliceText.Value = Loc.T("banner.flee"); break;
+                case UrgentIncoming: PoliceText.Value = Loc.F("banner.policeIncoming", Loc.Clock(seconds)); break;
+                case UrgentWarning: PoliceText.Value = Loc.F("banner.lastWarning", seconds); break;
+                default: PoliceText.Value = Loc.F("banner.police", seconds); break;
+            }
         }
 
         void UpdateCards(GameSession session)

@@ -6,7 +6,8 @@ namespace Movers
 {
     // The grandmother, top right: her face for her mood, her name and the mood word, and her
     // patience as a tape measure running from green to red. It shakes when her mood changes
-    // for the worse, so the one number the crew must watch catches the eye by itself. Unplaced:
+    // for the worse, so the one number the crew must watch catches the eye by itself. During
+    // her one last warning a red chip replaces the "Patience" caption. Unplaced:
     // it heads PlayerHudView's right column, above the key hints and the toasts.
     public static class GrandmaView
     {
@@ -21,9 +22,9 @@ namespace Movers
         };
 
         public static Widget Build(SharedHudModel m, PlayerHudModel p) =>
-            new ReactiveBuilder<int>(m.Mood, tier => tier < 0 ? UiKit.Empty : Meter((MoodTier)tier, p));
+            new ReactiveBuilder<int>(m.Mood, tier => tier < 0 ? UiKit.Empty : Meter((MoodTier)tier, m, p));
 
-        static Widget Meter(MoodTier tier, PlayerHudModel p)
+        static Widget Meter(MoodTier tier, SharedHudModel m, PlayerHudModel p)
         {
             var th = UiKit.Theme;
             var tx = th.Text;
@@ -36,12 +37,19 @@ namespace Movers
                     UiKit.Chip(MoodWord(tier), c),
                 }, 6f, MainAxisAlignment.Start, CrossAxisAlignment.Center),
                 UiKit.TapeBar(p.PatienceFill, c, Width - 124f),
-                UiKit.Label(Loc.T("grandma.patience"), tx.Caption, th.creamSoft, false),
+                new ReactiveBuilder<bool>(m.LastWarning, on => on ? WarningChip() : UiKit.Label(Loc.T("grandma.patience"), tx.Caption, th.creamSoft, false)),
             }, 4f, MainAxisAlignment.Start, CrossAxisAlignment.Stretch);
 
             Widget row = new Row(new[] { UiKit.Icon(UiTheme.MoodIcon(tier), 58f), new Expanded(text) },
                                  10f, MainAxisAlignment.Start, CrossAxisAlignment.Center);
             return new SizedBox(UiKit.Panel(row, th.Skins.WoodDark, 8f, Entrances[(int)tier]), Width);
+        }
+
+        static Widget WarningChip()
+        {
+            var th = UiKit.Theme;
+            return new Row(new[] { UiKit.With(UiMotion.PulseFast, UiKit.Chip(Loc.T("mood.lastWarning"), th.bad)) },
+                           0f, MainAxisAlignment.Start, CrossAxisAlignment.Center);
         }
 
         public static string MoodWord(MoodTier tier)
