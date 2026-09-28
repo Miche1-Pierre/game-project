@@ -57,6 +57,7 @@ namespace Movers
         const float NudgeSeconds = 2f;
         const float StunCoastDecel = 3f;
         const float BlockingMass = 40f;       // kg: a body lighter than this does not block the lane
+        const float LatePaceMargin = 1.1f;    // the pace to the house is aimed 10 % over the bare need (bends)
 
         Rigidbody body;
         Vector3 localCenter, localHalf;
@@ -259,12 +260,19 @@ namespace Movers
             if (targetTruck != null && targetTruck.isActiveAndEnabled) { PlanTruck(n, speed, out aim, out stopDistance, out holdYaw, out yaw); return; }
             if (targetMember != null && targetMember.isActiveAndEnabled) { PlanMember(n, speed, out aim, out stopDistance); return; }
 
-            // To the parking distance. Late for the arrival (a slow climb): chase speed.
+            // To the parking distance, at the pace that makes the arrival time: cruise when on
+            // time, faster (up to chase speed) when bends and climbs made it late, and chase
+            // speed once the police are due. The final stop is counted in the distance.
             float remaining = Mathf.Abs(parkS - progress);
             var s = GameSession.Current;
             float cruise = n.policeCruiseKmh / 3.6f;
-            bool late = s != null && s.PoliceIn > 0f && remaining > cruise * (s.PoliceIn + 1f);
-            if (!late) topSpeed = cruise;
+            if (s != null && s.PoliceIn > 0.5f)
+            {
+                float stopRun = cruise * cruise / (2f * Mathf.Max(0.1f, n.policeBrake));
+                float needed = (remaining + stopRun) / s.PoliceIn;
+                topSpeed = Mathf.Clamp(needed * LatePaceMargin, cruise, topSpeed);
+            }
+            else if (s == null) topSpeed = cruise;
             aim = OnRoute(parkS, parkLateral, speed, out stopDistance);
         }
 
