@@ -6,7 +6,8 @@ using UnityEngine;
 namespace Movers
 {
     // Short lines both players should read when something happens: a theft, a broken piece of
-    // the contract, the grandmother noticing, the keys. The same lines in every view, so a
+    // the contract, the grandmother noticing, the keys, the police flee (her last warning, the
+    // police arriving, an arrest, the truck stopped, the escape). The same lines in every view, so a
     // spectator reads the story from either half of the screen. Built when the event arrives
     // (a few per minute), never per frame; the views rebuild when Version moves.
     public sealed class ToastFeed
@@ -117,6 +118,8 @@ namespace Movers
                     Push(Loc.F("toast.contractDestroyed", NameOf(e), Loc.Money(e.value)), UiSprites.IconCross, t.bad);
                     break;
                 case WorldEventType.GrandmaNoticed:
+                    // Raised for every priced stimulus; one that cost her no patience says nothing.
+                    if (e.magnitude <= 0f) break;
                     if (Time.unscaledTime - lastNoticed < NoticedEvery) break;
                     lastNoticed = Time.unscaledTime;
                     Push(Loc.T("toast.noticed"), UiSprites.IconGrandmaAnnoyed, t.warn);
@@ -124,7 +127,32 @@ namespace Movers
                 case WorldEventType.GrandmaCalledPolice:
                     Push(Loc.T("toast.police"), UiSprites.IconGrandmaFurious, t.bad);
                     break;
+                case WorldEventType.GrandmaLastWarning:
+                    Push(Loc.T("toast.lastWarning"), UiSprites.IconGrandmaFurious, t.bad);
+                    break;
+                case WorldEventType.PoliceArrived:
+                    Push(Loc.T("toast.policeHere"), UiSprites.IconWarning, t.bad);
+                    break;
+                case WorldEventType.CrewArrested:
+                    Push(Loc.F("toast.arrested", Who(e.instigator)), UiSprites.IconCross, t.bad);
+                    break;
+                case WorldEventType.TruckIntercepted:
+                    Push(Loc.T(Surrounded(e) ? "toast.surrounded" : "toast.intercepted"), UiSprites.IconCross, t.bad);
+                    break;
+                case WorldEventType.EscapeReached:
+                    Push(Loc.T("toast.escaped"), UiSprites.IconTruck, t.good);
+                    break;
             }
+        }
+
+        // TruckIntercepted is the truck stopped or the house surrounded (the escape time ran
+        // out). Magnitude 1 says surrounded when the mission writes it; otherwise the flee clock
+        // at 0 with no interception warning on does.
+        public static bool Surrounded(in WorldEvent e)
+        {
+            if (e.magnitude >= 1f) return true;
+            var s = GameSession.Current;
+            return s != null && s.InterceptLeft < 0f && s.FleeLeft >= 0f && s.FleeLeft < 1f;
         }
 
         // "J2" in French, "P2" in English.
