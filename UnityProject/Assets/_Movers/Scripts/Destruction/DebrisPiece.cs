@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Movers
 {
@@ -18,12 +19,17 @@ namespace Movers
         internal Rigidbody rb;
         internal float born;
         internal float lifetime = 18f;
+        internal float expireAt = float.PositiveInfinity;   // may leave from here, once no crew camera sees it
+        internal float hardAt = float.PositiveInfinity;     // leaves from here, seen or not
         internal float sleepTime;
         internal float shrinkStart = -1f;
         internal float shrinkDuration = 1f;
+        internal bool awaitingRelease;        // shrunk and inactive, waiting for the frame's destroy budget
         internal Vector3 baseScale = Vector3.one;
         internal CollisionDetectionMode detectionMode = CollisionDetectionMode.Discrete;
         internal float size;                  // m, the extent of its box: small ones are culled first
+        internal Renderer rend;               // for the view test and the shadow rules; may be null
+        internal ShadowCastingMode shadowMode = ShadowCastingMode.On;   // what it cast when registered
         // Who broke it off, for what it crushes (see Actors).
         internal int instigator = Actors.World;
         internal BreakMaterial material = BreakMaterial.Plaster;
