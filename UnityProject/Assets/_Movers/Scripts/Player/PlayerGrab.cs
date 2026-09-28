@@ -58,10 +58,13 @@ namespace Movers
         // Left past the arms' reach (it lagged on a turn, or caught on a door frame), it is hauled
         // back this much harder, in m/s per metre over, so the hands stay on it.
         public float leashStrength = 12f;
-        // Pushed back toward you by this much (it met a wall, a door, the truck), it stops you
-        // walking on into it: your own capsule passes through what you carry, so nothing else would,
-        // and the eyes would end up inside it.
+        // Pushed back toward you by this much (it met a wall, a door, the truck), or its near face
+        // down to nearClearance from the eyes, it stops you walking on into it: your own
+        // capsule passes through what you carry, so nothing else would, and the eyes would end up
+        // inside it.
         public float jamDistance = 0.15f;
+        public float jamLookahead = 0.04f;   // seconds of your own pace counted ahead
+        public float jamSpeedLoss = 1f;      // m/s of forward speed a step must take off it to count as blocked
         // Caught on something (a door frame, the stair rail) and left this far past the arms'
         // reach for gripLossSeconds, you lose your grip, as a drag does (dragSlack), instead of
         // holding it metres away. A thing just grabbed from across the room is given time to come in.
@@ -151,6 +154,8 @@ namespace Movers
         // hands go on its holds (FirstPersonHands, CrewCarryIK).
         public bool HoldsInArms => held != null && !dragging && heldUsable == null;
         public CarryGrip.Style GripStyle => gripStyle;
+        // What is in the arms is pushed back at you and holds the walk (see jamDistance).
+        public bool IsJammed => jammed;
         public bool GripStyleKnown => gripStyleKnown;
 
         FirstPersonHands Hands
@@ -229,6 +234,7 @@ namespace Movers
         readonly List<Collider> heldColliders = new List<Collider>(8);
         readonly List<Collider> letGo = new List<Collider>(16);
         bool jammed;   // what is in the arms is pushed back at you: no walking on into it
+        Vector3 lastCarryVelocity;   // what the carry gave it last step, to tell a blocked thing
         float overSeconds;     // how long it has been past carrySlack
         bool reachedHands;     // it has been in the hands since it was taken
         float heldSince;
@@ -573,6 +579,7 @@ namespace Movers
                 overSeconds = 0f;
                 reachedHands = false;
                 heldSince = Time.time;
+                lastCarryVelocity = held.rb.linearVelocity;
             }
             // pick the object up as it lies, do not snap it to a pose
             heldLocalRotation = Quaternion.Inverse(PlayerYaw) * held.rb.rotation;
@@ -722,13 +729,25 @@ namespace Movers
             Vector3 toTarget = target - held.rb.worldCenterOfMass;
             if (inArms)
             {
-                // Pushed back, and not just lagging: a heavy thing trails you but keeps your pace,
-                // a blocked one stops. Once jammed, it stays so until it is nearly back in place.
+                // Blocked, not just lagging: the step lost it the forward speed the carry gave it (a
+                // heavy thing trails you but keeps what it is given; a thing against a wall does not).
+                // Then pushed back, or its near face coming at the eyes, and it stops the walk. The
+                // stop takes a step to hold, so what you would still cover by then counts already,
+                // or a sprint ends with the eyes in it. Once jammed, it stays so until it is nearly
+                // back in place.
                 Vector3 ahead = PlayerYaw * Vector3.forward;
                 float back = Vector3.Dot(toTarget, ahead);
                 float yours = controller != null ? Vector3.Dot(controller.Velocity, ahead) : 0f;
-                float its = Vector3.Dot(held.rb.linearVelocity, ahead);
-                jammed = wasJammed ? back > jamDistance * 0.5f : back > jamDistance && its < yours * 0.5f;
+                float given = Vector3.Dot(lastCarryVelocity, ahead);
+                float lost = given - Vector3.Dot(held.rb.linearVelocity, ahead);
+                // The carry's own damping takes about a tenth of it every step, never a third.
+                bool blocked = lost > Mathf.Max(jamSpeedLoss, given * 0.3f);
+                float near = CarryGrip.See(held, held.rb.position, held.rb.rotation, cam.position, cam.rotation).min.z;
+                float coming = Mathf.Max(0f, yours) * jamLookahead;
+                jammed = wasJammed
+                    ? back > jamDistance * 0.5f || near < nearClearance * 0.75f
+                    : blocked && (back + coming > jamDistance || near - coming < nearClearance);
+                if (jammed && controller != null && input.Move.y > 0f) controller.speedMultiplier = 0f;
             }
             // It is carried, so it goes where you go: most of your own velocity by itself, the
             // pull catching up the rest. What is left to catch up (a start, a turn) is the weight.
@@ -743,6 +762,7 @@ namespace Movers
                 if (LostGrip(over)) return;
             }
             held.rb.linearVelocity = Vector3.ClampMagnitude(desired, maxSpeed);
+            lastCarryVelocity = held.rb.linearVelocity;
 
             if (holdOrientation) DriveRotation(weightFactor);
         }
@@ -811,8 +831,24 @@ namespace Movers
 
             Vector3 fromEyes = target - eyes;
             if (fromEyes.magnitude > maxHoldDistance) target = eyes + fromEyes.normalized * maxHoldDistance;
-            // The floor has the last word: the reach and the cap can both pull it lower.
-            return AboveFloor(target, turn, rootFromCom);
+            // The floor over the reach and the cap, which can both pull it lower; then the eyes.
+            target = AboveFloor(target, turn, rootFromCom);
+            return ClearOfEyes(target, turn, rootFromCom, eyes, look);
+        }
+
+        // The reach, the floor and the cap can all bring it back at your face: crouched, a chair is
+        // lifted to the height of the eyes, and a heavy thing's holds pull it in. Wherever the eyes
+        // are within its height and width, its near face is kept nearClearance ahead of them, along
+        // the heading. The eyes win over the hands, which stop short if they must.
+        Vector3 ClearOfEyes(Vector3 target, Quaternion turn, Vector3 rootFromCom, Vector3 eyes, Quaternion look)
+        {
+            const float around = 0.05f;
+            Quaternion heading = Quaternion.Euler(0f, look.eulerAngles.y, 0f);
+            var seen = CarryGrip.See(held, target + rootFromCom, turn, eyes, heading);
+            bool facing = seen.min.x < around && seen.max.x > -around
+                          && seen.min.y < around && seen.max.y > -around && seen.max.z > 0f;
+            if (!facing || seen.min.z >= nearClearance) return target;
+            return target + heading * Vector3.forward * (nearClearance - seen.min.z);
         }
 
         // The holds' depth along the eyes' line.

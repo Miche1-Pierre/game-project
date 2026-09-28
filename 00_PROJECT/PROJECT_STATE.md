@@ -39,7 +39,7 @@ Crew scaled to 1.80 m the same day, see the note in `05_ART/ASSET_STATUS.md`. Th
 
 **Hot-fix 2026-09-27, body and shadow in sync:** one skeleton now drives the crew. The first-person arms are drawn on the body's bones, so the shadow and the other player's view show the same arms. What the hands hold is put on the body by IK. Walk and sprint play at their real ground speed, jumps tuck, and the crouch goes as low as the eyes. Measured in Play (hands 0.000 m apart, head at the eyes crouched), not played by a person. At rest your hands now hang out of view, as the shadow's do: a change from the "hands visible" pass, to confirm with Pierre. Detail in `changelog/CHANGELOG.md`.
 
-**Hot-fix 2026-09-27, the two-hand carry:**
+**Hot-fix 2026-09-27, the two-hand carry (ADR-013, proposed, for Pierre to accept):**
 - What you lift is in your arms. The hands sit on holds worked out from the thing's size (`CarryGrip`), and no centre goes past 1.50 m.
 - The wheel bends and stretches the arms.
 - A snagged thing is let go, and walking into a wall with it stops you.

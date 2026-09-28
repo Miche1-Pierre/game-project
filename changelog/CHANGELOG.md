@@ -6,6 +6,7 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 
 ### Hot-fix: the two-hand carry, hands on the object
 
+- **DESIGN:** proposed as ADR-013, for Pierre to accept. It changes the carry playtest 001 validated.
 - **TECH, the cause:** things seemed to float between the hands. The wheel slid them 1 to 3.2 m out while the arms end at about 0.5 m, so the hands stopped in the air short of them.
 - **TECH, in the arms:** what you lift now rides at chest height, where the hands hold it. `CarryGrip` works the holds out from the thing's own box, with no set-up per object:
   - a palm on each side, up to 0.9 m across;
@@ -18,7 +19,8 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
   - Tall things ride low enough to see over when the floor allows.
   - Your own capsule lets them through, and collides with them again once they are clear of it.
   - Left more than 0.35 m past the reach for 0.3 s (snagged on a door frame), a thing is let go, as a drag already was.
-  - Pushed back at you by a wall, it stops you walking on into it.
+  - Pushed back at you by a wall, it stops you walking on into it. "Blocked" means a physics step took off it at least a third of the forward speed the carry gave it (1 m/s at least), so a heavy thing trailing you never counts. It then stops the walk after 15 cm, or when its near face comes within 12 cm of the eyes, counting what you will cover before the stop holds.
+  - Wherever the eyes are within its height and width (crouched, a tall chair), its near face stays 12 cm ahead of them, the hands stopping short if they must.
 - **TECH:** the cigarette, the beer and the grenade keep their old rail, capped to 1.0 to 1.5 m, so the smoke of ADR-005 still forms clear of the smoker. The online client's own dropped item now collides with it again only once apart.
 - **Measured in Play, scripted:** eleven carries, from the keys (one hand) to the piano (180 kg).
   - The first-person palm is on its hold every time, 6 mm off the surface. The body's hand is within 1.4 cm of the surface and 8 cm along it.
@@ -26,6 +28,11 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
   - A 0.62 m crate: 0.43 m out arms bent, 0.57 m stretched, both hands in the picture when stretched.
   - Looking straight down, a box stays 0.10 m ahead of the eyes, hands on it and in view. A snagged box was let go; a box walked into a wall stopped the walk.
   - Console: 0 errors.
+  - Follow-up, measured the same way:
+    - Crouched (eyes at 0.82 m), a chair and 2 m garage shelves stay 0.20 and 0.29 m ahead of the eyes, hands in reach.
+    - A sprint into a wall with the shelves stops at the first blocked step, the near face 12.8 cm from the eyes.
+    - A walk across open ground holds its pace (4.1 m/s), with no false stop.
+    - Editor frame hitches (a scripted command compiling) can still jump the player 0.9 m in one frame; that is the test bench, not the game.
   - **Not verified by a person.** The knock-down and the online client were not played.
 
 ### Hot-fix: the body, its animations and its shadow move as one
