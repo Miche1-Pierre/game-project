@@ -18,7 +18,7 @@ namespace Movers
             Plank,        // the compass tape: a chamfered wooden board with two nails
             Notch,        // a small triangle pointing down: where the player looks
             Caret,        // a small triangle pointing up (rotated 180 for down): another floor
-            IconKey, IconTruck, IconBox, IconGrandma,
+            IconKey, IconTruck, IconBox, IconGrandma, IconFlag, IconPoliceCar,
         }
 
         Shape shape;
@@ -62,6 +62,8 @@ namespace Movers
                 case IndicatorIcon.GrandmaAnnoyed:
                 case IndicatorIcon.GrandmaAngry:
                 case IndicatorIcon.GrandmaFurious: s = Shape.IconGrandma; return true;
+                case IndicatorIcon.Flag: s = Shape.IconFlag; return true;
+                case IndicatorIcon.PoliceCar: s = Shape.IconPoliceCar; return true;
                 default: s = Shape.Octagon; return false;
             }
         }
@@ -84,6 +86,8 @@ namespace Movers
                 case Shape.IconTruck: Truck(p, r); break;
                 case Shape.IconBox: Box(p, r); break;
                 case Shape.IconGrandma: Grandma(p, r); break;
+                case Shape.IconFlag: Flag(p, r); break;
+                case Shape.IconPoliceCar: PoliceCar(p, r); break;
             }
         }
 
@@ -252,6 +256,36 @@ namespace Movers
             p.strokeColor = rim; p.lineWidth = Mathf.Max(1f, s * 0.04f);
             p.BeginPath(); p.Arc(U(r, 0.43f, 0.43f), s * 0.055f, 0f, 360f); p.Stroke();
             p.BeginPath(); p.Arc(U(r, 0.57f, 0.43f), s * 0.055f, 0f, 360f); p.Stroke();
+        }
+
+        // The exit: a pole and a pennant.
+        void Flag(Painter2D p, Rect r)
+        {
+            float s = Mathf.Min(r.width, r.height);
+            p.BeginPath(); p.MoveTo(U(r, 0.3f, 0.12f)); p.LineTo(U(r, 0.3f, 0.9f));
+            p.strokeColor = fill; p.lineWidth = s * 0.09f; p.Stroke();
+            p.BeginPath();
+            p.MoveTo(U(r, 0.34f, 0.14f)); p.LineTo(U(r, 0.84f, 0.3f)); p.LineTo(U(r, 0.34f, 0.5f)); p.ClosePath();
+            p.fillColor = fill; p.Fill();
+        }
+
+        // A car seen from the side with a light bar on the roof.
+        void PoliceCar(Painter2D p, Rect r)
+        {
+            float s = Mathf.Min(r.width, r.height);
+            p.fillColor = fill;
+            p.BeginPath();
+            p.MoveTo(U(r, 0.08f, 0.5f)); p.LineTo(U(r, 0.3f, 0.5f)); p.LineTo(U(r, 0.38f, 0.34f)); p.LineTo(U(r, 0.66f, 0.34f));
+            p.LineTo(U(r, 0.74f, 0.5f)); p.LineTo(U(r, 0.92f, 0.52f)); p.LineTo(U(r, 0.92f, 0.7f)); p.LineTo(U(r, 0.08f, 0.7f)); p.ClosePath();
+            p.Fill();
+            // The light bar.
+            p.BeginPath();
+            p.MoveTo(U(r, 0.44f, 0.22f)); p.LineTo(U(r, 0.6f, 0.22f)); p.LineTo(U(r, 0.6f, 0.3f)); p.LineTo(U(r, 0.44f, 0.3f)); p.ClosePath();
+            p.Fill();
+            // Wheels, cut out in the rim colour.
+            p.fillColor = rim;
+            p.BeginPath(); p.Arc(U(r, 0.27f, 0.72f), s * 0.1f, 0f, 360f); p.Fill();
+            p.BeginPath(); p.Arc(U(r, 0.74f, 0.72f), s * 0.1f, 0f, 360f); p.Fill();
         }
 
         static void Poly(Painter2D p, Vector2[] pts, int n)

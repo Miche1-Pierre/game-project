@@ -146,7 +146,7 @@ namespace Movers
             { "Veranda Table", "Table de véranda" }, { "Wardrobe", "Armoire" }, { "Wheelbarrow", "Brouette" },
             { "Wine", "Vin" }, { "Wine Barrel", "Tonneau de vin" }, { "Wine Bottle", "Bouteille de vin" },
             { "Workbench", "Établi" }, { "Yarn Ball", "Pelote de laine" }, { "Beer", "Bière" }, { "Cigarette", "Cigarette" },
-            { "Grenade", "Grenade" }, { "Object", "Objet" },
+            { "Grenade", "Grenade" }, { "Object", "Objet" }, { "something", "quelque chose" },
         };
 
         static readonly Dictionary<string, string>[] itemCache = { new Dictionary<string, string>(), new Dictionary<string, string>() };
@@ -180,7 +180,7 @@ namespace Movers
         {
             { "Open", "verb.open" }, { "Close", "verb.close" }, { "Unlock", "verb.unlock" }, { "Lock", "verb.lock" },
             { "Locked", "verb.locked" }, { "Talk", "verb.talk" }, { "Drive", "verb.drive" }, { "Get out", "verb.getOut" },
-            { "Drag", "verb.drag" }, { "Open the window", "verb.openWindow" }, { "Close the window", "verb.closeWindow" },
+            { "Drag", "verb.drag" }, { "Ride", "seat.ride" }, { "Open the window", "verb.openWindow" }, { "Close the window", "verb.closeWindow" },
             { "Open the door", "prompt.openDoor" }, { "Close the door", "prompt.closeDoor" },
             { "Open the garage", "prompt.openGarage" }, { "Close the garage", "prompt.closeGarage" },
             { "Open the veranda door", "prompt.openVeranda" }, { "Close the veranda door", "prompt.closeVeranda" },
@@ -224,6 +224,14 @@ namespace Movers
             Add("banner.police", "LA POLICE ARRIVE  {0}", "THE POLICE ARE COMING  {0}");
             Add("banner.ready", "Tout est chargé : livre au panneau jaune du camion", "All loaded: deliver at the truck's yellow board");
             Add("police.short", "POLICE {0}", "POLICE {0}");
+            // The police flee (DEV2 8.7): the countdown to their arrival, then the escape.
+            Add("banner.policeIncoming", "LA POLICE ARRIVE DANS {0} : chargez et filez vers la sortie", "POLICE IN {0}: load up and head for the exit");
+            Add("banner.flee", "LA POLICE EST LÀ : FONCEZ VERS LA SORTIE", "THE POLICE ARE HERE: DRIVE TO THE EXIT");
+            Add("banner.blocked", "BLOQUÉS ! {0}", "BLOCKED! {0}");
+            Add("banner.lastWarning", "DERNIER AVERTISSEMENT  {0}", "LAST WARNING  {0}");
+            Add("hud.caught", "ATTRAPÉ", "CAUGHT");
+            Add("flee.short", "FUITE {0}", "ESCAPE {0}");
+            Add("marker.exit", "SORTIE", "EXIT");
 
             // The grandmother
             Add("grandma.name", "Mamie", "Grandma");
@@ -233,6 +241,7 @@ namespace Movers
             Add("mood.angry", "Fâchée", "Angry");
             Add("mood.furious", "Furieuse", "Furious");
             Add("mood.police", "Appelle la police !", "Calling the police!");
+            Add("mood.lastWarning", "Dernier avertissement", "Last warning");
 
             // Toasts
             Add("toast.keys", "{0} a les clés. Le chrono tourne !", "{0} has the keys. The clock is running!");
@@ -247,6 +256,12 @@ namespace Movers
             Add("toast.contractDestroyed", "{0} est détruit : facturé {1}.", "The {0} is destroyed: billed {1}.");
             Add("toast.noticed", "Mamie a remarqué quelque chose...", "Grandma noticed something...");
             Add("toast.police", "Mamie appelle la police !", "Grandma is calling the police!");
+            Add("toast.lastWarning", "Mamie : dernier avertissement !", "Grandma: last warning!");
+            Add("toast.policeHere", "La police est arrivée !", "The police are here!");
+            Add("toast.arrested", "{0} s'est fait arrêter !", "{0} got arrested!");
+            Add("toast.intercepted", "La police a bloqué le camion !", "The police stopped the truck!");
+            Add("toast.surrounded", "La police encercle la maison !", "The police surround the house!");
+            Add("toast.escaped", "Vous êtes passés !", "You made it out!");
             Add("toast.piece", "morceau", "piece");
             Add("what.window", "une fenêtre", "a window");
             Add("what.door", "une porte", "a door");
@@ -331,6 +346,7 @@ namespace Movers
             Add("drive.kg", "{0} / {1} kg", "{0} / {1} kg");
             Add("drive.over", "SURCHARGE", "OVERLOADED");
             Add("drive.noRoom", "Pas la place de descendre ici", "No room to get out here");
+            Add("seat.ride", "Monter", "Ride");
 
             // Drunk
             Add("drunk.label", "Pompette", "Tipsy");
@@ -342,8 +358,8 @@ namespace Movers
                 "The job: load the {0} things on the list into the truck, then deliver them at the yellow board on the truck's right side, at the back.");
             Add("intro.steal", "Tout le reste de ses affaires qui part avec vous est à vous... tant qu'elle ne vous voit pas le prendre.",
                 "Anything else of hers that leaves with you is yours to sell, as long as she never sees you take it.");
-            Add("intro.patience", "Casse, bruit, lenteur : elle perd patience. À bout, elle appelle la police.",
-                "Break things, make noise, dawdle: she loses patience. At the end of it, she calls the police.");
+            Add("intro.patience", "Casse, bruit, lenteur : elle perd patience. À bout, elle appelle la police, et il faudra filer avec le camion.",
+                "Break things, make noise, dawdle: she loses patience. At the end of it, she calls the police, and you run for it with the truck.");
             Add("intro.cta", "Parle à Mamie : elle vous donnera la liste et les clés", "Talk to Grandma: she will give you the list and the keys");
             Add("intro.start", "C'est parti", "Let's go");
             Add("intro.press", "Appuie sur", "Press");
@@ -355,6 +371,10 @@ namespace Movers
             Add("end.timeUp", "Temps écoulé.", "Time is up.");
             Add("end.police", "Mamie a appelé la police.", "Grandma called the police.");
             Add("end.stopped", "La partie a été arrêtée.", "The run was stopped.");
+            Add("end.escaped", "VOUS AVEZ FILÉ", "YOU GOT AWAY");
+            Add("end.intercepted", "La police a arrêté le camion.", "The police stopped the truck.");
+            Add("end.surrounded", "La police a encerclé la maison.", "The police surrounded the house.");
+            Add("end.arrested", "Toute l'équipe s'est fait arrêter.", "The whole crew was arrested.");
             Add("end.total", "TOTAL", "TOTAL");
             Add("end.replay", "Rejouer", "Play again");
             Add("end.menu", "Menu", "Menu");
@@ -372,6 +392,12 @@ namespace Movers
             Add("settle.void", "Contrat annulé", "The contract is void");
             Add("settle.left", "Ses affaires que vous avez dû laisser : {0}", "Her things you had to leave: {0}");
             Add("settle.more", "et {0} de plus", "and {0} more");
+            Add("settle.escapeVoid", "Vous avez filé : contrat annulé", "You got away: the contract is void");
+            Add("settle.escapeCargo", "Vendu depuis le camion : {0}", "Sold from the truck: {0}");
+            Add("settle.arrestFine", "Amende : {0} arrêté(s)", "Fine: {0} arrested");
+            Add("settle.voidIntercepted", "La police a arrêté le camion : contrat annulé", "The police stopped the truck: the contract is void");
+            Add("settle.voidSurrounded", "La police a encerclé la maison : contrat annulé", "The police surrounded the house: the contract is void");
+            Add("settle.voidArrested", "Tout le monde a été arrêté : contrat annulé", "Everyone was arrested: the contract is void");
 
             // Pause menu and options
             Add("pause.title", "Pause", "Paused");

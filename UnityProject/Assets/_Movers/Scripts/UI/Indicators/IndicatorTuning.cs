@@ -61,6 +61,12 @@ namespace Movers
         public GrandmaReveal grandmaMarkers = GrandmaReveal.Always;
         [Tooltip("The delivery board gets an edge arrow while you carry something (where it goes). Always once everything is loaded.")]
         public bool deliverArrowWhenCarrying = true;
+        [Tooltip("The exit of the police flee, from the call to the end of the run: a ring or an edge arrow at any distance, for the driver and the passenger too.")]
+        public bool showExit = true;
+        [Tooltip("The dispatched police cars.")]
+        public bool showPolice = true;
+        [Tooltip("A police car farther than this gets no ring or edge arrow, only its token on the tape.")]
+        public float policeMarkerMaxDistance = 150f;
 
         [Header("Text (Fredoka)")]
         public float distanceFontSize = 17f;
@@ -82,6 +88,10 @@ namespace Movers
         public Color truck = new Color32(0xF1, 0xE3, 0xC2, 0xFF);
         public Color deliver = new Color32(0xF2, 0xB8, 0x3B, 0xFF);
         public Color keys = new Color32(0xF6, 0xCD, 0x4C, 0xFF);
+        [Tooltip("The exit of the police flee.")]
+        public Color exit = new Color32(0x6F, 0xC8, 0x5A, 0xFF);
+        [Tooltip("The police cars.")]
+        public Color police = new Color32(0x3E, 0x7B, 0xE0, 0xFF);
         [Tooltip("The grandmother's colour by mood: Sweet, Annoyed, Angry, Furious, Police (MoodTier order).")]
         public Color[] mood =
         {

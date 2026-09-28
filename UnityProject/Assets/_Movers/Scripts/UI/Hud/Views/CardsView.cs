@@ -98,12 +98,9 @@ namespace Movers
             Settlement s = m.Result;
             if (s == null) return UiKit.Empty;
 
-            string title = Loc.T(s.Completed ? "end.complete" : "end.failed");
+            string title = Loc.T(SettlementText.IsEscape(s) ? "end.escaped" : s.Completed ? "end.complete" : "end.failed");
             Color titleColor = s.Completed ? th.goodInk : th.badInk;
-            string reason = s.Completed ? null
-                : s.Failure == FailReason.TimeUp ? Loc.T("end.timeUp")
-                : s.Failure == FailReason.PoliceCalled ? Loc.T("end.police")
-                : Loc.T("end.stopped");
+            string reason = s.Completed ? null : Loc.T(ReasonKey(s));
 
             var lines = new List<Widget>(s.Lines.Count * 2);
             for (int i = 0; i < s.Lines.Count; i++) lines.Add(Line(s.Lines[i], th));
@@ -134,6 +131,19 @@ namespace Movers
             parts.Add(new Row(new[] { UiKit.Bound(m.EndCountdown, tx.Small, th.inkSoft) }, 0f, MainAxisAlignment.Center, CrossAxisAlignment.Center));
             Widget sheet = new Column(parts, 10f, MainAxisAlignment.Start, CrossAxisAlignment.Stretch);
             return Frame(new SizedBox(UiKit.Card(sheet, 16f, th.Skins.CardboardBig, UiMotion.Pop), SheetWidth));
+        }
+
+        // Why the run failed, one line under the title.
+        public static string ReasonKey(Settlement s)
+        {
+            switch (s.Failure)
+            {
+                case FailReason.TimeUp: return "end.timeUp";
+                case FailReason.PoliceCalled: return "end.police";
+                case FailReason.Intercepted: return SettlementText.IsSurrounded(s) ? "end.surrounded" : "end.intercepted";
+                case FailReason.CrewArrested: return "end.arrested";
+                default: return "end.stopped";
+            }
         }
 
         static Widget Line(Settlement.Line line, UiTheme th)

@@ -4,8 +4,9 @@ namespace Movers
 {
     // What a marker points at. The house keys are not a kind of their own: during the intro they
     // are in the grandmother's hands, so her marker carries them (a gold key badge) instead of a
-    // second token stacked on the same spot.
-    public enum IndicatorKind { Partner, Grandma, Deliver }
+    // second token stacked on the same spot. Exit and Police belong to the police flee: the exit
+    // checkpoint once she called them, and each dispatched police car.
+    public enum IndicatorKind { Partner, Grandma, Deliver, Exit, Police }
 
     // How a target shows inside one player's view this frame (the compass tape is separate).
     public enum MarkerMode
@@ -29,6 +30,7 @@ namespace Movers
     public enum IndicatorIcon
     {
         None, Number, GrandmaCalm, GrandmaAnnoyed, GrandmaAngry, GrandmaFurious, Truck, Box, Key,
+        Flag, PoliceCar,
     }
 
     // One target as one view shows it this frame: what the tests and the debug read, never what

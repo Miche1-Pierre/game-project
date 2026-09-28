@@ -51,9 +51,11 @@ namespace Movers
             ICrewInputSource src = member.Input.Source;
             if (src is NullInputSource) return set;   // nobody drives this player
 
+            // Seated in the truck: at the wheel, or riding as the passenger (IsDriving means seated).
             if (member.IsDriving)
             {
-                Driving(ref set, src);
+                if (TruckVehicle.IsAtWheel(member)) Driving(ref set, src);
+                else Riding(ref set, src);
                 return set;
             }
             seat = null;
@@ -109,9 +111,14 @@ namespace Movers
                 case GrandmaTalk _:
                     set.Add(new HintLine(Verb.Talk, e));
                     return;
-                case VehicleSeat _:
-                    set.Add(new HintLine(Verb.Drive, e));
+                case VehicleSeat vs:
+                {
+                    // The driver's seat says "Drive", the passenger's its own word ("Ride").
+                    string seatWords = vs.Prompt;
+                    if (string.IsNullOrEmpty(seatWords) || seatWords == "Drive") set.Add(new HintLine(Verb.Drive, e));
+                    else set.Add(new HintLine(Verb.Raw, e, raw: Loc.Prompt(seatWords)));
                     return;
+                }
                 case DeliverPoint _:
                 {
                     var contract = GameSession.Current != null ? GameSession.Current.contract : null;
@@ -263,6 +270,21 @@ namespace Movers
 
         void Driving(ref HintSet set, ICrewInputSource src)
         {
+            GetOutRow(ref set, src);
+            set.Add(new HintLine(Verb.Steer, InputGlyphs.Move(src)));
+            set.Add(new HintLine(Verb.Handbrake, InputGlyphs.For(src, CrewButton.Jump), Gesture.Hold));
+            set.Add(new HintLine(Verb.Look, InputGlyphs.Look(src)));
+        }
+
+        // The passenger seat: no controls but the view and the way out.
+        void Riding(ref HintSet set, ICrewInputSource src)
+        {
+            GetOutRow(ref set, src);
+            set.Add(new HintLine(Verb.Look, InputGlyphs.Look(src)));
+        }
+
+        void GetOutRow(ref HintSet set, ICrewInputSource src)
+        {
             if (seat == null) seat = member.GetComponentInParent<VehicleSeat>();
             TruckVehicle truck = seat != null ? seat.vehicle : null;
             // The seat's own refusal ("No room to get out here") takes the get-out row's place
@@ -276,9 +298,6 @@ namespace Movers
             else if (truck != null && truck.Body != null && truck.Velocity.magnitude > seat.maxExitSpeed)
                 set.Add(new HintLine(Verb.StopToGetOut, default, warn: true));
             else set.Add(new HintLine(Verb.GetOut, InputGlyphs.For(src, CrewButton.Interact)));
-            set.Add(new HintLine(Verb.Steer, InputGlyphs.Move(src)));
-            set.Add(new HintLine(Verb.Handbrake, InputGlyphs.For(src, CrewButton.Jump), Gesture.Hold));
-            set.Add(new HintLine(Verb.Look, InputGlyphs.Look(src)));
         }
 
         // ---- the card ----

@@ -82,12 +82,29 @@ namespace Movers
                     Push("The " + NameOf(e) + " is destroyed: billed " + ContractPanel.Money(e.value) + ".", Bad);
                     break;
                 case WorldEventType.GrandmaNoticed:
+                    // Raised for every priced stimulus; one that cost her no patience says nothing.
+                    if (e.magnitude <= 0f) break;
                     if (Time.unscaledTime - lastNoticed < NoticedEvery) break;
                     lastNoticed = Time.unscaledTime;
                     Push("Grandma noticed something.", Warning);
                     break;
                 case WorldEventType.GrandmaCalledPolice:
                     Push("Grandma is calling the police!", Bad);
+                    break;
+                case WorldEventType.GrandmaLastWarning:
+                    Push("Grandma: last warning!", Bad);
+                    break;
+                case WorldEventType.PoliceArrived:
+                    Push("The police are here!", Bad);
+                    break;
+                case WorldEventType.CrewArrested:
+                    Push(Actors.Name(e.instigator) + " got arrested!", Bad);
+                    break;
+                case WorldEventType.TruckIntercepted:
+                    Push(ToastFeed.Surrounded(e) ? "The police surround the house!" : "The police stopped the truck!", Bad);
+                    break;
+                case WorldEventType.EscapeReached:
+                    Push("You made it out!", Good);
                     break;
             }
         }

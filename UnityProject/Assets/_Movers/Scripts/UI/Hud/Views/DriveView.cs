@@ -7,7 +7,8 @@ namespace Movers
 {
     // At the wheel, bottom centre: the speed in big friendly digits and the load of the truck
     // as a tape measure against its capacity (red when overloaded). The driving keys are the
-    // hint rows' (VerbHints knows the seat), so they stay where the eyes already look.
+    // hint rows' (VerbHints knows the seat), so they stay where the eyes already look. Only
+    // the driver sees it (PlayerHudModel.Driving reads TruckVehicle.IsAtWheel), not the passenger.
     public static class DriveView
     {
         static readonly UiPlace Place = UiPlace.BottomCenter(22f);

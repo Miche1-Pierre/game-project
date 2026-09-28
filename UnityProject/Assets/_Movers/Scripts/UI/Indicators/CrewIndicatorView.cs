@@ -188,7 +188,7 @@ namespace Movers
 
             Vector3 eyes = owner.EyePosition;
             parkedLeft = parkedRight = 0;
-            bool driving = owner.IsDriving;
+            bool driving = TruckVehicle.IsAtWheel(owner);
             bool carrying = owner.Held != null;
             for (int i = 0; i < slots.Count; i++)
                 TickSlot(slots[i], frame, eyes, driving, carrying, markersOn, time);
@@ -249,7 +249,7 @@ namespace Movers
             // In the view: a ring over it, or a token at the edge pointing to it, never under the HUD.
             IndicatorToken v = slot.viewToken;
             IndicatorPlacement.Result place = IndicatorPlacement.Place(frame, t.anchor, ellipse, keep);
-            bool allowed = markersOn && t.markers;
+            bool allowed = markersOn && t.markers && (t.markersWithin <= 0f || distance <= t.markersWithin);
             MarkerMode mode = MarkerMode.Hidden;
             if (allowed && (place.onScreen || place.underHud))
             {
@@ -257,7 +257,7 @@ namespace Movers
                 // seen, so the same ring becomes an edge token beside the panel.
                 float closest = Mathf.Max(t.kind == IndicatorKind.Grandma ? s.grandmaRingMinDistance : s.ringMinDistance, t.noRingWithin);
                 bool deliverRing = t.kind != IndicatorKind.Deliver || (t.ready && s.deliverRingInView);
-                if (distance >= closest && distance <= s.ringMaxDistance && deliverRing)
+                if (distance >= closest && (t.anyDistance || distance <= s.ringMaxDistance) && deliverRing)
                     mode = place.onScreen ? MarkerMode.Ring : MarkerMode.Edge;
             }
             else if (allowed && distance >= s.edgeMinDistance

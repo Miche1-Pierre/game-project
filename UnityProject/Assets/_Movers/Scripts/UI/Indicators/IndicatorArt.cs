@@ -28,6 +28,8 @@ namespace Movers
         public Sprite grandmaAnnoyed;    // icon_grandma_annoyed
         public Sprite grandmaAngry;      // icon_grandma_angry
         public Sprite grandmaFurious;    // icon_grandma_furious
+        public Sprite flag;              // icon_flag: the exit (drawn when empty)
+        public Sprite policeCar;         // icon_police_car (drawn when empty)
 
         [Header("Fredoka")]
         public Font semiBold;            // distances and compass letters
@@ -55,6 +57,8 @@ namespace Movers
                 case IndicatorIcon.Truck: return truck;
                 case IndicatorIcon.Box: return box;
                 case IndicatorIcon.Key: return key;
+                case IndicatorIcon.Flag: return flag;
+                case IndicatorIcon.PoliceCar: return policeCar;
                 default: return null;
             }
         }
@@ -76,10 +80,12 @@ namespace Movers
                 if (grandmaAnnoyed != null) n++;
                 if (grandmaAngry != null) n++;
                 if (grandmaFurious != null) n++;
+                if (flag != null) n++;
+                if (policeCar != null) n++;
                 return n;
             }
         }
 
-        public const int SpriteSlots = 11;
+        public const int SpriteSlots = 13;
     }
 }

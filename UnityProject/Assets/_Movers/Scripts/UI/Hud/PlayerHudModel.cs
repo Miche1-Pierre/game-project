@@ -52,11 +52,22 @@ namespace Movers
 
         public readonly State<bool> ControlsOpen = new State<bool>(false);
 
+        // The police are about to arrest this player (Session.ArrestPendingMask): a red ring
+        // closes in on the crosshair over the officer zone's seconds, so the arrest is never a
+        // surprise. Animated here from the edge of the mask, on both machines.
+        public readonly State<bool> Caught = new State<bool>(false);
+        public readonly UiScale CaughtScale = new UiScale();
+
         public int Index => member != null ? member.index : 0;
         public ICrewInputSource Source => member != null && member.Input != null ? member.Input.Source : null;
 
+        // GameLoopNumbers.officerZoneSeconds at its default: how long the ring takes to close.
+        const float ArrestRingSeconds = 2f;
+        const float ArrestRingEndScale = 0.3f;
+
         string shownHint;
         int shownKmh = -1, shownKg = -1, shownCap = -1;
+        float caughtSince;
         Drunkenness drunk;
         VehicleSeat seat;
 
@@ -95,6 +106,7 @@ namespace Movers
             UpdatePockets(src);
             UpdateDrunk();
             UpdateTruck();
+            UpdateCaught();
             PatienceFill.Set(shared.Patience01);
         }
 
@@ -142,9 +154,11 @@ namespace Movers
             if (on) DrunkFill.Set(drunk.Amount);
         }
 
+        // The truck's plate is for whoever is at the wheel; the passenger (also IsDriving, which
+        // means seated) rides without it.
         void UpdateTruck()
         {
-            bool driving = member.IsDriving;
+            bool driving = TruckVehicle.IsAtWheel(member);
             if (!driving) seat = null;
             else if (seat == null) seat = member.GetComponentInParent<VehicleSeat>();
             TruckVehicle truck = seat != null ? seat.vehicle : null;
@@ -168,6 +182,17 @@ namespace Movers
             }
             Overloaded.Value = cargo.OverCapacity;
             CargoFill.Set(cap > 0 ? (float)kg / cap : 0f);
+        }
+
+        void UpdateCaught()
+        {
+            int i = Index;
+            bool pending = i >= 0 && i < 8 && (Session.ArrestPendingMask & (1 << i)) != 0
+                        && !Session.IsArrested(i) && !Session.IsOver;
+            if (pending && !Caught.Value) caughtSince = Time.time;
+            Caught.Value = pending;
+            if (pending)
+                CaughtScale.Set(Mathf.Lerp(1f, ArrestRingEndScale, Mathf.Clamp01((Time.time - caughtSince) / ArrestRingSeconds)));
         }
 
         // After a language change.

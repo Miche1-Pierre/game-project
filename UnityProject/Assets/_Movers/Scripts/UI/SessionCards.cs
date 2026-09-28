@@ -43,7 +43,8 @@ namespace Movers
                     "then deliver them at the yellow board on the truck's right side, at the back.\n\n" +
                     "Anything else of hers that leaves with you is yours to sell,\n" +
                     "as long as she never sees you take it.\n" +
-                    "Break things, make noise, dawdle: she loses patience. At the end of it, she calls the police.";
+                    "Break things, make noise, dawdle: she loses patience. At the end of it, she calls the police,\n" +
+                    "and you run for it with the truck.";
             }
 
             int size = ViewportGUI.FontSize(screen, 22);
@@ -117,7 +118,7 @@ namespace Movers
             shown = s;
             if (s.Completed)
             {
-                endTitle = "CONTRACT COMPLETE";
+                endTitle = SettlementText.IsEscape(s) ? "YOU GOT AWAY" : "CONTRACT COMPLETE";
                 endReason = "";
             }
             else
@@ -125,6 +126,9 @@ namespace Movers
                 endTitle = "RUN FAILED";
                 endReason = s.Failure == FailReason.TimeUp ? "Time is up."
                           : s.Failure == FailReason.PoliceCalled ? "Grandma called the police."
+                          : s.Failure == FailReason.Intercepted
+                              ? (SettlementText.IsSurrounded(s) ? "The police surrounded the house." : "The police stopped the truck.")
+                          : s.Failure == FailReason.CrewArrested ? "The whole crew was arrested."
                           : "The run was stopped.";
             }
             int n = s.Lines.Count;
