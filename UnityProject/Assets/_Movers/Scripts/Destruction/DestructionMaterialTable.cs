@@ -129,9 +129,11 @@ namespace Movers
         public float impactMaxSpread = 2.5f;
         [Tooltip("m/s added to the gate for an object in someone's hands: the arms give.")]
         public float heldSpeedAllowance = 1.5f;
+        [Tooltip("Mass-ratio cap for an object in someone's hands. Under 3 it also scales the damage by value / 3 (the arms cushion it).")]
         public float heldMaxMassRatio = 1f;
         [Tooltip("m/s added to the gate for cargo hitting its own truck, so one ram does not wipe the load.")]
         public float cargoSpeedAllowance = 3f;
+        [Tooltip("Mass-ratio cap for cargo hitting its own truck. Under 3 it also scales the damage by value / 3 (the load cushions it).")]
         public float cargoMaxMassRatio = 1f;
         [Tooltip("A pane counts a striker as at least this share of its mass: a thrown cup still breaks a window.")]
         public float glassMinMassRatio = 0.5f;
@@ -142,7 +144,7 @@ namespace Movers
                      toolMultiplier = 1f;
         [Tooltip("Vehicles: the bumper absorbs most of the energy.")]
         public float vehicleMultiplier = 0.01f;
-        [Tooltip("A launched wall chunk strikes other built pieces this much softer: no domino through the house.")]
+        [Tooltip("A launched wall chunk strikes other built pieces this much softer: no domino through the house. 0: launched chunks never damage.")]
         public float structureChunkStrikeFactor = 0.1f;
         [Tooltip("At most this many debris strikes damage anything per frame.")]
         public int debrisStrikesPerFrame = 20;
