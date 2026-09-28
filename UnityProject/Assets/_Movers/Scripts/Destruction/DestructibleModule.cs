@@ -35,7 +35,9 @@ namespace Movers
         const float Touch = 0.03f;          // m: a chunk this close to a face of the wall reaches it
         const float HeldMargin = 0.16f;     // m: a pane or a leaf still touching a chunk is held
         const float DamagedTint = 0.8f, FracturedTint = 0.6f;
-        const float SpreadExponent = 1.3f;  // an impact's share falls as (1 - d / spread) to this power
+        const float SpreadExponent = 1.3f;
+        const float MinFeedbackSize = 0.3f; // m: the dust of a point hit
+        const int MaxRubble = 15;           // rubble pieces per chunk at most (4 bits in ChunkDetached)  // an impact's share falls as (1 - d / spread) to this power
 
         public static readonly List<DestructibleModule> All = new List<DestructibleModule>();
         static readonly Dictionary<Collider, DestructibleChunk> byCollider = new Dictionary<Collider, DestructibleChunk>();
@@ -246,9 +248,28 @@ namespace Movers
             if (IsGone || !enabled || !(e.damage > 0f)) return DamageResult.None(before);
             if (!(e.damage * DestructionMaterialTable.Factor(e.type, Material) > 0f)) return DamageResult.None(before);
 
-            return !IsFractured && (!WouldFracture(e.damage, e.type) || !Fracture())
+            var result = !IsFractured && (!WouldFracture(e.damage, e.type) || !Fracture())
                 ? WearIntact(e, before)
                 : SpreadOverChunks(e, hitChunk, before);
+            // What the hit looks and sounds like, by its energy (3.9). A blast has its own.
+            if (e.type != DamageType.Blast && result.applied > 0f)
+                ImpactFeedback.Hit(e.position, HitEnergy(e), Mathf.Max(MinFeedbackSize, e.radius),
+                                   DestructionMaterialTable.Get(Material).sound, e.instigator, result.removed);
+            return result;
+        }
+
+        // The energy of an impact, for its feedback. ImpactDamage.Evaluate's spread grows with the
+        // cube root of the energy, so the spread gives it back (exact under impactMaxSpread); an
+        // event with no spread falls back to its impulse times its speed.
+        static float HitEnergy(in DamageEvent e)
+        {
+            var t = DestructionMaterialTable.Current;
+            if (e.radius > 0f && t.impactSpreadPerCubeRootKJ > 0f)
+            {
+                float k = e.radius / t.impactSpreadPerCubeRootKJ;
+                return 1000f * k * k * k;
+            }
+            return Mathf.Max(0f, e.impulse * e.speed);
         }
 
         // A hit too small to break the wall up is remembered on the intact wall. Small hits add up:
@@ -339,7 +360,7 @@ namespace Movers
             if (c.Health <= 0f)
             {
                 float overkill = -c.Health;
-                RemoveChunk(c, e, false);
+                RemoveChunk(c, e, false, overkill);
                 removed = true;
                 if (propagate) applied += PassOn(c, e, overkill);
             }
@@ -389,8 +410,9 @@ namespace Movers
             if (s == DestructionState.Fractured && c.Node >= 0) StructureGraph.Current?.MarkWeakened(c.Node, instigator);
         }
 
-        // Out of the wall: broken off by damage (flies with the blast) or fallen (drops).
-        void RemoveChunk(DestructibleChunk c, in DamageEvent e, bool fell)
+        // Out of the wall: broken off by damage (launched by the hit) or fallen (drops). overkill:
+        // the damage past its health, which decides whether a broken-off chunk comes out as rubble.
+        void RemoveChunk(DestructibleChunk c, in DamageEvent e, bool fell, float overkill = 0f)
         {
             if (!c.Attached) return;
             Bounds b = c.Bounds;
@@ -401,51 +423,218 @@ namespace Movers
             if (c.Collider != null) byCollider.Remove(c.Collider);
             if (c.Node >= 0) StructureGraph.Current?.MarkRemoved(c.Node, e.instigator);
 
-            Vector3 v = fell
-                ? Vector3.down * 0.5f + Random.insideUnitSphere * 0.3f
-                : Vector3.ClampMagnitude(e.ImpulseVector / Mathf.Max(1f, c.Mass), 8f) + e.direction * 0.5f;
-            Detach(c, v, e.instigator, fell);
-
-            DestructionFX.Dust(b.center, b.extents.magnitude);
-            ImpactAudio.Play(DestructionMaterialTable.Get(Material).sound, b.center, fell ? 0.6f : 0.8f, e.instigator);
+            var sound = DestructionMaterialTable.Get(Material).sound;
+            if (fell)
+            {
+                Detach(c, Vector3.down * 0.5f + Random.insideUnitSphere * 0.3f, Random.insideUnitSphere * 1.5f,
+                       e.instigator, true, 0);
+                DestructionFX.Dust(b.center, b.extents.magnitude);
+                ImpactAudio.Play(sound, b.center, 0.6f, e.instigator);
+            }
+            else
+            {
+                Vector3 v = LaunchVelocity(c, e);
+                Detach(c, v, Spin(), e.instigator, false, RubblePieces(c, e, overkill));
+                // Dust and sound by the energy the chunk flies off with; the client plays its own
+                // from ChunkDetached (NetDetach), so this one is not sent.
+                ImpactFeedback.Hit(b.center, 0.5f * PhysicsMass(c.Mass) * v.sqrMagnitude, b.extents.magnitude, sound,
+                                   e.instigator, true);
+            }
             DebrisManager.WakeInBounds(b);
             CheckAttachments(e.instigator);
         }
 
-        // The chunk object becomes a rigidbody of debris, or simply vanishes in its dust when
-        // the frame's debris budget is spent.
-        // Online, each exit tells the client, with the velocities the host gave it (fell: it came
-        // down for lack of support, rather than broken off).
-        void Detach(DestructibleChunk c, Vector3 velocity, int instigator, bool fell)
+        // How a chunk leaves the wall (DEV 2, 3.6): along the hit at the striker's speed (for a
+        // blast, its eject speed at this chunk), all of it for a blast and impactChunkLaunchShare
+        // of it for an impact, a heavy chunk slower and a light one faster, with a little lift.
+        // An event with no speed (an older caller) falls back to its impulse over the mass.
+        static Vector3 LaunchVelocity(DestructibleChunk c, in DamageEvent e)
+        {
+            if (!(e.speed > 0f))
+                return Vector3.ClampMagnitude(e.ImpulseVector / Mathf.Max(1f, c.Mass), 8f) + e.direction * 0.5f;
+            var t = DestructionMaterialTable.Current;
+            float share = e.type == DamageType.Blast ? 1f : t.impactChunkLaunchShare;
+            float lo = Mathf.Min(t.chunkLaunchMassFactor.x, t.chunkLaunchMassFactor.y);
+            float hi = Mathf.Max(t.chunkLaunchMassFactor.x, t.chunkLaunchMassFactor.y);
+            float byMass = Mathf.Clamp(Mathf.Sqrt(Mathf.Max(1f, t.chunkLaunchReferenceMass) / PhysicsMass(c.Mass)), lo, hi);
+            return e.direction * (e.speed * share * byMass) + Vector3.up * (t.chunkUpBias * e.speed);
+        }
+
+        static Vector3 Spin()
+        {
+            Vector2 s = DestructionMaterialTable.Current.chunkSpin;
+            return Random.onUnitSphere * Random.Range(Mathf.Min(s.x, s.y), Mathf.Max(s.x, s.y));
+        }
+
+        // A chunk's Rigidbody mass, on both machines: capped at debrisPhysicsMassCap, so a 400 kg
+        // slab does not bulldoze the furniture it lands on. Its real mass still counts for the
+        // collapse events and the crush blame.
+        static float PhysicsMass(float kg)
+        {
+            float cap = DestructionMaterialTable.Current.debrisPhysicsMassCap;
+            return Mathf.Max(1f, cap > 0f ? Mathf.Min(kg, cap) : kg);
+        }
+
+        // Big hits break a chunk into rubble (3.7): an overkill of at least rubbleOverkill times its
+        // health, or a blast so close that the chunk flies out at least as fast as it would at
+        // breachRadius (the eject speed follows the falloff curve, so this is "within breachRadius
+        // of the blast" without knowing the blast's centre). More overkill, more pieces. 0: whole.
+        static int RubblePieces(DestructibleChunk c, in DamageEvent e, float overkill)
+        {
+            var t = DestructionMaterialTable.Current;
+            float ratio = c.MaxHealth > 0f ? overkill / c.MaxHealth : 0f;
+            bool big = t.rubbleOverkill > 0f && ratio >= t.rubbleOverkill;
+            bool breach = e.type == DamageType.Blast && e.speed > 0f && t.breachRadius > 0f && t.blastChunkEjectSpeed > 0f
+                          && e.speed >= t.blastChunkEjectSpeed * DestructionMaterialTable.Focus(t.breachRadius) - 0.01f;
+            if (!big && !breach) return 0;
+            int lo = Mathf.Clamp(Mathf.Min(t.rubblePieces.x, t.rubblePieces.y), 2, MaxRubble);
+            int hi = Mathf.Clamp(Mathf.Max(t.rubblePieces.x, t.rubblePieces.y), lo, MaxRubble);
+            float more = t.rubbleOverkill > 0f ? Mathf.Clamp01((ratio - t.rubbleOverkill) / (2f * t.rubbleOverkill)) : 1f;
+            return Mathf.RoundToInt(Mathf.Lerp(lo, hi, more));
+        }
+
+        // The chunk object becomes debris: rubble for a big hit when the budget allows it, else the
+        // whole slab as one body. Never nothing (3.8): when the frame's budget is spent the slab
+        // waits, collider off and still drawn, and is retried on the next frames, then forced.
+        // Online, each exit tells the client when it really happens, with the velocities the host
+        // gave it and the rubble count (fell: it came down for lack of support).
+        void Detach(DestructibleChunk c, Vector3 velocity, Vector3 angular, int instigator, bool fell, int rubble)
         {
             if (c.Transform == null)
             {
-                if (Net.IsHost) StructureSync.ChunkDetached(this, c.Index, fell, true, velocity, Vector3.zero);
+                if (Net.IsHost) StructureSync.ChunkDetached(this, c.Index, fell, true, velocity, Vector3.zero, 0);
                 return;
             }
-            GameObject go = c.Transform.gameObject;
-            if (go.TryGetComponent(out ChunkCollisionRelay relay)) relay.owner = null;
-            var manager = DebrisManager.Instance;
-            if (manager == null || !manager.TryReserve(1, out _))
+            if (c.Transform.TryGetComponent(out ChunkCollisionRelay relay)) relay.owner = null;
+            if (rubble > 0 && Shatter(c, velocity, instigator, rubble))
             {
-                go.SetActive(false);
-                if (Net.IsHost) StructureSync.ChunkDetached(this, c.Index, fell, true, velocity, Vector3.zero);
+                if (Net.IsHost) StructureSync.ChunkDetached(this, c.Index, fell, false, velocity, angular, rubble);
                 return;
             }
-            // A dynamic body needs a convex collider (see MakeCollider).
+            var manager = DebrisManager.Instance;
+            if (manager != null && manager.TryReserveStructure(1, out _))
+            {
+                MakeDebris(c, velocity, angular, instigator, fell);
+                if (Net.IsHost) StructureSync.ChunkDetached(this, c.Index, fell, false, velocity, angular, 0);
+                return;
+            }
+            Defer(c, velocity, angular, instigator, fell);
+        }
+
+        // The chunk cut into rubble, every piece flying with it. False when the budget gave no
+        // piece: the caller then lets the whole slab go.
+        bool Shatter(DestructibleChunk c, Vector3 velocity, int instigator, int pieces)
+        {
+            if (c.Renderer == null) return false;
+            Bounds b = c.Bounds;
+            var made = MeshShatter.ShatterChunk(c.Renderer, pieces, PhysicsMass(c.Mass), velocity, b.center,
+                                                DestructionMaterialTable.Current.structureDebrisLifetime, instigator);
+            if (made == null || made.Count == 0) return false;
+            for (int i = 0; i < made.Count; i++)
+            {
+                if (made[i] == null || !made[i].TryGetComponent(out DebrisPiece piece)) continue;
+                piece.material = Material;
+                MarkWallDebris(piece, false);
+            }
+            // The rubble took its place in this same frame: the slab itself goes.
+            if (c.Collider != null) c.Collider.enabled = false;
+            c.Renderer.enabled = false;
+            Destroy(c.Transform.gameObject);
+            return true;
+        }
+
+        void MakeDebris(DestructibleChunk c, Vector3 velocity, Vector3 angular, int instigator, bool fell)
+        {
+            GameObject go = c.Transform.gameObject;
+            if (c.Collider != null) c.Collider.enabled = true;
+            // A dynamic body needs a convex collider (see MakeCollider); its hull was cooked at load
+            // (HouseDestruction), so this does not cook one now.
             if (go.TryGetComponent(out MeshCollider mc) && !mc.convex) mc.convex = true;
             var rb = go.AddComponent<Rigidbody>();
-            rb.mass = c.Mass;
+            rb.mass = PhysicsMass(c.Mass);
             rb.interpolation = RigidbodyInterpolation.Interpolate;
             rb.maxDepenetrationVelocity = 3f;
             rb.linearVelocity = velocity;
-            rb.angularVelocity = Random.insideUnitSphere * 1.5f;
+            rb.angularVelocity = angular;
             var piece = go.AddComponent<DebrisPiece>();
             piece.Init(rb, null);
             piece.instigator = instigator;
             piece.material = Material;
-            manager.Register(piece, DestructionMaterialTable.Current.structureDebrisLifetime);
-            if (Net.IsHost) StructureSync.ChunkDetached(this, c.Index, fell, false, velocity, rb.angularVelocity);
+            MarkWallDebris(piece, fell);
+            var manager = DebrisManager.Instance;
+            if (manager != null) manager.Register(piece, DestructionMaterialTable.Current.structureDebrisLifetime);
+        }
+
+        // A piece of this wall: it never hurts the chunks still in it (3.14), strikes other built
+        // pieces softly (ImpactDamage), and the blast that launched it does not push it a second
+        // time within structureLaunchGrace (a fallen chunk was not launched: any blast pushes it).
+        void MarkWallDebris(DebrisPiece piece, bool fell)
+        {
+            piece.structureChunk = true;
+            piece.structureSource = this;
+            piece.launchedAt = fell ? float.NegativeInfinity : Time.time;
+        }
+
+        // ---- deferred detaches (3.8) ----
+
+        struct PendingDetach
+        {
+            public int chunk;
+            public Vector3 velocity, angular;
+            public int instigator;
+            public bool fell;
+            public int tries;
+            public int frame;
+        }
+
+        const int DetachRetries = 3;
+        readonly List<PendingDetach> pending = new List<PendingDetach>(4);
+
+        // No budget this frame: the chunk leaves the wall for physics at once (collider off, so
+        // nothing hits a chunk that is gone) and stays drawn until it can fall.
+        void Defer(DestructibleChunk c, Vector3 velocity, Vector3 angular, int instigator, bool fell)
+        {
+            if (c.Collider != null) c.Collider.enabled = false;
+            pending.Add(new PendingDetach
+            {
+                chunk = c.Index, velocity = velocity, angular = angular, instigator = instigator, fell = fell,
+                tries = 0, frame = Time.frameCount,
+            });
+        }
+
+        void Update()
+        {
+            if (pending.Count > 0) RetryDetaches();
+        }
+
+        // Once per frame after the one it was refused in, with the same velocity; the third retry
+        // is always granted. On the host the record goes out now, when the chunk really falls.
+        void RetryDetaches()
+        {
+            int frame = Time.frameCount;
+            var manager = DebrisManager.Instance;
+            for (int i = 0; i < pending.Count; i++)
+            {
+                var p = pending[i];
+                if (p.frame >= frame) continue;
+                p.tries++;
+                p.frame = frame;
+                var c = p.chunk >= 0 && p.chunk < chunks.Count ? chunks[p.chunk] : null;
+                if (c == null || c.Transform == null)
+                {
+                    pending.RemoveAt(i--);
+                    continue;
+                }
+                bool granted = manager != null && manager.TryReserveStructure(1, out _);
+                if (!granted && p.tries < DetachRetries)
+                {
+                    pending[i] = p;
+                    continue;
+                }
+                pending.RemoveAt(i--);
+                MakeDebris(c, p.velocity, p.angular, p.instigator, p.fell);
+                if (Net.IsHost) StructureSync.ChunkDetached(this, c.Index, p.fell, false, p.velocity, p.angular, 0);
+            }
         }
 
         // Panes, casements and door leaves hang in the wall. Once no chunk touches one, it
@@ -966,7 +1155,8 @@ namespace Movers
         //
         // The host's structure records, applied as bookkeeping and picture only: no graph (it is
         // not installed on the client), no Refresh, no events, no damage. Sounds come from the
-        // host's own Props Sound records. Silent is the join snapshot: no dust, no debris.
+        // host's own Props Sound records, except a broken-off chunk's (NetDetach plays it from the
+        // speed it was given). Silent is the join snapshot: no dust, no debris.
 
         // The wall breaks up into its chunks, with the host's share of health left, so every
         // chunk starts with the host's look.
@@ -977,10 +1167,13 @@ namespace Movers
             Fracture(false);
         }
 
-        // One chunk out of the wall: a body with the host's velocities, or gone in its dust.
-        // The window frames with nothing left around them drop here too, as on the host; the
-        // panes and door leaves have their own records.
-        public void NetDetach(int index, bool fell, bool vanished, Vector3 velocity, Vector3 angular, bool silent)
+        // One chunk out of the wall, as on the host (3.8): rubble when the host cut it (rubble > 0)
+        // and this machine's budget allows it, else the whole slab as a body with the host's
+        // velocities (its mass capped like the host's), deferred like the host's when the frame's
+        // budget is spent. Never hidden while it is live here. The window frames with nothing left
+        // around them drop here too; the panes and door leaves have their own records.
+        public void NetDetach(int index, bool fell, bool vanished, Vector3 velocity, Vector3 angular, bool silent,
+                              int rubble = 0)
         {
             if (!IsFractured || index < 0 || index >= chunks.Count) return;
             var c = chunks[index];
@@ -996,29 +1189,32 @@ namespace Movers
             {
                 GameObject go = c.Transform.gameObject;
                 if (go.TryGetComponent(out ChunkCollisionRelay relay)) relay.owner = null;
-                var manager = silent || vanished ? null : DebrisManager.Instance;
-                if (manager == null) go.SetActive(false);
-                else
+                // The join snapshot: gone before this machine joined, never a live chunk here. (A
+                // chunk the host had no object for still falls here: nothing live vanishes.)
+                if (silent) go.SetActive(false);
+                else if (!(rubble > 0 && Shatter(c, velocity, Actors.World, rubble)))
                 {
-                    if (go.TryGetComponent(out MeshCollider mc) && !mc.convex) mc.convex = true;
-                    var rb = go.AddComponent<Rigidbody>();
-                    rb.mass = c.Mass;
-                    rb.interpolation = RigidbodyInterpolation.Interpolate;
-                    rb.maxDepenetrationVelocity = 3f;
-                    rb.linearVelocity = velocity;
-                    rb.angularVelocity = angular;
-                    var piece = go.AddComponent<DebrisPiece>();
-                    piece.Init(rb, null);
-                    piece.material = Material;
-                    manager.Register(piece, DestructionMaterialTable.Current.structureDebrisLifetime);
+                    var manager = DebrisManager.Instance;
+                    if (manager != null && manager.TryReserveStructure(1, out _)) MakeDebris(c, velocity, angular, Actors.World, fell);
+                    else Defer(c, velocity, angular, Actors.World, fell);
                 }
             }
             if (!silent)
             {
-                DestructionFX.Dust(b.center, b.extents.magnitude);
+                if (fell) DestructionFX.Dust(b.center, b.extents.magnitude);   // its sound is the host's (Props Sound)
+                else LaunchFeedback(b, velocity, c.Mass);
                 DebrisManager.WakeInBounds(b);
             }
             NetDropLooseFixtures(silent);
+        }
+
+        // The client's dust and sound for a chunk broken off, scaled by the speed the host gave it:
+        // the host's own ImpactFeedback for the removal is not sent (3.9), so this is the only puff.
+        void LaunchFeedback(Bounds b, Vector3 velocity, float mass)
+        {
+            float strength = ImpactFeedback.Strength01(0.5f * PhysicsMass(mass) * velocity.sqrMagnitude);
+            DestructionFX.Dust(b.center, b.extents.magnitude * (1f + strength));
+            ImpactAudio.PlayFromNet(DestructionMaterialTable.Get(Material).sound, b.center, Mathf.Lerp(0.3f, 1f, strength));
         }
 
         // DropFixture's picture, for the client: the frame's own panes break here first (the
@@ -1132,6 +1328,7 @@ namespace Movers
         // are destroyed; the graph is rebuilt by HouseDestruction afterwards.
         public void Revive()
         {
+            pending.Clear();
             for (int i = 0; i < chunks.Count; i++)
             {
                 var c = chunks[i];
