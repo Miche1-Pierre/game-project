@@ -12,7 +12,15 @@ namespace Movers
         public bool hasIntro, cardShowing, brokeIn;
         public int breakInBy, startedBy;
         public string breakInWhat, startedHow;
-        public float policeRemaining;               // -1 = no police called
+        public float policeRemaining;               // seconds to the police's arrival; -1 = no police called
+        // The flee (ADR-013), protocol 2.
+        public MissionPhase phase;
+        public byte arrestedMask, pendingMask;
+        public byte interceptTenths;                // tenths of a second before interception; NoIntercept = no warning
+        public float fleeSeconds;                   // escape time left in PoliceHere; -1 = none
+        public bool escaped;
+
+        public const byte NoIntercept = 255;
 
         public static SessionReplica Of(GameSession s)
         {
@@ -30,6 +38,12 @@ namespace Movers
                 startedBy = s.StartedBy,
                 startedHow = s.StartedHow,
                 policeRemaining = s.PoliceIn,
+                phase = Session.Phase,
+                arrestedMask = Session.ArrestedMask,
+                pendingMask = Session.ArrestPendingMask,
+                interceptTenths = Tenths(s.InterceptLeft),
+                fleeSeconds = s.FleeLeft,
+                escaped = Session.Escaped,
             };
         }
 
@@ -43,12 +57,18 @@ namespace Movers
             if (hasIntro) flags |= 1;
             if (cardShowing) flags |= 2;
             if (brokeIn) flags |= 4;
+            if (escaped) flags |= 8;
             w.WriteByte(flags);
             w.WriteSByte((sbyte)breakInBy);
             w.WriteByte(Code(GameSession.BreakInWords, breakInWhat));
             w.WriteSByte((sbyte)startedBy);
             w.WriteByte(Code(GameSession.StartedHowWords, startedHow));
             w.WriteFloat(policeRemaining);
+            w.WriteByte((byte)phase);
+            w.WriteByte(arrestedMask);
+            w.WriteByte(pendingMask);
+            w.WriteByte(interceptTenths);
+            w.WriteFloat(fleeSeconds);
         }
 
         public static SessionReplica Read(NetReader r)
@@ -62,13 +82,22 @@ namespace Movers
             s.hasIntro = (flags & 1) != 0;
             s.cardShowing = (flags & 2) != 0;
             s.brokeIn = (flags & 4) != 0;
+            s.escaped = (flags & 8) != 0;
             s.breakInBy = r.ReadSByte();
             s.breakInWhat = Word(GameSession.BreakInWords, r.ReadByte());
             s.startedBy = r.ReadSByte();
             s.startedHow = Word(GameSession.StartedHowWords, r.ReadByte());
             s.policeRemaining = r.ReadFloat();
+            s.phase = (MissionPhase)r.ReadByte();
+            s.arrestedMask = r.ReadByte();
+            s.pendingMask = r.ReadByte();
+            s.interceptTenths = r.ReadByte();
+            s.fleeSeconds = r.ReadFloat();
             return s;
         }
+
+        static byte Tenths(float seconds) =>
+            seconds < 0f ? NoIntercept : (byte)Mathf.Clamp(Mathf.RoundToInt(seconds * 10f), 0, NoIntercept - 1);
 
         static byte Code(string[] words, string s)
         {
@@ -148,7 +177,8 @@ namespace Movers
             }
             var end = NetOut.Reliable(NetSyncId.Session, OpSettlementEnd);
             if (end == null) return;
-            end.WriteBool(result.Completed);
+            // Flags (protocol 2): 1 completed, 2 escaped.
+            end.WriteByte((byte)((result.Completed ? 1 : 0) | (result.Escaped ? 2 : 0)));
             end.WriteByte((byte)result.Failure);
             end.WriteInt(result.Total);
             NetOut.End(end);
@@ -217,10 +247,10 @@ namespace Movers
                     return;
                 case OpSettlementEnd:
                 {
-                    bool completed = r.ReadBool();
+                    byte flags = r.ReadByte();
                     var failure = (FailReason)r.ReadByte();
                     r.ReadInt();   // the total: the sum of the lines, rebuilt by FromReplica
-                    if (s != null) s.ApplyResult(Settlement.FromReplica(completed, failure, lines));
+                    if (s != null) s.ApplyResult(Settlement.FromReplica((flags & 1) != 0, (flags & 2) != 0, failure, lines));
                     lines.Clear();
                     return;
                 }

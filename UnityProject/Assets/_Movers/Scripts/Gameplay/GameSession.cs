@@ -15,6 +15,13 @@ namespace Movers
     //   InProgress       the clock runs: delivering completes, time or the police fail
     //   Completed/Failed the end screen shows the settlement; every player is frozen
     //
+    // The police (ADR-013). In a scene with an EscapeMission, her call does not end the run: it
+    // stays InProgress while Session.Phase goes Job, PoliceIncoming (the countdown to the lead
+    // car's arrival, looting allowed, the mission clock stopped), then PoliceHere (fleeTimeLimit
+    // to reach the exit, then the house is surrounded). EscapeMission decides arrests,
+    // interception and the exit, and reports here: this class still writes every field of
+    // Session. Without an EscapeMission (Tutorial_01) the call fails the run after the countdown.
+    //
     // The ledger of what the crew took lives here, because it only means something when the
     // run ends: at delivery its provisional entries become thefts.
     [DefaultExecutionOrder(-400)]
@@ -48,7 +55,11 @@ namespace Movers
         public int StartedBy { get; private set; } = Actors.World;
         public string StartedHow { get; private set; } = "";
         public bool PoliceCalled => policeAt >= 0f;
+        // Seconds to the police's arrival (the lead car), 0 once they are here, -1 before the call.
         public float PoliceIn => PoliceCalled ? Mathf.Max(0f, policeAt - Time.time) : -1f;
+        // The scene has a flee for the police call (EscapeMission) and the tuning wants it.
+        public bool HasEscape => mission != null && mission.isActiveAndEnabled && !Numbers.policeEndsRun;
+        public EscapeMission Mission => mission;
         public bool IntroCardShowing => cardShowing;
         // The card is gone and the crew gets its hands back on the next frame (HideIntroCard).
         public bool CrewReleasePending => releaseFrame >= 0;
@@ -57,9 +68,11 @@ namespace Movers
         public bool Holds(CrewMember m) =>
             Session.IsOver || IntroCardShowing || CrewReleasePending || (m != null && Session.IsArrested(m.index));
         // PoliceHere: seconds of escape left before the house is surrounded, else -1 (EscapeMission).
-        public float FleeLeft => -1f;
+        public float FleeLeft => Session.Phase == MissionPhase.PoliceHere && fleeUntil >= 0f ? Mathf.Max(0f, fleeUntil - Time.time) : -1f;
         // Seconds before the police stop the truck while that warning is on, else -1 (EscapeMission).
-        public float InterceptLeft => -1f;
+        public float InterceptLeft => interceptUntil >= 0f ? Mathf.Max(0f, interceptUntil - Time.time) : -1f;
+        // The police are the clock now: the mission timer waits (both machines).
+        bool ClockStopped => Session.Phase != MissionPhase.Job && Numbers.stopClockOnPolice;
         public float IntroCardAge => Time.unscaledTime - cardSince;
         public float EndAge => Session.IsOver ? Time.unscaledTime - overSince : 0f;
         public bool CanRestart => Session.IsOver && EndAge >= Numbers.restartDelay;
@@ -75,6 +88,9 @@ namespace Movers
         bool cardShowing, frozen;
         float cardSince, overSince, nextLedgerScan;
         float policeAt = -1f;
+        float fleeUntil = -1f, interceptUntil = -1f;
+        bool surrounded;
+        EscapeMission mission;
         int startedFrame;
         int releaseFrame = -1;
 
@@ -88,6 +104,7 @@ namespace Movers
             StartedCount++;
 
             if (contract == null) contract = SceneLookup.Find<ContractManager>(gameObject.scene);
+            mission = SceneLookup.Find<EscapeMission>(gameObject.scene);
             Ledger = new TheftLedger(Numbers);
             onWorldEvent = OnWorldEvent;
             onCrewJoined = OnCrewJoined;
@@ -187,11 +204,7 @@ namespace Movers
             }
             if (Session.IsOver) return;
 
-            if (PoliceCalled && Time.time >= policeAt)
-            {
-                Fail(FailReason.PoliceCalled);
-                return;
-            }
+            if (TickPolice()) return;
             if (Time.time >= nextLedgerScan)
             {
                 nextLedgerScan = Time.time + LedgerScanInterval;
@@ -223,12 +236,155 @@ namespace Movers
             if (!Net.HasAuthority || Session.IsOver) return;
             HideIntroCard();
             Session.Failure = reason;
-            Result = Settlement.ForFailure(reason, Ledger);
+            Result = Settlement.ForFailure(reason, Ledger, reason == FailReason.Intercepted && surrounded);
             if (Net.IsHost) SessionSync.SendSettlement(this);
             SetState(SessionState.Failed);
         }
 
+        // ---- the police flee: EscapeMission reports here (host) ----
+
+        // A crew member on foot caught by a car or an officer zone: frozen for the rest of the run
+        // (Holds keeps the mute through pauses), fined at the end. Everyone arrested fails.
+        public void Arrest(CrewMember m)
+        {
+            if (!Net.HasAuthority || Session.IsOver || m == null || m.index < 0 || m.index > 7) return;
+            if (Session.IsArrested(m.index)) return;
+            byte bit = (byte)(1 << m.index);
+            Session.ArrestedMask |= bit;
+            Session.ArrestPendingMask &= (byte)~bit;
+            if (m.Grab != null) m.Grab.Release(false);
+            if (m.Input != null) m.Input.Muted = true;
+            if (Net.IsHost) SessionSync.SendState(this);
+            WorldEvents.Raise(WorldEventType.CrewArrested, m.transform.position, m.index, 0f, 0f, 0, m);
+            if (AllCrewArrested()) Fail(FailReason.CrewArrested);
+        }
+
+        // The members an officer zone is about to arrest (the HUD's "CAUGHT" ring). Sent on change.
+        public void SetArrestPending(byte mask)
+        {
+            if (!Net.HasAuthority || Session.IsOver) return;
+            mask &= (byte)~Session.ArrestedMask;
+            if (mask == Session.ArrestPendingMask) return;
+            Session.ArrestPendingMask = mask;
+            if (Net.IsHost) SessionSync.SendState(this);
+        }
+
+        // The "BLOCKED!" warning: on with the seconds left before the truck is stopped, off with
+        // a negative value. Only the edges are sent; each machine counts down by itself.
+        public void SetInterceptWarning(float secondsLeft)
+        {
+            if (!Net.HasAuthority || Session.IsOver) return;
+            bool on = secondsLeft >= 0f;
+            if (on == interceptUntil >= 0f) return;
+            interceptUntil = on ? Time.time + secondsLeft : -1f;
+            if (Net.IsHost) SessionSync.SendState(this);
+        }
+
+        // surrounded: the flee time ran out; else a car stopped the truck.
+        public void FailIntercepted(bool surrounded)
+        {
+            if (!Net.HasAuthority || Session.IsOver) return;
+            this.surrounded = surrounded;
+            var truck = mission != null ? mission.Truck : null;
+            WorldEvents.Raise(WorldEventType.TruckIntercepted, truck != null ? truck.transform.position : transform.position,
+                              Actors.World, 0f, surrounded ? 1f : 0f, 0, truck);
+            Fail(FailReason.Intercepted);
+        }
+
+        // The truck reached the exit with crew aboard. aboard: bit i, member i was aboard (and
+        // free). The others are fined like the arrested ones.
+        public void CompleteEscape(int by, Vector3 at, int aboard)
+        {
+            if (!Net.HasAuthority || Session.IsOver) return;
+            HideIntroCard();
+            Ledger.FinalizeAll(House);
+            int fined = 0;
+            var all = CrewRoster.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var m = all[i];
+                if (!Mine(m) || m.index < 0 || m.index > 7) continue;
+                if (Session.IsArrested(m.index) || (aboard & (1 << m.index)) == 0) fined++;
+            }
+            Result = Settlement.ForEscape(contract != null ? contract.Tracker : null, Ledger, BrokeIn, BreakInWhat,
+                                          aboard, fined, Numbers);
+            if (contract != null) contract.money = Result.Total;
+            Session.Escaped = true;
+            if (Net.IsHost) SessionSync.SendSettlement(this);
+            WorldEvents.Raise(WorldEventType.EscapeReached, at, by, 0f, 0f, Result.Total,
+                              mission != null ? mission.Truck : null);
+            SetState(SessionState.Completed);
+        }
+
         // ---- inside ----
+
+        // Her call. With a flee in the scene the police come and the run goes on; without one
+        // it fails at the end of the countdown (TickPolice).
+        void CallPolice()
+        {
+            if (!HasEscape)
+            {
+                policeAt = Time.time + Numbers.policeCountdown;
+                if (Net.IsHost) SessionSync.SendState(this);
+                return;
+            }
+            // Called before the keys: the job starts now, so the flee runs InProgress (the HUD
+            // past "keys first", nobody frozen by the card).
+            if (Session.State == SessionState.Intro) StartContract(Actors.World, false, "", "");
+            policeAt = Time.time + mission.Countdown(Numbers);
+            SetPhase(MissionPhase.PoliceIncoming);
+        }
+
+        // true: the run just ended.
+        bool TickPolice()
+        {
+            if (!PoliceCalled) return false;
+            switch (Session.Phase)
+            {
+                case MissionPhase.Job:
+                    if (Time.time < policeAt) return false;
+                    Fail(FailReason.PoliceCalled);   // no flee in this scene
+                    return true;
+                case MissionPhase.PoliceIncoming:
+                    if (Time.time >= policeAt) PoliceArrive();
+                    return false;
+                default:
+                    if (fleeUntil < 0f || Time.time < fleeUntil) return false;
+                    FailIntercepted(true);
+                    return true;
+            }
+        }
+
+        // The lead car is at the house, on time by construction (EscapeMission sends it early
+        // enough): the escape time starts.
+        void PoliceArrive()
+        {
+            fleeUntil = Time.time + (mission != null ? mission.FleeTime(Numbers) : Numbers.fleeTimeLimit);
+            SetPhase(MissionPhase.PoliceHere);
+            var lead = mission != null ? mission.LeadCarBody : null;
+            WorldEvents.Raise(WorldEventType.PoliceArrived, lead != null ? lead.position : transform.position,
+                              Actors.World, 0f, 0f, 0, lead);
+        }
+
+        void SetPhase(MissionPhase p)
+        {
+            if (Session.Phase == p) return;
+            Session.Phase = p;
+            if (Net.IsHost) SessionSync.SendState(this);
+        }
+
+        bool AllCrewArrested()
+        {
+            var all = CrewRoster.All;
+            bool any = false;
+            for (int i = 0; i < all.Count; i++)
+            {
+                if (!Mine(all[i])) continue;
+                any = true;
+                if (!Session.IsArrested(all[i].index)) return false;
+            }
+            return any;
+        }
 
         void Complete(int by, Vector3 at)
         {
@@ -265,11 +421,7 @@ namespace Movers
                     if (Session.State == SessionState.Intro) OnWayInBeforeKeys(e);
                     break;
                 case WorldEventType.GrandmaCalledPolice:
-                    if (!PoliceCalled)
-                    {
-                        policeAt = Time.time + Numbers.policeCountdown;
-                        if (Net.IsHost) SessionSync.SendState(this);
-                    }
+                    if (!PoliceCalled) CallPolice();
                     break;
             }
         }
@@ -314,7 +466,7 @@ namespace Movers
 
         void TickClock()
         {
-            if (Session.TimeLimit <= 0f) return;   // no limit on this contract
+            if (Session.TimeLimit <= 0f || ClockStopped) return;   // no limit on this contract, or the police
             Session.TimeLeft = Mathf.Max(0f, Session.TimeLeft - Time.deltaTime);
             if (Session.TimeLeft <= 0f && failOnTimeUp) Fail(FailReason.TimeUp);
         }
@@ -350,6 +502,9 @@ namespace Movers
             Session.State = s;
             if (Session.IsOver)
             {
+                // No warning outlives the run (the HUD reads them from the State sent below).
+                Session.ArrestPendingMask = 0;
+                interceptUntil = -1f;
                 overSince = Time.unscaledTime;
                 restartInput.Reset();
                 releaseFrame = -1;
@@ -368,17 +523,18 @@ namespace Movers
         // Muting is the one switch that freezes a player whatever they drive (ADR-009).
         // Only the crew of this session's scene: during a reload the old scene and the new one
         // can overlap for a moment, and the old, finished run must not freeze the new crew.
+        // An arrested member stays muted whatever the card or the end screen do.
         void SetCrewFrozen(bool on)
         {
             frozen = on;
             var all = CrewRoster.All;
             for (int i = 0; i < all.Count; i++)
-                if (Mine(all[i])) all[i].Input.Muted = on;
+                if (Mine(all[i])) all[i].Input.Muted = on || Session.IsArrested(all[i].index);
         }
 
         void OnCrewJoined(CrewMember m)
         {
-            if (frozen && Mine(m)) m.Input.Muted = true;
+            if ((frozen || (m != null && Session.IsArrested(m.index))) && Mine(m)) m.Input.Muted = true;
         }
 
         bool Mine(CrewMember m)
@@ -390,6 +546,13 @@ namespace Movers
         void DebugSetTimeLeft(float seconds)
         {
             if (Net.HasAuthority && Session.IsRunning) Session.TimeLeft = Mathf.Max(0f, seconds);
+        }
+
+        // Test hook, called with SendMessage: the grandmother's call, as if her patience ran out.
+        void DebugCallPolice()
+        {
+            if (Net.HasAuthority && !Session.IsOver && !PoliceCalled)
+                WorldEvents.Raise(WorldEventType.GrandmaCalledPolice, transform.position, Actors.Grandma);
         }
 
         // Test hook, called with SendMessage (tests/skip_intro_card.cs): the card goes and the
@@ -417,7 +580,7 @@ namespace Movers
         // The host's clock between two Clock records. It never fails the run: the host does.
         void TickReplicaClock()
         {
-            if (!Session.IsRunning || Session.TimeLimit <= 0f) return;
+            if (!Session.IsRunning || Session.TimeLimit <= 0f || ClockStopped) return;
             Session.TimeLeft = Mathf.Max(0f, Session.TimeLeft - Time.deltaTime);
         }
 
@@ -439,6 +602,9 @@ namespace Movers
         internal void ApplyReplica(in SessionReplica r)
         {
             if (Net.HasAuthority || Current != this) return;
+            // The flee first: an arrest or a warning changes no SessionState, so it must be
+            // written before the early return below.
+            ApplyMissionReplica(r);
             HasIntro = r.hasIntro;
             BrokeIn = r.brokeIn;
             BreakInBy = r.breakInBy;
@@ -461,12 +627,35 @@ namespace Movers
             if (r.state == Session.State) return;
             if (r.state == SessionState.Completed && contract != null)
             {
-                contract.Tracker.MarkDelivered();      // from the replicated loaded flags
+                // An escape delivers nothing: the contract is void (as on the host).
+                if (!r.escaped)
+                {
+                    contract.Tracker.MarkDelivered();      // from the replicated loaded flags
+                    contract.complete = true;
+                }
                 if (Result != null) contract.money = Result.Total;
-                contract.complete = true;
             }
             if (r.state == SessionState.ContractStarted) startedFrame = Time.frameCount;
             SetState(r.state);
+        }
+
+        void ApplyMissionReplica(in SessionReplica r)
+        {
+            byte newlyArrested = (byte)(r.arrestedMask & ~Session.ArrestedMask);
+            Session.Phase = r.phase;
+            Session.ArrestedMask = r.arrestedMask;
+            Session.ArrestPendingMask = r.pendingMask;
+            Session.Escaped = r.escaped;
+            fleeUntil = r.fleeSeconds >= 0f ? Time.time + r.fleeSeconds : -1f;
+            interceptUntil = r.interceptTenths != SessionReplica.NoIntercept ? Time.time + r.interceptTenths * 0.1f : -1f;
+            // The client drives its own body: the arrest stops it here (Net.LocalMember), and
+            // Holds keeps it stopped through the pause menu.
+            for (int i = 0; i < 8; i++)
+            {
+                if ((newlyArrested & (1 << i)) == 0) continue;
+                var m = CrewRoster.Get(i);
+                if (m != null && m.Input != null) m.Input.Muted = true;
+            }
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
