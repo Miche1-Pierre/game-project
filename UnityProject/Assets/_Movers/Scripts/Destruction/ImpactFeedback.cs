@@ -7,8 +7,8 @@ namespace Movers
     // crunch and a camera shake. One place for it, so walls, the ram and crashes agree.
     //
     // Host or offline only. Never doubled on the client:
-    // - a hit that removed nothing: the host sends a Props ImpactFx (dust, and the shake of a big
-    //   one); its sound reaches the client as an ordinary Props Sound;
+    // - a hit that removed nothing: the host sends a Props ImpactFx (dust, chips, and the shake of
+    //   a big one); its sound reaches the client as an ordinary Props Sound;
     // - a hit that removed a chunk or a piece: that removal already reaches the client
     //   (ChunkDetached, whose NetDetach plays its own dust and sound), so the host keeps its sound
     //   to itself and sends only the shake of a big hit (ImpactFx with size 0).
@@ -27,6 +27,13 @@ namespace Movers
         // picture of it, not a record per contact.
         const int MaxSentPerWindow = 8;
         const float SendWindow = 0.1f;
+        // Chips (3.9): the chunk is looked for within ChipSearch of the hit, the patch cut is
+        // ChipRadius across, a tenth of the chunk's mass, thrown off the face at ChipSpeed.
+        const float ChipSearch = 0.3f;     // m
+        const float ChipRadius = 0.25f;    // m
+        const float ChipMassShare = 0.1f;
+        const float ChipSpeed = 3f;        // m/s
+        static readonly Collider[] chipHits = new Collider[8];
 
         static float windowStart = -1000f;
         static int sentInWindow;
@@ -72,6 +79,8 @@ namespace Movers
             bool shakes = energyJoules >= ShakeEnergy;
             if (shakes) Shake(at, strength);
 
+            if (!removedSomething) Chips(at, strength, instigator);
+
             if (!Net.IsHost) return;
             if (!removedSomething) Send(at, strength, Mathf.Max(0.1f, size));
             else if (shakes) Send(at, strength, 0f);
@@ -82,7 +91,11 @@ namespace Movers
         {
             if (!IsFinite(at) || float.IsNaN(strength01)) return;
             strength01 = Mathf.Clamp01(strength01);
-            if (size > 0f) Dust(at, size, strength01);
+            if (size > 0f)
+            {
+                Dust(at, size, strength01);
+                Chips(at, strength01, Actors.World);
+            }
             // The byte loses a little: a hit sent for its shake at exactly ShakeEnergy must still shake.
             if (size <= 0f || strength01 >= Strength01(ShakeEnergy) - 1f / 255f) Shake(at, strength01);
         }
@@ -93,6 +106,38 @@ namespace Movers
             float cloud = Mathf.Max(0.1f, size) * (1f + strength);
             int count = Mathf.Clamp(Mathf.RoundToInt(Mathf.Lerp(4f, 24f, strength) + size * 4f), 4, 32);
             DestructionFX.Dust(at, cloud, count);
+        }
+
+        // A hit that removes nothing knocks 1 to 3 chips off the wall chunk it landed on (3.9): a
+        // small patch of that chunk's surface, a tenth of its mass, on the ordinary debris budget
+        // (MeshShatter.Chips). The chunk is found from the point on each machine (the host's Hit,
+        // the client's ImpactFx), so nothing more goes on the wire. An intact wall or a prop
+        // gives none: the dust says it.
+        static void Chips(Vector3 at, float strength, int instigator)
+        {
+            int n = Physics.OverlapSphereNonAlloc(at, ChipSearch, chipHits, ~0, QueryTriggerInteraction.Ignore);
+            DestructibleChunk best = null;
+            float bestDistance = float.PositiveInfinity;
+            for (int i = 0; i < n; i++)
+            {
+                Collider c = chipHits[i];
+                chipHits[i] = null;
+                if (!DestructibleModule.TryGetChunk(c, out DestructibleChunk chunk)) continue;
+                if (!chunk.Attached || chunk.Renderer == null || !chunk.Renderer.enabled) continue;
+                float d = c.bounds.SqrDistance(at);
+                if (d < bestDistance)
+                {
+                    bestDistance = d;
+                    best = chunk;
+                }
+            }
+            if (best == null) return;
+
+            Vector3 away = at - best.Renderer.bounds.center;
+            away = away.sqrMagnitude > 1e-6f ? away.normalized : Vector3.up;
+            int count = Mathf.Clamp(1 + Mathf.RoundToInt(strength * 2f), 1, 3);
+            MeshShatter.Chips(best.Renderer, at, ChipRadius, count, ChipMassShare * best.Mass, away * ChipSpeed,
+                              DestructionMaterialTable.Current.propDebrisLifetime, instigator);
         }
 
         static void Shake(Vector3 at, float strength)
