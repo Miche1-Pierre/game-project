@@ -478,16 +478,21 @@ namespace Movers
         }
 
         // Big hits break a chunk into rubble (3.7): an overkill of at least rubbleOverkill times its
-        // health, or a blast so close that the chunk flies out at least as fast as it would at
-        // breachRadius (the eject speed follows the falloff curve, so this is "within breachRadius
-        // of the blast" without knowing the blast's centre). More overkill, more pieces. 0: whole.
+        // health, or a chunk within breachRadius x cbrt(power) of the blast. While BlastSolver.Apply
+        // runs it knows the centre (WithinBreach, e.position is the chunk's nearest point to it).
+        // Otherwise the eject speed stands in: it follows the falloff curve, so a chunk flying out
+        // at least as fast as it would at breachRadius was that close. More overkill, more pieces.
+        // 0: whole.
         static int RubblePieces(DestructibleChunk c, in DamageEvent e, float overkill)
         {
             var t = DestructionMaterialTable.Current;
             float ratio = c.MaxHealth > 0f ? overkill / c.MaxHealth : 0f;
             bool big = t.rubbleOverkill > 0f && ratio >= t.rubbleOverkill;
-            bool breach = e.type == DamageType.Blast && e.speed > 0f && t.breachRadius > 0f && t.blastChunkEjectSpeed > 0f
-                          && e.speed >= t.blastChunkEjectSpeed * DestructionMaterialTable.Focus(t.breachRadius) - 0.01f;
+            bool breach = e.type == DamageType.Blast && t.breachRadius > 0f
+                          && (BlastSolver.Applying
+                              ? BlastSolver.WithinBreach(e.position)
+                              : e.speed > 0f && t.blastChunkEjectSpeed > 0f
+                                && e.speed >= t.blastChunkEjectSpeed * DestructionMaterialTable.Focus(t.breachRadius) - 0.01f);
             if (!big && !breach) return 0;
             int lo = Mathf.Clamp(Mathf.Min(t.rubblePieces.x, t.rubblePieces.y), 2, MaxRubble);
             int hi = Mathf.Clamp(Mathf.Max(t.rubblePieces.x, t.rubblePieces.y), lo, MaxRubble);
