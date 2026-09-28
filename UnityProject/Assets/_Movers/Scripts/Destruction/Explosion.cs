@@ -391,6 +391,12 @@ namespace Movers
             if (rb.TryGetComponent(out DebrisPiece piece)) piece.instigator = instigator;
         }
 
+        // Something else (the truck's ram) threw this body: same launch table, same blame window.
+        public static void MarkLaunched(Rigidbody rb, int instigator)
+        {
+            if (rb != null) Blame(rb, instigator);
+        }
+
         // Who launched this body within the last 'withinSeconds', or World.
         internal static int LaunchedBy(Rigidbody rb, float withinSeconds)
         {

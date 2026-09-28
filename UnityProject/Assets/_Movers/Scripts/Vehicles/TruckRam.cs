@@ -388,10 +388,14 @@ namespace Movers
             body.angularVelocity += UnityEngine.Random.insideUnitSphere * 4f;
 
             // What it breaks on landing is the driver's doing (ImpactDamage reads a throw).
-            if (Actors.IsPlayer(driver) && body.TryGetComponent(out MovableObject mo))
+            if (Actors.IsPlayer(driver))
             {
-                mo.lastThrownBy = driver;
-                mo.lastThrownTime = Time.time;
+                if (body.TryGetComponent(out MovableObject mo))
+                {
+                    mo.lastThrownBy = driver;
+                    mo.lastThrownTime = Time.time;
+                }
+                else Explosion.MarkLaunched(body, driver);   // loose debris, a pot plant: the launch table
             }
 
             body.GetComponentsInChildren(false, bodyColliders);
