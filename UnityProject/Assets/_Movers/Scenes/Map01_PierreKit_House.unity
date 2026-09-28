@@ -4320,6 +4320,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Movers.HouseDestruction
   houseRoot: {fileID: 0}
+  extraRoots: []
   splitGlass: 1
   breakableStructure: 1
   breakableMovables: 1
@@ -4333,6 +4334,7 @@ MonoBehaviour:
   hangingHops: 1
   collapsePerFrame: 40
   collapseStagger: 0.3
+  precookMsPerFrame: 4
   debugTools: 1
 --- !u!4 &117438985
 Transform:
@@ -7958,6 +7960,130 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8248883031531054394, guid: 04a7eaf774344574b892c69a87b65f57, type: 3}
   m_PrefabInstance: {fileID: 211346650}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &212906825
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 212906826}
+  m_Layer: 0
+  m_Name: Mission
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &212906826
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 212906825}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1761335112}
+  - {fileID: 1981866778}
+  - {fileID: 1696432978}
+  - {fileID: 1824411509}
+  - {fileID: 1901621744}
+  - {fileID: 1055126343}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &217491927
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 217491928}
+  - component: {fileID: 217491930}
+  - component: {fileID: 217491929}
+  m_Layer: 0
+  m_Name: PassengerDoor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &217491928
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 217491927}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.3880514, y: 1.6, z: 2.9142494}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1635108356}
+  m_Father: {fileID: 1554164722}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &217491929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 217491927}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cf99d4aff280bd4e8b4a4cc225be15c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.VehicleSeat
+  vehicle: {fileID: 1554164723}
+  seatPoint: {fileID: 1635108356}
+  seatIndex: 1
+  drives: 0
+  maxExitSpeed: 1
+  exitClearance: 0.3
+  chase:
+    speedResponse: 0.6
+    distance: 10
+    pivotHeight: 2.4
+    basePitch: 14
+    minPitch: -5
+    maxPitch: 60
+    orbitSensitivity: 3
+    followLag: 0.25
+    recenterDelay: 1.5
+    recenterSpeed: 90
+    recenterMinSpeed: 2
+    collisionRadius: 0.3
+  fontSize: 18
+--- !u!65 &217491930
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 217491927}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.04, y: 2, z: 1.4743447}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &223224961
 GameObject:
   m_ObjectHideFlags: 0
@@ -15850,6 +15976,8 @@ Transform:
   - {fileID: 682526375}
   - {fileID: 93227714}
   - {fileID: 666718201}
+  - {fileID: 1756144475}
+  - {fileID: 1101826833}
   m_Father: {fileID: 1148394774}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &439076164
@@ -20453,6 +20581,7 @@ MonoBehaviour:
   blockedByPlayerWait: 1.5
   detourSeconds: 6
   maxStuckRetries: 3
+  knockMaxStagger: 3
   pushMaxKg: 15
   pushForce: 40
   seatedRadius: 0.25
@@ -28259,6 +28388,68 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 763017096}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &763121924
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1901621744}
+    m_Modifications:
+    - target: {fileID: 134962, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_Name
+      value: Policecar
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+--- !u!4 &763121925 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+  m_PrefabInstance: {fileID: 763121924}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &764321422
 GameObject:
   m_ObjectHideFlags: 0
@@ -34125,6 +34316,68 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6653188208847994874, guid: 4fd88743338a3674c818eda0c9cf2226, type: 3}
   m_PrefabInstance: {fileID: 967580205}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &971281403
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1824411509}
+    m_Modifications:
+    - target: {fileID: 134962, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_Name
+      value: Policecar
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+--- !u!4 &971281404 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 429084, guid: 1bc3a967e1e743b41b30f111c58ba985, type: 3}
+  m_PrefabInstance: {fileID: 971281403}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &972333931
 GameObject:
   m_ObjectHideFlags: 0
@@ -37620,6 +37873,92 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1052438481}
   m_Mesh: {fileID: -421428982362565094, guid: 9da57168f63d3a845a6e4cc421afce85, type: 3}
+--- !u!1 &1055126342
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1055126343}
+  - component: {fileID: 1055126346}
+  - component: {fileID: 1055126345}
+  - component: {fileID: 1055126344}
+  m_Layer: 2
+  m_Name: EscapeCheckpoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1055126343
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1055126342}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.26516795, z: -0, w: 0.9642022}
+  m_LocalPosition: {x: 261.77338, y: 0, z: 194.6868}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 212906826}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1055126344
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1055126342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56e6cbeabbbe492685f1c7bc943a3e41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.RoadAnchor
+  road: {fileID: 2113438738}
+  distance: 320
+  lateral: 0
+  alignYaw: 1
+  yawOffset: 0
+  restOnColliders: 0
+  lift: 0
+--- !u!114 &1055126345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1055126342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94656c8d6c5d49ebbd00424a5013e2f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.EscapeCheckpoint
+--- !u!65 &1055126346
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1055126342}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Size: {x: 14, y: 8, z: 10}
+  m_Center: {x: 0, y: 4, z: 0}
 --- !u!1 &1056699568
 GameObject:
   m_ObjectHideFlags: 0
@@ -39071,7 +39410,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 438214444}
     m_Modifications:
     - target: {fileID: 330839558451507705, guid: e502d3107d08dc741ad3190b284c0450, type: 3}
       propertyPath: m_Name
@@ -39095,7 +39434,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1142982468401785667, guid: e502d3107d08dc741ad3190b284c0450, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 1142982468401785667, guid: e502d3107d08dc741ad3190b284c0450, type: 3}
       propertyPath: m_LocalRotation.y
@@ -39122,6 +39461,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e502d3107d08dc741ad3190b284c0450, type: 3}
+--- !u!4 &1101826833 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1142982468401785667, guid: e502d3107d08dc741ad3190b284c0450, type: 3}
+  m_PrefabInstance: {fileID: 1101826832}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1106429065
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -40205,6 +40549,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1387553623456563977, guid: 719ba35239e7e6a45a438e6220541748, type: 3}
   m_PrefabInstance: {fileID: 1144603310}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1145386359
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1145386360}
+  m_Layer: 0
+  m_Name: Arrival
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1145386360
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1145386359}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -23.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1981866778}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1146593484
 GameObject:
   m_ObjectHideFlags: 0
@@ -43369,6 +43744,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Movers.CrewEquip
   animator: {fileID: 1233498702}
+  bodyRenderer: {fileID: 0}
 --- !u!1001 &1235158190
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -47552,6 +47928,7 @@ GameObject:
   - component: {fileID: 1383562370}
   - component: {fileID: 1383562369}
   - component: {fileID: 1383562376}
+  - component: {fileID: 1383562377}
   m_Layer: 0
   m_Name: _Systems
   m_TagString: Untagged
@@ -47691,6 +48068,24 @@ MonoBehaviour:
   art: {fileID: 11400000, guid: 6702d4a0caf2d324d96485747fe53786, type: 2}
   tuning: {fileID: 11400000, guid: 5be1e0dc296901a499ec49d082289197, type: 2}
   mode: 0
+--- !u!114 &1383562377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1383562367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 234dd71d9b5c4aa7b1bb10177854262b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.EscapeMission
+  policeCountdown: -1
+  fleeTimeLimit: -1
+  route: {fileID: 1981866779}
+  spawn: {fileID: 1696432979}
+  checkpoint: {fileID: 1055126345}
+  truck: {fileID: 1554164723}
 --- !u!1001 &1394528691
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -49869,6 +50264,19 @@ MonoBehaviour:
   eventHoldSeconds: 0.7
   knockDownSpeed: 5.5
   uprightSeconds: 0.3
+  arrestHoldTime: 0.92
+  runClipSpeed: 3.7
+  crouchWalkClipSpeed: 1.39
+  maxMoveScale: 1.8
+  airDelay: 0.12
+  airLift: 0.22
+  airBlendSeconds: 0.12
+  landSeconds: 0.05
+  crouchHipDrop: 0.36
+  crouchHipBack: 0.22
+  eyeAboveHead: 0.07
+  maxSpineFlex: 60
+  headCounter: 0.7
 --- !u!114 &1468103405
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -53033,6 +53441,7 @@ Transform:
   - {fileID: 575750777}
   - {fileID: 1847573690}
   - {fileID: 2001334840}
+  - {fileID: 217491928}
   - {fileID: 361886235}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -53048,6 +53457,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 487b1b9c446202a43bd87bb6a7057cd1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Movers.TruckVehicle
+  tuning: {fileID: 11400000, guid: c33083fbb87a4ac99466aaf6294e90d8, type: 2}
   frontLeft: {fileID: 972333932}
   frontRight: {fileID: 18100533}
   rearLeft: {fileID: 609116121}
@@ -53087,7 +53497,6 @@ MonoBehaviour:
     lookAhead: 0.1
     minClosingSpeed: 0.3
     sideKick: 0.5
-  tuning: {fileID: 11400000, guid: c33083fbb87a4ac99466aaf6294e90d8, type: 2}
 --- !u!208 &1554164724
 NavMeshObstacle:
   m_ObjectHideFlags: 0
@@ -55687,6 +56096,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8285094275381451766, guid: d2bef2c24c9e0ab45be07d04fa771549, type: 3}
   m_PrefabInstance: {fileID: 1625093986}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1635108355
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1635108356}
+  m_Layer: 0
+  m_Name: SeatPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1635108356
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1635108355}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.77, y: 0.4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 217491928}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1637662648
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -57424,6 +57864,74 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6627594869401380672, guid: 9963495d4f4743d488de26ff3cc2ffec, type: 3}
   m_PrefabInstance: {fileID: 1693904572}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1696432977
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1696432978}
+  - component: {fileID: 1696432980}
+  - component: {fileID: 1696432979}
+  m_Layer: 0
+  m_Name: PoliceSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1696432978
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696432977}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.7239634, z: -0, w: 0.6898384}
+  m_LocalPosition: {x: -595.23956, y: 0, z: 36.236958}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 212906826}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1696432979
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696432977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aad184d3d8ea4b0681404c5be059f76d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.PoliceSpawn
+  cars:
+  - {fileID: 1824411511}
+  - {fileID: 1901621746}
+  stagger: -1
+--- !u!114 &1696432980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696432977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56e6cbeabbbe492685f1c7bc943a3e41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.RoadAnchor
+  road: {fileID: 1288317971}
+  distance: 580
+  lateral: -1.6
+  alignYaw: 1
+  yawOffset: 180
+  restOnColliders: 0
+  lift: 0
 --- !u!1 &1702866849
 GameObject:
   m_ObjectHideFlags: 0
@@ -58832,7 +59340,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 438214444}
     m_Modifications:
     - target: {fileID: 330839558451507705, guid: e502d3107d08dc741ad3190b284c0450, type: 3}
       propertyPath: m_Name
@@ -58856,7 +59364,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1142982468401785667, guid: e502d3107d08dc741ad3190b284c0450, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 1142982468401785667, guid: e502d3107d08dc741ad3190b284c0450, type: 3}
       propertyPath: m_LocalRotation.y
@@ -58883,6 +59391,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e502d3107d08dc741ad3190b284c0450, type: 3}
+--- !u!4 &1756144475 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1142982468401785667, guid: e502d3107d08dc741ad3190b284c0450, type: 3}
+  m_PrefabInstance: {fileID: 1756144474}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1759142409
 GameObject:
   m_ObjectHideFlags: 0
@@ -58973,6 +59486,57 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1759142409}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1761335110
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1761335112}
+  - component: {fileID: 1761335111}
+  m_Layer: 0
+  m_Name: Route_Street
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1761335111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1761335110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3854a11e91b7fd4e9b9df0c90d5c5e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.RoadPath
+  points:
+  - {x: -29.5, y: 0, z: -23.6}
+  - {x: 50.5, y: 0, z: -23.6}
+  halfWidth: 4.8
+  shoulder: 0.9
+  step: 1
+  dash: {x: 3, y: 4}
+--- !u!4 &1761335112
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1761335110}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 212906826}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1764361108
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60609,6 +61173,128 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3290450727210773728, guid: 844e69182153d7f40b07c25a1a256891, type: 3}
   m_PrefabInstance: {fileID: 1819268990}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1824411508
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1824411509}
+  - component: {fileID: 1824411513}
+  - component: {fileID: 1824411512}
+  - component: {fileID: 1824411511}
+  - component: {fileID: 1824411510}
+  m_Layer: 0
+  m_Name: PoliceCar_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1824411509
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1824411508}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.72441375, z: -0, w: 0.6893655}
+  m_LocalPosition: {x: -593.244, y: 0.9, z: 36.13885}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 971281404}
+  m_Father: {fileID: 212906826}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1824411510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1824411508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56e6cbeabbbe492685f1c7bc943a3e41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.RoadAnchor
+  road: {fileID: 1288317971}
+  distance: 578
+  lateral: -1.6
+  alignYaw: 1
+  yawOffset: 180
+  restOnColliders: 1
+  lift: 0.05
+--- !u!114 &1824411511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1824411508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dce3ac0af1934ff6bf7a4fe0379ff80b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.PoliceCar
+  lane: 1.6
+  maxYawRate: 90
+  lateralGrip: 12
+  uprightStrength: 25
+  uprightDamping: 5
+  flashHz: 2
+  sirenVolume: 0.9
+--- !u!54 &1824411512
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1824411508}
+  serializedVersion: 5
+  m_Mass: 1400
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 2
+--- !u!65 &1824411513
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1824411508}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.94, y: 1.64, z: 4.84}
+  m_Center: {x: 0, y: 0.01, z: 0.27}
 --- !u!1001 &1825362711
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -63400,6 +64086,128 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1898695462}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1901621743
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1901621744}
+  - component: {fileID: 1901621748}
+  - component: {fileID: 1901621747}
+  - component: {fileID: 1901621746}
+  - component: {fileID: 1901621745}
+  m_Layer: 0
+  m_Name: PoliceCar_2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1901621744
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901621743}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.72279674, z: -0, w: 0.6910607}
+  m_LocalPosition: {x: -603.2253, y: 0.9, z: 36.61068}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 763121925}
+  m_Father: {fileID: 212906826}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1901621745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901621743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56e6cbeabbbe492685f1c7bc943a3e41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.RoadAnchor
+  road: {fileID: 1288317971}
+  distance: 588
+  lateral: -1.6
+  alignYaw: 1
+  yawOffset: 180
+  restOnColliders: 1
+  lift: 0.05
+--- !u!114 &1901621746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901621743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dce3ac0af1934ff6bf7a4fe0379ff80b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.PoliceCar
+  lane: 1.6
+  maxYawRate: 90
+  lateralGrip: 12
+  uprightStrength: 25
+  uprightDamping: 5
+  flashHz: 2
+  sirenVolume: 0.9
+--- !u!54 &1901621747
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901621743}
+  serializedVersion: 5
+  m_Mass: 1400
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 2
+--- !u!65 &1901621748
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901621743}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.94, y: 1.64, z: 4.84}
+  m_Center: {x: 0, y: 0.01, z: 0.27}
 --- !u!1001 &1908669652
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -65575,6 +66383,66 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.1849401, y: 0.50271523, z: 0.17851083}
   m_Center: {x: 0, y: 0.25135761, z: 0}
+--- !u!1 &1981866777
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1981866778}
+  - component: {fileID: 1981866779}
+  m_Layer: 0
+  m_Name: MissionRoute
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1981866778
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981866777}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1145386360}
+  m_Father: {fileID: 212906826}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1981866779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981866777}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 730525ace70d4515a16f06354353a23d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movers.MissionRoute
+  segments:
+  - road: {fileID: 1288317971}
+    fromS: 580
+    toS: 0
+    waypoints: []
+  - road: {fileID: 1761335111}
+    fromS: 0
+    toS: 80
+    waypoints: []
+  - road: {fileID: 2113438738}
+    fromS: 0
+    toS: 360
+    waypoints: []
+  arrival: {fileID: 1145386360}
+  step: 2
 --- !u!1 &1982436635
 GameObject:
   m_ObjectHideFlags: 0
@@ -66533,9 +67401,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Movers.VehicleSeat
   vehicle: {fileID: 1554164723}
   seatPoint: {fileID: 30709105}
+  seatIndex: 0
+  drives: 1
   maxExitSpeed: 1
   exitClearance: 0.3
   chase:
+    speedResponse: 0.6
     distance: 10
     pivotHeight: 2.4
     basePitch: 14
@@ -71159,8 +72030,6 @@ SceneRoots:
   - {fileID: 331656088}
   - {fileID: 1148394774}
   - {fileID: 1468103398}
-  - {fileID: 1756144474}
-  - {fileID: 1101826832}
   - {fileID: 895459487}
   - {fileID: 1554164722}
   - {fileID: 76612978}
@@ -71172,3 +72041,4 @@ SceneRoots:
   - {fileID: 855634484}
   - {fileID: 782496777}
   - {fileID: 930183099}
+  - {fileID: 212906826}
