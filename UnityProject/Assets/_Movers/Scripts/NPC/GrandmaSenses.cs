@@ -12,7 +12,8 @@ namespace Movers
     // - Hearing: world events within WorldEvents.HearingRadius(loudness), halved for each wall
     //   or floor in between. Explosions are heard through walls, and at full range (her
     //   deafness does not apply to them, MoodCosts.explosionHearing).
-    // - Touch: a player pushing into her, or a thrown object hitting her.
+    // - Touch: a player pushing into her, or a thrown object hitting her. A vehicle knocking her
+    //   (GrandmaMover.Knock) is being run over from runOverMinSpeed, a bump below.
     // - The clock: whether the house is emptying as fast as the time runs out.
     //
     // Theft: she witnesses it when she sees a player pocket or load one of her things that is
@@ -66,6 +67,7 @@ namespace Movers
 
         Transform head;
         Action<WorldEvent> onWorldEvent;
+        Action<Vector3, int> onKnocked;
         float nextLook;
         float lastLookTime = -1f;
         float nextScheduleCheck = -1f;
@@ -93,12 +95,22 @@ namespace Movers
             if (animator == null) animator = GetComponentInChildren<Animator>();
             if (animator != null && animator.isHuman) head = animator.GetBoneTransform(HumanBodyBones.Head);
             onWorldEvent = OnWorldEvent;
+            onKnocked = OnKnocked;
             int debris = LayerMask.NameToLayer("Debris");
             if (debris >= 0) layerMask &= ~(1 << debris);
         }
 
-        void OnEnable() { WorldEvents.Subscribe(onWorldEvent); }
-        void OnDisable() { WorldEvents.Unsubscribe(onWorldEvent); }
+        void OnEnable()
+        {
+            WorldEvents.Subscribe(onWorldEvent);
+            if (mover != null) mover.Knocked += onKnocked;
+        }
+
+        void OnDisable()
+        {
+            WorldEvents.Unsubscribe(onWorldEvent);
+            if (mover != null) mover.Knocked -= onKnocked;
+        }
 
         Vector3 Forward => mover != null ? mover.Forward : transform.forward;
 
@@ -424,6 +436,14 @@ namespace Movers
                     Emit(new Stimulus(StimulusKind.Bumped, m.Position, p) { seen = true });
                 }
             }
+        }
+
+        // A vehicle hit her (host, GrandmaMover.Knock).
+        void OnKnocked(Vector3 velocityChange, int by)
+        {
+            if (!Net.HasAuthority || asleep || !isActiveAndEnabled) return;
+            var kind = velocityChange.magnitude >= Costs.runOverMinSpeed ? StimulusKind.RunOver : StimulusKind.Bumped;
+            Emit(new Stimulus(kind, transform.position, by) { seen = true });
         }
 
         // Something thrown (or knocked) into her.

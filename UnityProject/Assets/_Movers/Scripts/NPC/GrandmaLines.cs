@@ -16,7 +16,7 @@ namespace Movers
         ExcuseMe, Blocked, BreakIn, Goodbye,
         Rock, Read, TV, Tea, Cook, Water, Fire, LookOutside,
         // DEV 2 (ADR-013). Values travel on the wire (GrandmaSync Speech): append only.
-        StructureBroken, GardenBroken,
+        StructureBroken, GardenBroken, RunOver,
         Count
     }
 
@@ -35,6 +35,7 @@ namespace Movers
                 case StimulusKind.DoorBroken: return Line.Door;
                 case StimulusKind.Explosion: return Line.Explosion;
                 case StimulusKind.Bumped: return Line.Bumped;
+                case StimulusKind.RunOver: return Line.RunOver;
                 case StimulusKind.SeatTaken: return Line.SeatTaken;
                 case StimulusKind.Smoking: return Line.Smoking;
                 case StimulusKind.Drinking: return Line.Drinking;
@@ -190,6 +191,7 @@ namespace Movers
             t[(int)Line.LookOutside] = fr ? new[] { "Belle journée pour déménager." } : new[] { "Lovely day for moving." };
             t[(int)Line.StructureBroken] = fr ? new[] { "Mes murs !" } : new[] { "My walls!" };
             t[(int)Line.GardenBroken] = fr ? new[] { "Mes rosiers !" } : new[] { "My roses!" };
+            t[(int)Line.RunOver] = fr ? new[] { "Vous voulez m'écraser ?!" } : new[] { "Are you trying to run me over?!" };
             return t;
         }
     }

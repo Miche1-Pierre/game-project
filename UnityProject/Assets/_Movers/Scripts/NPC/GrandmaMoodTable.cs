@@ -51,6 +51,11 @@ namespace Movers
         [Header("The crew's behaviour")]
         public float bumped = 2f;
         public float bumpCooldown = 2f;
+        [Tooltip("The truck (or another vehicle) hit her at runOverMinSpeed or more.")]
+        public float runOver = 10f;
+        public float runOverCooldown = 3f;
+        [Tooltip("Speed a knock gives her (m/s, GrandmaMover.Knock) from which it is being run over; slower, a nudge at walking pace, it is a bump.")]
+        public float runOverMinSpeed = 3f;
         public float smokingPuff = 1f;
         public float smokingCooldown = 10f;
         public float drinking = 1.5f;

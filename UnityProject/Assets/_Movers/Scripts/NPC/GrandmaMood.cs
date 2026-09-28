@@ -100,6 +100,7 @@ namespace Movers
                 case StimulusKind.StructureBroken: return Cooled(s.kind, s.instigator, c.structureCooldown) ? c.structureBroken : 0f;
                 case StimulusKind.GardenBroken: return c.gardenBroken;
                 case StimulusKind.ObjectDamaged: return c.objectDamaged;
+                case StimulusKind.RunOver: return Cooled(s.kind, s.instigator, c.runOverCooldown) ? c.runOver : 0f;
             }
             return 0f;
         }

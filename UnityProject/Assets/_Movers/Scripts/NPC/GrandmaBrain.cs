@@ -396,6 +396,7 @@ namespace Movers
             switch (kind)
             {
                 case StimulusKind.TheftWitnessed: return 100;
+                case StimulusKind.RunOver: return 95;
                 case StimulusKind.Explosion: return 90;
                 case StimulusKind.SeatTaken:
                 case StimulusKind.Bumped:
@@ -434,7 +435,7 @@ namespace Movers
                     stats.theftsWitnessed++;
                     WorldEvents.Raise(WorldEventType.TheftWitnessed, s.position, s.instigator, 0f, 0f, s.value, s.item);
                 }
-                if (s.kind == StimulusKind.Bumped && cost > 0f)
+                if ((s.kind == StimulusKind.Bumped || s.kind == StimulusKind.RunOver) && cost > 0f)
                 {
                     stats.bumps++;
                     WorldEvents.Raise(WorldEventType.GrandmaBumped, transform.position, s.instigator, 0f, 0f, 0, s.item);
