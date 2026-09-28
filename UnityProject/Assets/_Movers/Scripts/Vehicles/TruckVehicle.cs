@@ -87,6 +87,9 @@ namespace Movers
         [Header("Crew in the way")]
         public CrewBumper crewBumper = new CrewBumper();
 
+        // What is in the way and is not crew: broken or flung before the contact (DEV 2, 6.4).
+        public TruckRam ram = new TruckRam();
+
         // The asset, or the fallback built from the fields above.
         public TruckTuning Tuning => tuning != null ? tuning : Fallback();
 
@@ -396,6 +399,7 @@ namespace Movers
             Resist(t);
             AntiRoll(frontLeft, frontRight);
             AntiRoll(rearLeft, rearRight);
+            ram.Tick(this, rb, Hull, t, Time.fixedDeltaTime);
             crewBumper.Tick(rb, Hull);
 
             // Parked with nobody at the wheel: the ramp comes back down for the crew.
@@ -562,6 +566,8 @@ namespace Movers
             // A crew member the bumper could not shove clear (pinned against a wall): the truck
             // stops against him, and that is not a crash.
             if (other == null && c.collider is CharacterController && CrewRoster.Owner(c.collider.transform) != null) return;
+            // The ram sweep already broke it and made its noise.
+            if (TruckRam.Handled(c.collider)) return;
 
             nextNoiseTime = Time.time + 0.3f;
             ImpactAudio.Play(speed > 6f ? ImpactAudio.Kind.Crunch : ImpactAudio.Kind.Thud,
