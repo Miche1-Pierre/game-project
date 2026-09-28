@@ -29,7 +29,7 @@ namespace Movers
                 case "Time is up: the contract is void": return Loc.T("settle.voidTime");
                 case "The police came: the contract is void": return Loc.T("settle.voidPolice");
                 case "The contract is void": return Loc.T("settle.void");
-                case "You got away: the contract is void": return Loc.T("settle.escapeVoid");
+                case EscapeLine: return Loc.T("settle.escapeVoid");
                 case SurroundedLine: return Loc.T("settle.voidSurrounded");
                 case "The police stopped the truck: the contract is void": return Loc.T("settle.voidIntercepted");
                 case "Everyone was arrested: the contract is void": return Loc.T("settle.voidArrested");
@@ -46,11 +46,19 @@ namespace Movers
         // card tells them apart by the settlement's own line.
         const string SurroundedLine = "The police surrounded the house: the contract is void";
 
-        public static bool IsSurrounded(Settlement s)
+        const string EscapeLine = "You got away: the contract is void";
+
+        public static bool IsSurrounded(Settlement s) => HasLine(s, SurroundedLine);
+
+        // A run completed through the exit: Session.Escaped, or the escape's own line when the
+        // settlement reached the screen first.
+        public static bool IsEscape(Settlement s) => s != null && s.Completed && (Session.Escaped || HasLine(s, EscapeLine));
+
+        static bool HasLine(Settlement s, string label)
         {
             if (s == null) return false;
             for (int i = 0; i < s.Lines.Count; i++)
-                if (s.Lines[i].label == SurroundedLine) return true;
+                if (s.Lines[i].label == label) return true;
             return false;
         }
 
