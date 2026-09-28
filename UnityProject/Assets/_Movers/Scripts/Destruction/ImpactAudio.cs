@@ -106,6 +106,14 @@ namespace Movers
         // The same, with who made the noise (see Actors), for the LoudNoise it raises.
         public static void Play(Kind kind, Vector3 position, float volume, int instigator)
         {
+            Play(kind, position, volume, instigator, true);
+        }
+
+        // forward false: an online host keeps this sound to itself, because the client plays its
+        // own from another record (a wall chunk's ChunkDetached, DEV 2 3.9), and must not hear
+        // it twice. The noise is raised all the same.
+        public static void Play(Kind kind, Vector3 position, float volume, int instigator, bool forward)
+        {
             if (Net.IsClient) return;   // the host's sound arrives through PlayFromNet
             if (!Application.isPlaying || quitting) return;   // never litter an edited scene with voices
             int k = (int)kind;
@@ -120,7 +128,7 @@ namespace Movers
 
             // The noise is a fact even when the voice below is rate limited away.
             RaiseNoise(k, position, volume, instigator);
-            Voice(kind, position, volume, true);
+            Voice(kind, position, volume, forward);
         }
 
         // The voice itself, rate limited. forward: an online host passes the sound on to the
