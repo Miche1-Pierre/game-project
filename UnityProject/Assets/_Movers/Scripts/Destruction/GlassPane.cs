@@ -91,6 +91,8 @@ namespace Movers
             if (now < armedAt || now < nextHitTime) return;
 
             Init();
+            // The pane resists with its own mass (10 kg per m2), not a wall's; Rules.Glass counts a
+            // light striker as at least half of it, so a thrown cup still breaks a window.
             if (!ImpactDamage.TryMeasure(c, BreakMaterial.Glass, mass, ImpactDamage.Glass, transform.position, null,
                                          out DamageEvent e))
                 return;
@@ -111,18 +113,21 @@ namespace Movers
             if (!Net.HasAuthority) return DamageResult.None(before);
             if (IsBroken || !enabled || !(e.damage > 0f)) return DamageResult.None(before);
             Init();
-            float applied = e.damage * (e.type == DamageType.Blast
+            float amount = e.damage * (e.type == DamageType.Blast
                 ? DestructionMaterialTable.Current.paneBlastFactor
                 : DestructionMaterialTable.Factor(e.type, BreakMaterial.Glass));
-            if (!(applied > 0f)) return DamageResult.None(before);
+            if (!(amount > 0f)) return DamageResult.None(before);
             LastHit = e;
             LastHitTime = Time.time;
 
             // A whole pane only cracks, unless the hit is hard enough to go straight through.
-            if (!IsCracked && applied < maxHealth * BreaksAtOnce)
-                health = Mathf.Max(health - applied, Mathf.Min(health, maxHealth * CrackedAt) * 0.5f);
+            float healthBefore = health;
+            if (!IsCracked && amount < maxHealth * BreaksAtOnce)
+                health = Mathf.Max(health - amount, Mathf.Min(health, maxHealth * CrackedAt) * 0.5f);
             else
-                health -= applied;
+                health -= amount;
+            // What really came off, capped at what it had left (the ram's toll reads it).
+            float applied = Mathf.Max(0f, healthBefore - Mathf.Max(0f, health));
 
             if (health <= 0f) Shatter(e);
             else if (!IsCracked && health <= maxHealth * CrackedAt) Crack(e);

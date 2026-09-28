@@ -8,10 +8,10 @@ namespace Movers
     //
     // One health model for all of it. A hit only hurts above a speed set by the material (a
     // plate minds a 3 m/s knock, a wall does not care below 8), and past that the damage grows
-    // with the square of the extra speed, scaled by how heavy the other thing is compared to
-    // this one (ImpactDamage). At half health it is marked broken (a movable pays half, the
-    // existing rule) and goes darker so you can see it; at zero it shatters into physical debris
-    // and switches off. It is deactivated, never destroyed, so the contract list and the truck
+    // with the collision energy against this object's resisting mass (ImpactDamage): its body's
+    // mass, or structureReferenceMass for a built piece. At half health it is marked broken (a
+    // movable pays half, the existing rule) and goes darker so you can see it; at zero it
+    // shatters into physical debris and switches off. It is deactivated, never destroyed, so the contract list and the truck
     // keep valid references and can say "destroyed" instead of throwing.
     //
     // Something being carried is cushioned by the hands holding it (see ImpactDamage.Held):
@@ -31,8 +31,9 @@ namespace Movers
         public float maxHealth = 0f;
         [Tooltip("A static piece of the house rather than a movable object.")]
         public bool structural = false;
-        [Tooltip("Stands in for this object's mass in the impact formula when it has no dynamic Rigidbody (house pieces).")]
-        public float referenceMass = 100f;
+        [Tooltip("Stands in for this object's mass in the impact formula when it has no dynamic Rigidbody (house pieces). " +
+                 "0 = the table's structureReferenceMass.")]
+        public float referenceMass = 0f;
         [Tooltip("How far down the damage ladder it may go. Damaged = the foundation: it never breaks.")]
         public DestructionState stateCap = DestructionState.Destroyed;
         [Tooltip("A garden piece (hedge, bush, mailbox, post): its destruction is garden damage (DestructionEvents.Garden), never a wall.")]
@@ -147,7 +148,8 @@ namespace Movers
             return h;
         }
 
-        float MyMass => rb != null && !rb.isKinematic ? rb.mass : referenceMass;
+        float MyMass => rb != null && !rb.isKinematic ? rb.mass
+                      : referenceMass > 0f ? referenceMass : DestructionMaterialTable.Current.structureReferenceMass;
         Rigidbody MyBody => rb != null && !rb.isKinematic ? rb : null;
 
         // ---- damage ----
@@ -186,13 +188,16 @@ namespace Movers
             if (IsDestroyed || !enabled || !(e.damage > 0f)) return DamageResult.None(before);
             if (IsWorn()) return DamageResult.None(before);
             Init();
-            float applied = e.damage * DestructionMaterialTable.Factor(e.type, material);
-            if (!(applied > 0f)) return DamageResult.None(before);
+            float amount = e.damage * DestructionMaterialTable.Factor(e.type, material);
+            if (!(amount > 0f)) return DamageResult.None(before);
             LastHit = e;
             LastHitTime = Time.time;
 
-            health -= applied;
+            float healthBefore = health;
+            health -= amount;
             if (stateCap < DestructionState.Destroyed) health = Mathf.Max(health, 1f);
+            // What really came off, capped at what it had left (the ram's toll reads it).
+            float applied = Mathf.Max(0f, healthBefore - Mathf.Max(0f, health));
             if (!markedBroken && health < resolvedMax * 0.5f) MarkBroken(e.instigator);
             if (health <= 0f) Shatter(e);
             return new DamageResult { applied = applied, before = before, after = State, removed = IsDestroyed };
@@ -209,7 +214,8 @@ namespace Movers
                 mo.broken = true;
                 DestructionEvents.PropDamaged(mo, resolvedMax > 0f ? Mathf.Clamp01(health / resolvedMax) : 0f, instigator);
             }
-            else if (structural)
+            // A garden piece only counts once it is gone (Garden): a cracked hedge is not a wall.
+            else if (structural && !isYard)
             {
                 DestructionEvents.Structure(this, transform.position, DestructionState.Damaged, instigator);
             }
@@ -321,6 +327,8 @@ namespace Movers
             gameObject.SetActive(false);
 
             if (mo != null) DestructionEvents.PropDestroyed(mo, e.instigator);
+            // A hedge, a bush, the mailbox: garden damage, never a wall or a break-in.
+            else if (isYard) DestructionEvents.Garden(this, at, e.instigator);
             else if (structural)
             {
                 DestructionEvents.Structure(this, at, DestructionState.Destroyed, e.instigator);
