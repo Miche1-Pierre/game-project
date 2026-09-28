@@ -61,8 +61,16 @@ namespace Movers
         public int Index => member != null ? member.index : 0;
         public ICrewInputSource Source => member != null && member.Input != null ? member.Input.Source : null;
 
-        // GameLoopNumbers.officerZoneSeconds at its default: how long the ring takes to close.
-        const float ArrestRingSeconds = 2f;
+        // How long the ring takes to close: the officer's zone time, so it closes as the arrest lands.
+        static float ArrestRingSeconds
+        {
+            get
+            {
+                var session = GameSession.Current;
+                float s = session != null ? session.Numbers.officerZoneSeconds : GameLoopNumbers.Defaults.officerZoneSeconds;
+                return Mathf.Max(0.1f, s);
+            }
+        }
         const float ArrestRingEndScale = 0.3f;
 
         string shownHint;
@@ -160,7 +168,7 @@ namespace Movers
         {
             bool driving = TruckVehicle.IsAtWheel(member);
             if (!driving) seat = null;
-            else if (seat == null) seat = member.GetComponentInParent<VehicleSeat>();
+            else if (seat == null) seat = VehicleSeat.Of(member);
             TruckVehicle truck = seat != null ? seat.vehicle : null;
             Driving.Value = driving && truck != null;
             if (truck == null) return;

@@ -285,7 +285,7 @@ namespace Movers
 
         void GetOutRow(ref HintSet set, ICrewInputSource src)
         {
-            if (seat == null) seat = member.GetComponentInParent<VehicleSeat>();
+            if (seat == null) seat = VehicleSeat.Of(member);
             TruckVehicle truck = seat != null ? seat.vehicle : null;
             // The seat's own refusal ("No room to get out here") takes the get-out row's place
             // for its two seconds, as it did on the old HUD: the key was pressed, this is why
