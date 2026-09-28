@@ -173,14 +173,28 @@ namespace Movers
 
         // Debris strikes that did damage this frame, at most debrisStrikesPerFrame (the overlay shows it).
         public static int DebrisStrikesThisFrame => strikeFrame == Time.frameCount ? debrisStrikes : 0;
+        // The same count for the last completed frame (the F3 overlay line).
+        public static int DebrisStrikesLastFrame
+        {
+            get
+            {
+                int f = Time.frameCount;
+                if (strikeFrame == f - 1) return debrisStrikes;
+                return strikeFrame == f && previousStrikeFrame == f - 1 ? previousStrikes : 0;
+            }
+        }
         static int strikeFrame = -1;
         static int debrisStrikes;
+        static int previousStrikeFrame = -1;
+        static int previousStrikes;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
             strikeFrame = -1;
             debrisStrikes = 0;
+            previousStrikeFrame = -1;
+            previousStrikes = 0;
         }
 
         // False means "this contact does not hurt". myBody is the receiver's own dynamic body
@@ -354,6 +368,8 @@ namespace Movers
             int frame = Time.frameCount;
             if (frame != strikeFrame)
             {
+                previousStrikeFrame = strikeFrame;
+                previousStrikes = debrisStrikes;
                 strikeFrame = frame;
                 debrisStrikes = 0;
             }

@@ -27,12 +27,6 @@ namespace Movers
         const float FrameBudgetMs = 16f;
         static readonly float[] DamageSteps = { 0.10f, 0.25f, 0.50f, 1f };
 
-        // ImpactDamage counts the launched-debris strikes it lets through each frame (DEV 2 3.14).
-        // Read by name, once, so this overlay does not depend on the counter being there: "n/a"
-        // until it is.
-        const string StrikesCounter = "DebrisStrikesLastFrame";
-        static System.Func<int> strikesReader;
-        static bool strikesLooked;
 
         public static bool OverlayOn { get; private set; }
         public static bool CollidersOn { get; private set; }
@@ -209,10 +203,15 @@ namespace Movers
             var debris = DebrisManager.Existing;
             var graph = StructureGraph.Current;
             var table = DestructionMaterialTable.Current;
-            sb.Append("\ndebris ").Append(debris != null ? debris.Count : 0).Append('/').Append(debris != null ? debris.maxPieces : 0)
-              .Append(", spawned this frame ").Append(debris != null ? debris.SpawnedThisFrame : 0)
-              .Append(" (last ").Append(debris != null ? debris.SpawnedLastFrame : 0).Append(')')
-              .Append("\ndebris strikes last frame ").Append(DebrisStrikes()).Append('/').Append(table.debrisStrikesPerFrame)
+            sb.Append("\ndebris ").Append(debris != null ? debris.DynamicCount : 0).Append('/').Append(table.maxDynamicPieces)
+              .Append(" moving, ").Append(debris != null ? debris.FrozenCount : 0).Append('/').Append(table.maxFrozenPieces)
+              .Append(" frozen, spawned this frame ").Append(debris != null ? debris.SpawnedThisFrame : 0)
+              .Append(" (last ").Append(debris != null ? debris.SpawnedLastFrame : 0).Append(", released ")
+              .Append(debris != null ? debris.ReleasedLastFrame : 0).Append(')')
+              .Append("\n  structure reserve ").Append(debris != null ? debris.StructureReserveThisFrame : 0)
+              .Append(", pool ").Append(debris != null ? debris.PoolFree : 0).Append('/')
+              .Append(debris != null ? debris.PoolSize : 0).Append(" free")
+              .Append("\ndebris strikes last frame ").Append(ImpactDamage.DebrisStrikesLastFrame).Append('/').Append(table.debrisStrikesPerFrame)
               .Append("\nlast blast ").Append(Explosion.LastBlastMs.ToString("0.0")).Append(" ms (its frame ")
               .Append(Explosion.LastFrameBlastMs.ToString("0.0")).Append(" ms), after it ")
               .Append(Explosion.MaxFrameMsAfterBlast.ToString("0.0")).Append(" ms of ").Append(FrameBudgetMs.ToString("0"))
@@ -303,21 +302,6 @@ namespace Movers
             if (time < 0f) { sb.Append("last hit: none\n"); return; }
             sb.Append("last hit: ").Append(e.type).Append(' ').Append(e.damage.ToString("0")).Append(" by ")
               .Append(Actors.Name(e.instigator)).Append(", ").Append((Time.time - time).ToString("0.0")).Append(" s ago\n");
-        }
-
-        static string DebrisStrikes()
-        {
-            if (!strikesLooked)
-            {
-                strikesLooked = true;
-                const System.Reflection.BindingFlags Static =
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
-                var p = typeof(ImpactDamage).GetProperty(StrikesCounter, Static);
-                if (p != null && p.PropertyType == typeof(int)) strikesReader = () => (int)p.GetValue(null);
-                var f = p == null ? typeof(ImpactDamage).GetField(StrikesCounter, Static) : null;
-                if (f != null && f.FieldType == typeof(int)) strikesReader = () => (int)f.GetValue(null);
-            }
-            return strikesReader != null ? strikesReader().ToString() : "n/a";
         }
 
         static string StateName(DestructionState s, bool glass, bool foundation)
