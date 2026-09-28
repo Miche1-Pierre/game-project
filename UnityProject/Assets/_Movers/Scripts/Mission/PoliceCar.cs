@@ -530,13 +530,12 @@ namespace Movers
         void UpdateLights()
         {
             bool on = IsDispatched;
-            if (red == null || blue == null) return;
+            lightsOn = on;
             bool redPhase = Mathf.Repeat(Time.time * flashHz, 1f) < 0.5f;
             SetOn(red, on && redPhase);
             SetOn(redFlare, on && redPhase);
             SetOn(blue, on && !redPhase);
             SetOn(blueFlare, on && !redPhase);
-            lightsOn = on;
         }
 
         static void SetOn(Renderer r, bool on)
