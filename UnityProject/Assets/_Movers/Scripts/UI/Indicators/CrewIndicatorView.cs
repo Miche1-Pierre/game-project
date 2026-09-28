@@ -188,7 +188,7 @@ namespace Movers
 
             Vector3 eyes = owner.EyePosition;
             parkedLeft = parkedRight = 0;
-            bool driving = owner.IsDriving;
+            bool driving = TruckVehicle.IsAtWheel(owner);
             bool carrying = owner.Held != null;
             for (int i = 0; i < slots.Count; i++)
                 TickSlot(slots[i], frame, eyes, driving, carrying, markersOn, time);

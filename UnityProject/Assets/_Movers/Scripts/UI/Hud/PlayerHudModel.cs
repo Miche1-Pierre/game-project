@@ -142,9 +142,11 @@ namespace Movers
             if (on) DrunkFill.Set(drunk.Amount);
         }
 
+        // The truck's plate is for whoever is at the wheel; the passenger (also IsDriving, which
+        // means seated) rides without it.
         void UpdateTruck()
         {
-            bool driving = member.IsDriving;
+            bool driving = TruckVehicle.IsAtWheel(member);
             if (!driving) seat = null;
             else if (seat == null) seat = member.GetComponentInParent<VehicleSeat>();
             TruckVehicle truck = seat != null ? seat.vehicle : null;
