@@ -15,6 +15,8 @@ namespace Movers
         Confront, DropIt, GiveUp, Police, OnThePhone, LastWarning, LastChance,
         ExcuseMe, Blocked, BreakIn, Goodbye,
         Rock, Read, TV, Tea, Cook, Water, Fire, LookOutside,
+        // DEV 2 (ADR-013). Values travel on the wire (GrandmaSync Speech): append only.
+        StructureBroken, GardenBroken, RunOver, PoliceArrived,
         Count
     }
 
@@ -33,15 +35,23 @@ namespace Movers
                 case StimulusKind.DoorBroken: return Line.Door;
                 case StimulusKind.Explosion: return Line.Explosion;
                 case StimulusKind.Bumped: return Line.Bumped;
+                case StimulusKind.RunOver: return Line.RunOver;
                 case StimulusKind.SeatTaken: return Line.SeatTaken;
                 case StimulusKind.Smoking: return Line.Smoking;
                 case StimulusKind.Drinking: return Line.Drinking;
                 case StimulusKind.TheftWitnessed:
                 case StimulusKind.CarryingSeen: return Line.Theft;
                 case StimulusKind.BehindSchedule: return Line.TooSlow;
+                case StimulusKind.StructureBroken: return s.seen || s.collapse ? Line.StructureBroken : Line.WhatWasThat;
+                case StimulusKind.GardenBroken: return s.seen ? Line.GardenBroken : Line.WhatWasThat;
                 default: return s.seen ? Line.Smash : Line.WhatWasThat;
             }
         }
+
+        // Lines that stay up for their whole time (GrandmaSpeech): the warning, the call and the
+        // police's arrival must be read, whatever else she notices meanwhile.
+        public static bool IsHeld(Line line) => line == Line.LastWarning || line == Line.Police || line == Line.OnThePhone
+                                              || line == Line.PoliceArrived;
 
         // "my rocking chair": the object's display name, as she would say it.
         public static string NameOf(MovableObject item)
@@ -180,6 +190,10 @@ namespace Movers
             t[(int)Line.Water] = fr ? new[] { "Voilà, mes chéries." } : new[] { "There you go, my darlings." };
             t[(int)Line.Fire] = fr ? new[] { "Une petite flambée, voilà qui est mieux." } : new[] { "A little fire, that's better." };
             t[(int)Line.LookOutside] = fr ? new[] { "Belle journée pour déménager." } : new[] { "Lovely day for moving." };
+            t[(int)Line.StructureBroken] = fr ? new[] { "Mes murs !" } : new[] { "My walls!" };
+            t[(int)Line.GardenBroken] = fr ? new[] { "Mes rosiers !" } : new[] { "My roses!" };
+            t[(int)Line.RunOver] = fr ? new[] { "Vous voulez m'écraser ?!" } : new[] { "Are you trying to run me over?!" };
+            t[(int)Line.PoliceArrived] = fr ? new[] { "Ils sont partis par là, monsieur l'agent !" } : new[] { "They went that way, officer!" };
             return t;
         }
     }

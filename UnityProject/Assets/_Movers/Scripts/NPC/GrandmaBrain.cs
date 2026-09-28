@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Movers
@@ -23,7 +24,9 @@ namespace Movers
     //   React            she saw it: she faces the culprit, says so, shakes her fist
     //   Confront         at the end of her patience she follows the worst offender and scolds
     //                    him, and he drops what of hers he is holding
-    //   CallPolice       patience 0: GrandmaCalledPolice, once, and the run fails
+    //   CallPolice       patience 0: GrandmaCalledPolice, once. The police come and the crew
+    //                    flees (EscapeMission), or, in a scene without one, the run fails.
+    //                    When the police arrive (PoliceArrived) she points them the way.
     //
     // Senses feed her Stimulus values, the mood table prices them, and this decides what she
     // does. She announces the facts other systems care about as world events (KeysHandedOver,
@@ -87,10 +90,11 @@ namespace Movers
         public Vector3 IntroPosition => introPosition;
         public Vector3 IntroFacing => introFacing;
 
-        const int QueueSize = 16;
-        readonly Stimulus[] queue = new Stimulus[QueueSize];
-        readonly Stimulus[] batch = new Stimulus[QueueSize];
-        int queued;
+        // What she perceived since the last frame. Full: a newcomer takes the place of the least
+        // urgent entry it outranks; a blast or a theft goes past the size rather than be lost.
+        const int QueueSize = 64;
+        List<Stimulus> queue = new List<Stimulus>(QueueSize);
+        List<Stimulus> batch = new List<Stimulus>(QueueSize);
 
         GrandmaStats stats;
         float stateStart;
@@ -120,7 +124,7 @@ namespace Movers
         bool wandering;
         float nextConfrontCheck;
         float lastBreakInHeard = -99f;
-        bool policePending, sessionOver, sessionOverPending, startRoutinePending;
+        bool policePending, policeHere, sessionOver, sessionOverPending, startRoutinePending;
         SessionState endedAs;
 
         Action<Stimulus> onPerceived;
@@ -197,7 +201,7 @@ namespace Movers
                 Enter(GrandmaState.GiveKeys);   // stops the mover
                 return;
             }
-            if (State == GrandmaState.CallPolice) { speech.Say(Line.OnThePhone); return; }
+            if (State == GrandmaState.CallPolice) { speech.Say(policeHere ? Line.PoliceArrived : Line.OnThePhone); return; }
             bool grumpy = State == GrandmaState.Confront || mood.Tier >= MoodTier.Angry;
             speech.Say(grumpy ? Line.ChatGrumpy : Line.Chat);
         }
@@ -211,7 +215,7 @@ namespace Movers
             if (mood != null) mood.Frozen = !on;
             if (!on)
             {
-                queued = 0;
+                queue.Clear();
                 mover.Stop();
                 mover.ClearFace();
                 activities.Interrupt(true);
@@ -219,6 +223,14 @@ namespace Movers
                 speech.Hush();
             }
             else Resume();
+        }
+
+        // Debug (Keypad 8) and tests: she calls the police now, as at the end of her patience.
+        public void ForcePoliceCall()
+        {
+            if (!Net.HasAuthority || PoliceCalled || sessionOver) return;
+            mood.DebugSetPatience(0f);
+            policePending = true;
         }
 
         // Debug and tests: back to waiting on the porch for someone to talk to her.
@@ -373,65 +385,107 @@ namespace Movers
 
         void Enqueue(Stimulus s)
         {
-            if (!AIEnabled || sessionOver || queued >= QueueSize) return;
-            queue[queued++] = s;
+            if (!AIEnabled || sessionOver) return;
+            if (queue.Count < QueueSize) { queue.Add(s); return; }
+
+            int lowest = -1, lowestRank = int.MaxValue;
+            for (int i = 0; i < queue.Count; i++)
+            {
+                if (queue[i].MustBeHeard) continue;
+                int r = QueueRank(queue[i].kind);
+                if (r < lowestRank) { lowestRank = r; lowest = i; }
+            }
+            if (lowest >= 0 && QueueRank(s.kind) > lowestRank) queue[lowest] = s;
+            else if (s.MustBeHeard) queue.Add(s);
+        }
+
+        // How much a stimulus matters before it is priced: only for choosing what a full queue
+        // lets go (Priority, after pricing, chooses what she does).
+        static int QueueRank(StimulusKind kind)
+        {
+            switch (kind)
+            {
+                case StimulusKind.TheftWitnessed: return 100;
+                case StimulusKind.RunOver: return 95;
+                case StimulusKind.Explosion: return 90;
+                case StimulusKind.SeatTaken:
+                case StimulusKind.Bumped:
+                case StimulusKind.CarryingSeen:
+                case StimulusKind.Smoking:
+                case StimulusKind.Drinking: return 60;
+                case StimulusKind.BehindSchedule: return 15;
+                case StimulusKind.SmallNoise: return 5;
+                default: return 40;   // breakage
+            }
         }
 
         // Every stimulus is priced; the worst one of the frame decides what she does.
         void ProcessQueue()
         {
-            if (queued == 0) return;
+            if (queue.Count == 0) return;
             // Pricing raises world events; a listener may make her perceive more. Those wait
             // for the next frame instead of changing the batch under the loop.
-            int n = queued;
-            Array.Copy(queue, batch, n);
-            queued = 0;
+            List<Stimulus> swap = batch;
+            batch = queue;
+            queue = swap;
+            queue.Clear();
+            int n = batch.Count;
+            int warningsBefore = mood.WarningsGiven;
 
             int best = -1;
-            float bestScore = 0f, bestLost = 0f;
+            float bestScore = 0f, bestCost = 0f;
             for (int i = 0; i < n; i++)
             {
                 Stimulus s = batch[i];
                 float cost = mood.CostOf(s);
-                float lost = cost > 0f ? mood.Apply(cost, s.instigator, s.position) : 0f;
+                float lost = cost > 0f ? mood.Apply(cost, s) : 0f;
 
                 if (s.kind == StimulusKind.TheftWitnessed)
                 {
                     stats.theftsWitnessed++;
                     WorldEvents.Raise(WorldEventType.TheftWitnessed, s.position, s.instigator, 0f, 0f, s.value, s.item);
                 }
-                if (s.kind == StimulusKind.Bumped && cost > 0f)
+                if ((s.kind == StimulusKind.Bumped || s.kind == StimulusKind.RunOver) && cost > 0f)
                 {
                     stats.bumps++;
                     WorldEvents.Raise(WorldEventType.GrandmaBumped, transform.position, s.instigator, 0f, 0f, 0, s.item);
                 }
-                if (lost > 0f && s.kind != StimulusKind.SmallNoise && s.kind != StimulusKind.BehindSchedule)
+                // Every priced stimulus is news, even when the cap or the warning took nothing
+                // (magnitude 0: the HUD toasts only what cost her patience). Noise and the clock
+                // stay out: they would flood the log.
+                if (cost > 0f && s.kind != StimulusKind.SmallNoise && s.kind != StimulusKind.BehindSchedule)
                     WorldEvents.Raise(WorldEventType.GrandmaNoticed, s.position, s.instigator, 0f, lost, s.value, s.item);
                 if (!KeysGiven && (s.kind == StimulusKind.WindowBroken || s.kind == StimulusKind.DoorBroken))
                     lastBreakInHeard = Time.time;
 
-                float score = Priority(s, lost);
-                if (score > bestScore) { bestScore = score; best = i; bestLost = lost; }
+                float score = Priority(s, cost);
+                if (score > bestScore) { bestScore = score; best = i; bestCost = cost; }
             }
             Stimulus chosen = best >= 0 ? batch[best] : default;
+            batch.Clear();
             if (best < 0 || PoliceCalled || policePending) return;
             LastStimulus = chosen;
             LastStimulusTime = Time.time;
-            Respond(chosen, bestLost);
+            // The batch that started her warning says nothing more: the warning line stays up
+            // (OnLastWarning already made her point and go after the worst offender).
+            if (mood.WarningsGiven != warningsBefore) return;
+            Respond(chosen, bestCost);
         }
 
-        float Priority(in Stimulus s, float lost)
+        // From the priced cost, not from what she lost: a capped blast or an offence during the
+        // warning still gets its reaction. Cost 0 means on cooldown: already dealt with.
+        float Priority(in Stimulus s, float cost)
         {
             switch (s.kind)
             {
                 case StimulusKind.TheftWitnessed: return 100f;
                 case StimulusKind.SeatTaken: return 60f;
-                case StimulusKind.BehindSchedule: return lost > 0f ? 15f : 0f;
-                case StimulusKind.SmallNoise: return lost > 0f ? 5f : 0f;
+                case StimulusKind.BehindSchedule: return cost > 0f ? 15f : 0f;
+                case StimulusKind.SmallNoise: return cost > 0f ? 5f : 0f;
             }
-            if (lost <= 0f) return 0f;   // on cooldown: already dealt with
-            if (s.IsOffence) return 60f + lost;
-            if (s.IsBreakage) return (s.seen ? 50f : 40f) + lost;
+            if (cost <= 0f) return 0f;
+            if (s.IsOffence) return 60f + cost;
+            if (s.IsBreakage) return (s.seen ? 50f : 40f) + cost;
             return 10f;
         }
 
@@ -450,7 +504,7 @@ namespace Movers
             }
         }
 
-        void Respond(in Stimulus s, float lost)
+        void Respond(in Stimulus s, float cost)
         {
             if (s.kind == StimulusKind.BehindSchedule)
             {
@@ -458,7 +512,7 @@ namespace Movers
                 return;
             }
 
-            bool smallThing = s.kind == StimulusKind.SmallNoise || (s.IsBreakage && !s.seen && lost < investigateMinCost);
+            bool smallThing = s.kind == StimulusKind.SmallNoise || (s.IsBreakage && !s.seen && cost < investigateMinCost);
             if (smallThing)
             {
                 if (State == GrandmaState.Routine || State == GrandmaState.Intro)
@@ -832,7 +886,7 @@ namespace Movers
         {
             CrewMember near = CrewRoster.Nearest(transform.position, 20f);
             if (near != null) mover.Face(near.Position);
-            if (Time.time < nextPhoneLine) return;
+            if (policeHere || Time.time < nextPhoneLine) return;   // off the phone: they are here
             nextPhoneLine = Time.time + 7f;
             speech.Say(Line.OnThePhone);
         }
@@ -842,6 +896,7 @@ namespace Movers
         void OnWorldEvent(WorldEvent e)
         {
             if (!Net.HasAuthority) return;
+            if (e.type == WorldEventType.PoliceArrived) { OnPoliceArrived(); return; }
             if (e.type != WorldEventType.SessionStateChanged) return;
             var st = (SessionState)Mathf.RoundToInt(e.magnitude);
             if (st == SessionState.ContractStarted || st == SessionState.InProgress)
@@ -854,6 +909,16 @@ namespace Movers
                 sessionOverPending = true;
                 endedAs = st;
             }
+        }
+
+        // The lead police car is at the house: she points the officers after the crew.
+        void OnPoliceArrived()
+        {
+            if (policeHere) return;
+            policeHere = true;
+            if (!AIEnabled || sessionOver) return;
+            speech.Say(Line.PoliceArrived);
+            anim.PlayUpper(GrandmaAnimation.Point);
         }
 
         // Online client (GrandmaSync Flags): the host's state and flags, no side effects.
@@ -888,7 +953,8 @@ namespace Movers
                 if (senses != null) senses.asleep = true;
                 mover.Stop();
                 activities.Interrupt(false);
-                if (endedAs == SessionState.Completed) speech.Say(Line.Goodbye);
+                // A run completed after her call is an escape (Session.Escaped): no thanks for that.
+                if (endedAs == SessionState.Completed) { if (!Session.Escaped && !PoliceCalled) speech.Say(Line.Goodbye); }
                 else if (!PoliceCalled) speech.Say(Line.TooSlow);
             }
         }

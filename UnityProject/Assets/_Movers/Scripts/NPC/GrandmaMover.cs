@@ -75,6 +75,10 @@ namespace Movers
         public float detourSeconds = 6f;
         public int maxStuckRetries = 3;
 
+        [Header("Knocked by a vehicle (Knock)")]
+        [Tooltip("The fastest she staggers aside, m/s. She slows down from it at her acceleration.")]
+        public float knockMaxStagger = 3f;
+
         [Header("Pushing light things aside")]
         public float pushMaxKg = 15f;
         public float pushForce = 40f;
@@ -180,6 +184,8 @@ namespace Movers
 
         // A player stands in her way: the brain says something.
         public event Action<CrewMember> BlockedBy;
+        // Host: Knock. The speed change she was given and who did it (GrandmaSenses perceives it).
+        public event Action<Vector3, int> Knocked;
 
         // Which way she looks. Her model may face -Z, so never read transform.forward directly.
         public Vector3 Forward
@@ -407,8 +413,18 @@ namespace Movers
         }
 
         // Host: something (the truck, CrewBumper) is about to hit her. She staggers aside and
-        // perceives being run over or bumped, blamed on 'by'.
-        public void Knock(Vector3 velocityChange, int by) { }
+        // perceives being run over or bumped, blamed on 'by'. No stagger while she sits or
+        // slides (her body is off); she still feels it. The stagger is her own walk velocity,
+        // so it fades at her acceleration and the stream carries it to the client.
+        public void Knock(Vector3 velocityChange, int by)
+        {
+            if (!Net.HasAuthority) return;
+            Vector3 push = velocityChange;
+            push.y = 0f;
+            if (!sliding && body.enabled && agent != null)
+                horizontal = Vector3.ClampMagnitude(horizontal + push, Mathf.Max(horizontal.magnitude, knockMaxStagger));
+            Knocked?.Invoke(velocityChange, by);
+        }
 
         // Puts her somewhere at once (debug, tests, the intro placement).
         public void Teleport(Vector3 position, Vector3 facing)

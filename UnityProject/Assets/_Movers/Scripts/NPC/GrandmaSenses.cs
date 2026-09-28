@@ -10,12 +10,14 @@ namespace Movers
     // - Vision: a 110 degree cone, 14 m, and a clear line from her head to a player's eyes or
     //   chest. Intact glass does not block it: she sees you through the veranda.
     // - Hearing: world events within WorldEvents.HearingRadius(loudness), halved for each wall
-    //   or floor in between. Explosions are heard through walls.
-    // - Touch: a player pushing into her, or a thrown object hitting her.
+    //   or floor in between. Explosions are heard through walls, and at full range (her
+    //   deafness does not apply to them, MoodCosts.explosionHearing).
+    // - Touch: a player pushing into her, or a thrown object hitting her. A vehicle knocking her
+    //   (GrandmaMover.Knock) is being run over from runOverMinSpeed, a bump below.
     // - The clock: whether the house is emptying as fast as the time runs out.
     //
     // Theft: she witnesses it when she sees a player pocket or load one of her things that is
-    // not on the list, or carry one in her sight for more than carryWitnessSeconds.
+    // not on the list, or carry or wear one in her sight for more than carryWitnessSeconds.
     [DisallowMultipleComponent]
     public sealed class GrandmaSenses : MonoBehaviour
     {
@@ -43,6 +45,9 @@ namespace Movers
 
         public event Action<Stimulus> Perceived;
 
+        static readonly MoodCosts DefaultCosts = new MoodCosts();
+        MoodCosts Costs => mood != null ? mood.Costs : DefaultCosts;
+
         // Set by the brain while her AI is off or the run is over: she perceives nothing, so
         // nothing is marked witnessed behind the brain's back.
         [System.NonSerialized] public bool asleep;
@@ -53,6 +58,10 @@ namespace Movers
         readonly float[] carryCharge = new float[MaxPlayers];
         readonly float[] pushTime = new float[MaxPlayers];
         readonly CharacterController[] crewBodies = new CharacterController[MaxPlayers];
+        // What each crew member wears on (CrewEquip), looked up once per member.
+        readonly CrewEquip[] crewEquip = new CrewEquip[MaxPlayers];
+        readonly CrewMember[] crewEquipOf = new CrewMember[MaxPlayers];
+        static readonly EquipSlot[] Slots = (EquipSlot[])Enum.GetValues(typeof(EquipSlot));
         readonly HashSet<MovableObject> witnessed = new HashSet<MovableObject>();
         readonly List<MovableObject> required = new List<MovableObject>();
 
@@ -62,6 +71,7 @@ namespace Movers
 
         Transform head;
         Action<WorldEvent> onWorldEvent;
+        Action<Vector3, int> onKnocked;
         float nextLook;
         float lastLookTime = -1f;
         float nextScheduleCheck = -1f;
@@ -89,12 +99,22 @@ namespace Movers
             if (animator == null) animator = GetComponentInChildren<Animator>();
             if (animator != null && animator.isHuman) head = animator.GetBoneTransform(HumanBodyBones.Head);
             onWorldEvent = OnWorldEvent;
+            onKnocked = OnKnocked;
             int debris = LayerMask.NameToLayer("Debris");
             if (debris >= 0) layerMask &= ~(1 << debris);
         }
 
-        void OnEnable() { WorldEvents.Subscribe(onWorldEvent); }
-        void OnDisable() { WorldEvents.Unsubscribe(onWorldEvent); }
+        void OnEnable()
+        {
+            WorldEvents.Subscribe(onWorldEvent);
+            if (mover != null) mover.Knocked += onKnocked;
+        }
+
+        void OnDisable()
+        {
+            WorldEvents.Unsubscribe(onWorldEvent);
+            if (mover != null) mover.Knocked -= onKnocked;
+        }
 
         Vector3 Forward => mover != null ? mover.Forward : transform.forward;
 
@@ -127,8 +147,10 @@ namespace Movers
                 bool sees = m != null && m.isActiveAndEnabled && CanSee(m);
                 seen[p] = sees;
 
+                // Carried, or worn: her dressing gown on a mover's back is as plain as in his arms.
                 MovableObject held = sees ? m.Held : null;
-                if (held == null || !held.IsTheftTarget)
+                MovableObject hers = held != null && held.IsTheftTarget ? held : sees ? WornTheftTarget(m) : null;
+                if (hers == null)
                 {
                     carrySeen[p] = 0f;
                     carryCharge[p] = 0f;
@@ -139,15 +161,43 @@ namespace Movers
                 carryCharge[p] += elapsed;
                 float witnessAfter = costs != null ? costs.carryWitnessSeconds : 2f;
                 float chargeEvery = costs != null ? Mathf.Max(0.5f, costs.carryingInterval) : 5f;
-                if (carrySeen[p] >= witnessAfter && !witnessed.Contains(held))
-                    Witness(held, p, held.transform.position);
+                if (carrySeen[p] >= witnessAfter && !witnessed.Contains(hers))
+                    Witness(hers, p, hers.transform.position);
                 if (carryCharge[p] >= chargeEvery)
                 {
                     carryCharge[p] -= chargeEvery;
-                    var s = new Stimulus(StimulusKind.CarryingSeen, m.Position, p) { seen = true, item = held };
+                    var s = new Stimulus(StimulusKind.CarryingSeen, m.Position, p) { seen = true, item = hers };
                     Emit(s);
                 }
             }
+        }
+
+        // One of her things (not on the list) the member wears, one she has not witnessed first.
+        MovableObject WornTheftTarget(CrewMember m)
+        {
+            CrewEquip body = EquipOf(m);
+            if (body == null) return null;
+            MovableObject found = null;
+            for (int i = 0; i < Slots.Length; i++)
+            {
+                EquipItem item = body.WornIn(Slots[i]);
+                if (item == null || !item.TryGetComponent(out MovableObject mo) || !mo.IsTheftTarget) continue;
+                if (!witnessed.Contains(mo)) return mo;
+                if (found == null) found = mo;
+            }
+            return found;
+        }
+
+        CrewEquip EquipOf(CrewMember m)
+        {
+            int i = m.index;
+            if (i < 0 || i >= MaxPlayers) return m.GetComponentInChildren<CrewEquip>(true);
+            if (crewEquipOf[i] != m)
+            {
+                crewEquipOf[i] = m;
+                crewEquip[i] = m.GetComponentInChildren<CrewEquip>(true);
+            }
+            return crewEquip[i];
         }
 
         // Cone, range, then a clear line to the eyes or the chest.
@@ -229,19 +279,36 @@ namespace Movers
                     break;
 
                 case WorldEventType.Explosion:
-                    if (Hears(e.position, Mathf.Max(1f, e.loudness), explosionsIgnoreWalls))
+                    if (Hears(e.position, Mathf.Max(1f, e.loudness), explosionsIgnoreWalls, Costs.explosionHearing))
                         Emit(new Stimulus(StimulusKind.Explosion, e.position, e.instigator) { seen = CanSeePoint(e.position), inside = IsIndoors(e.position) });
                     break;
 
                 case WorldEventType.ObjectDestroyed:
                     // A piece on the list also raises ContractObjectDestroyed: priced there, once.
                     if (item != null && item.requiredForContract) return;
-                    Perceive(StimulusKind.ObjectDestroyed, e, 0.5f, item, item != null && item.fragile);
+                    Perceive(StimulusKind.ObjectDestroyed, e, Costs.objectDestroyedLoudness, item, item != null && item.fragile);
                     break;
-                case WorldEventType.ContractObjectDamaged: Perceive(StimulusKind.ContractDamaged, e, 0.4f, item, false); break;
-                case WorldEventType.ContractObjectDestroyed: Perceive(StimulusKind.ContractDestroyed, e, 0.5f, item, false); break;
-                case WorldEventType.WindowBroken: Perceive(StimulusKind.WindowBroken, e, 0.6f, null, false); break;
-                case WorldEventType.DoorBroken: Perceive(StimulusKind.DoorBroken, e, 0.7f, null, false); break;
+                case WorldEventType.ObjectDamaged:
+                    // Same rule: a piece on the list is ContractObjectDamaged.
+                    if (item == null || item.requiredForContract) return;
+                    Perceive(StimulusKind.ObjectDamaged, e, Costs.objectDamagedLoudness, item, false);
+                    break;
+                case WorldEventType.ContractObjectDamaged: Perceive(StimulusKind.ContractDamaged, e, Costs.contractDamagedLoudness, item, false); break;
+                case WorldEventType.ContractObjectDestroyed: Perceive(StimulusKind.ContractDestroyed, e, Costs.contractDestroyedLoudness, item, false); break;
+                case WorldEventType.WindowBroken: Perceive(StimulusKind.WindowBroken, e, Costs.windowBrokenLoudness, null, false); break;
+                case WorldEventType.DoorBroken: Perceive(StimulusKind.DoorBroken, e, Costs.doorBrokenLoudness, null, false); break;
+
+                // A wall broken through (a crack is not news), or part of the house coming down.
+                case WorldEventType.StructureDamaged:
+                    if (e.magnitude >= (float)DestructionState.Destroyed)
+                        Perceive(StimulusKind.StructureBroken, e, Costs.structureBrokenLoudness, null, false);
+                    break;
+                case WorldEventType.StructureCollapsed:
+                    Perceive(StimulusKind.StructureBroken, e, Costs.structureBrokenLoudness, null, false, true);
+                    break;
+                case WorldEventType.GardenDamaged:
+                    Perceive(StimulusKind.GardenBroken, e, Costs.gardenBrokenLoudness, null, false);
+                    break;
 
                 case WorldEventType.PlayerSmoking:
                     if (Actors.IsPlayer(e.instigator) && CanSeePlayer(e.instigator))
@@ -264,13 +331,15 @@ namespace Movers
             }
         }
 
-        // Breakage: seen, or heard with a default loudness when the raiser gave none.
-        void Perceive(StimulusKind kind, in WorldEvent e, float defaultLoudness, MovableObject item, bool fragile)
+        // Breakage: seen, or heard with a default loudness when the raiser gave none. What broke
+        // does not hide itself: a wall is seen breaking through its own colliders.
+        void Perceive(StimulusKind kind, in WorldEvent e, float defaultLoudness, MovableObject item, bool fragile, bool collapse = false)
         {
-            bool sawIt = CanSeePoint(e.position, item != null ? item.transform : null);
+            Transform broken = item != null ? item.transform : e.subject is Component c && c != null ? c.transform : null;
+            bool sawIt = CanSeePoint(e.position, broken);
             float loudness = e.loudness > 0f ? e.loudness : defaultLoudness;
             if (!sawIt && !Hears(e.position, loudness, false)) return;
-            Emit(new Stimulus(kind, e.position, e.instigator) { seen = sawIt, item = item, fragile = fragile, value = e.value });
+            Emit(new Stimulus(kind, e.position, e.instigator) { seen = sawIt, item = item, fragile = fragile, value = e.value, collapse = collapse });
         }
 
         void Witness(MovableObject item, int thief, Vector3 at)
@@ -279,9 +348,13 @@ namespace Movers
             Emit(new Stimulus(StimulusKind.TheftWitnessed, at, thief) { seen = true, item = item, value = item.contractValue });
         }
 
-        public bool Hears(Vector3 source, float loudness, bool ignoreWalls)
+        public bool Hears(Vector3 source, float loudness, bool ignoreWalls) => Hears(source, loudness, ignoreWalls, Costs.hearing);
+
+        // hearing: the share of the normal radius she hears at (MoodCosts.hearing, or
+        // explosionHearing for a blast).
+        public bool Hears(Vector3 source, float loudness, bool ignoreWalls, float hearing)
         {
-            float radius = WorldEvents.HearingRadius(loudness) * (mood != null ? mood.Costs.hearing : 1f);
+            float radius = WorldEvents.HearingRadius(loudness) * hearing;
             Vector3 ear = HeadPosition;
             float dist = Vector3.Distance(source, ear);
             float effective = radius;
@@ -397,6 +470,14 @@ namespace Movers
                     Emit(new Stimulus(StimulusKind.Bumped, m.Position, p) { seen = true });
                 }
             }
+        }
+
+        // A vehicle hit her (host, GrandmaMover.Knock).
+        void OnKnocked(Vector3 velocityChange, int by)
+        {
+            if (!Net.HasAuthority || asleep || !isActiveAndEnabled) return;
+            var kind = velocityChange.magnitude >= Costs.runOverMinSpeed ? StimulusKind.RunOver : StimulusKind.Bumped;
+            Emit(new Stimulus(kind, transform.position, by) { seen = true });
         }
 
         // Something thrown (or knocked) into her.

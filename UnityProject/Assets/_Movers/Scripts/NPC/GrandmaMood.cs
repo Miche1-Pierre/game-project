@@ -9,8 +9,12 @@ namespace Movers
     // (GrandmaMoodTable); this component charges it, keeps the per-kind cooldowns (a crash is
     // one annoyance, not six), remembers who annoyed her most, and lets her calm down slowly
     // when nothing happens. One catastrophe can only cost so much in a few seconds
-    // (maxLossPerWindow). At 0 she gives a last warning first; another offence during it and
-    // the brain calls the police, none and she calms down a little.
+    // (maxLossPerWindow, noise and breakage only: offences always pay full price).
+    //
+    // The ladder is deterministic: at 0 she gives her one last warning of the run (shown for
+    // its whole duration, GrandmaLastWarning); only a player's own offence costing
+    // warningOffenceMinCost or more, warningGraceSeconds after it began, ends it with the
+    // call. None, and she calms down a little. At 0 with the warning used: the call, at once.
     //
     // Every change is a GrandmaMoodChanged world event, so the HUD and the event log follow
     // her without holding a reference to her.
@@ -28,8 +32,8 @@ namespace Movers
         // Her AI is switched off (Shift+F4): nothing costs anything and she does not recover.
         public bool Frozen { get; set; }
 
-        // Fired when she calls the police: an offence during her last warning (or at 0 when the
-        // table has no warning).
+        // Fired when she calls the police: an offence during her last warning, or 0 reached with
+        // the run's warnings used up (or none in the table).
         public event Action ReachedZero;
         // Her patience ran out: she warns once before calling. Then either ReachedZero, or
         // WarningSurvived when the crew behaved until the warning ran out.
@@ -38,7 +42,10 @@ namespace Movers
 
         public bool InLastWarning { get; private set; }
         public float WarningLeft => InLastWarning ? Mathf.Max(0f, warningUntil - Time.time) : 0f;
-        float warningUntil;
+        // Warnings given this run (lastWarningsPerRun). The brain compares it before and after
+        // a batch to know the batch started one.
+        public int WarningsGiven { get; private set; }
+        float warningUntil, warningStart;
         float windowStart = -99f, windowLoss;
 
         // Cooldowns per kind and per culprit: players 0..3, then one slot for everyone else.
@@ -90,6 +97,10 @@ namespace Movers
                 case StimulusKind.TheftWitnessed: return c.theftWitnessed;
                 case StimulusKind.CarryingSeen: return c.carryingSeen;
                 case StimulusKind.BehindSchedule: return c.behindSchedule;
+                case StimulusKind.StructureBroken: return Cooled(s.kind, s.instigator, c.structureCooldown) ? c.structureBroken : 0f;
+                case StimulusKind.GardenBroken: return c.gardenBroken;
+                case StimulusKind.ObjectDamaged: return c.objectDamaged;
+                case StimulusKind.RunOver: return Cooled(s.kind, s.instigator, c.runOverCooldown) ? c.runOver : 0f;
             }
             return 0f;
         }
@@ -103,14 +114,18 @@ namespace Movers
             return true;
         }
 
-        // Takes `cost` off her patience, blames the instigator for it, and returns what was
-        // actually lost (less at the bottom of the bar).
-        public float Apply(float cost, int instigator, Vector3 at)
+        // Takes `cost` (CostOf(s)) off her patience, blames the instigator for it, and returns
+        // what was actually lost (less at the bottom of the bar or under the cap, 0 during the
+        // warning). The brain is the only caller, once per stimulus.
+        public float Apply(float cost, in Stimulus s)
         {
             if (Frozen || cost <= 0f) return 0f;
             var c = Costs;
+            int instigator = s.instigator;
             if (InLastWarning)
             {
+                // She is waiting for one thing only. Anything else costs nothing now.
+                if (!EndsWarning(cost, s)) return 0f;
                 // She warned them. This is the offence that makes her pick up the phone.
                 InLastWarning = false;
                 LastLossTime = Time.time;
@@ -123,12 +138,16 @@ namespace Movers
             if (Patience <= 0f) return 0f;
 
             // One catastrophe at a time: a whole grenade chain in the next room is a few
-            // seconds of fury, not a run lost in one blast.
-            if (Time.time - windowStart > Mathf.Max(0.5f, c.lossWindow)) { windowStart = Time.time; windowLoss = 0f; }
-            float allowed = Mathf.Max(0f, c.maxLossPerWindow - windowLoss);
-            cost = Mathf.Min(cost, allowed);
-            if (cost <= 0f) return 0f;
-            windowLoss += cost;
+            // seconds of fury, not a run lost in one blast. Offences are not catastrophes:
+            // a theft she saw always costs its price.
+            if (!c.capOnlyBreakage || s.IsCapped)
+            {
+                if (Time.time - windowStart > Mathf.Max(0.5f, c.lossWindow)) { windowStart = Time.time; windowLoss = 0f; }
+                float allowed = Mathf.Max(0f, c.maxLossPerWindow - windowLoss);
+                cost = Mathf.Min(cost, allowed);
+                if (cost <= 0f) return 0f;
+                windowLoss += cost;
+            }
 
             float before = Patience;
             Patience = Mathf.Max(0f, Patience - cost);
@@ -136,19 +155,36 @@ namespace Movers
             LastLossTime = Time.time;
             if (Actors.IsPlayer(instigator) && instigator < blame.Length) blame[instigator] += lost;
 
+            // Decided before the mood goes out, so the client gets the warning with the value.
+            bool warn = Patience <= 0f && c.lastWarningSeconds > 0f && WarningsGiven < Mathf.Max(0, c.lastWarningsPerRun);
+            if (warn)
+            {
+                InLastWarning = true;
+                WarningsGiven++;
+                warningStart = Time.time;
+                warningUntil = Time.time + c.lastWarningSeconds;
+            }
+
             if (Net.IsHost) GrandmaSync.SendMood(this);
             WorldEvents.Raise(WorldEventType.GrandmaMoodChanged, transform.position, instigator, 0f, Patience);
-            if (Patience <= 0f)
+            if (warn)
             {
-                if (c.lastWarningSeconds > 0f)
-                {
-                    InLastWarning = true;
-                    warningUntil = Time.time + c.lastWarningSeconds;
-                    LastWarning?.Invoke();
-                }
-                else ReachedZero?.Invoke();
+                LastWarning?.Invoke();
+                WorldEvents.Raise(WorldEventType.GrandmaLastWarning, transform.position, WorstOffender(), 0f, c.lastWarningSeconds);
             }
+            else if (Patience <= 0f) ReachedZero?.Invoke();
             return lost;
+        }
+
+        // Only a player's own doing, a real offence (not a noise, not the clock), costing enough,
+        // and not in the first seconds: the blast that made her warn cannot make her call too.
+        bool EndsWarning(float cost, in Stimulus s)
+        {
+            var c = Costs;
+            return Actors.IsPlayer(s.instigator)
+                && s.kind != StimulusKind.SmallNoise && s.kind != StimulusKind.BehindSchedule
+                && cost >= c.warningOffenceMinCost
+                && Time.time >= warningStart + Mathf.Max(0f, c.warningGraceSeconds);
         }
 
         // A player she has seen at work near her can pick up a share of the blame for something
@@ -170,11 +206,27 @@ namespace Movers
             return best;
         }
 
+        // Debug (Keypad 7 and 8, host or offline): straight to a patience, any warning running
+        // ended. The warnings already given this run stay given.
+        public void DebugSetPatience(float value)
+        {
+            if (!Net.HasAuthority) return;
+            Patience = Mathf.Clamp(value, 0f, 100f);
+            InLastWarning = false;
+            LastLossTime = Time.time;
+            if (Net.IsHost) GrandmaSync.SendMood(this);
+            WorldEvents.Raise(WorldEventType.GrandmaMoodChanged, transform.position, Actors.World, 0f, Patience);
+        }
+
         // Online client (GrandmaSync Mood): the host's patience and warning, no events.
         public void ApplyReplica(float patience, bool inLastWarning)
         {
             if (patience < Patience) LastLossTime = Time.time;
-            if (inLastWarning && !InLastWarning) warningUntil = Time.time + Costs.lastWarningSeconds;
+            if (inLastWarning && !InLastWarning)
+            {
+                warningStart = Time.time;
+                warningUntil = Time.time + Costs.lastWarningSeconds;
+            }
             Patience = Mathf.Clamp(patience, 0f, 100f);
             InLastWarning = inLastWarning;
         }

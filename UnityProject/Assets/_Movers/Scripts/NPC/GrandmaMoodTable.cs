@@ -11,6 +11,9 @@ namespace Movers
     // hears less far, every cost is about half, she calms down sooner and higher, one
     // catastrophe can only take so much in a few seconds, and at zero she gives a last warning
     // before she picks up the phone.
+    //
+    // Made deterministic on 2026-09-28 (DEV 2, ADR-013): the cap no longer swallows offences,
+    // the warning comes once per run and only a player's own offence ends it.
     [System.Serializable]
     public sealed class MoodCosts
     {
@@ -36,10 +39,23 @@ namespace Movers
         public float doorBroken = 8f;
         public float explosionInside = 12f;
         public float explosionOutside = 4f;
+        [Tooltip("One of her own things cracked (not on the list; those are contractDamaged). 0: she does not mind.")]
+        public float objectDamaged = 1.5f;
+        [Tooltip("A wall, a fence or a structural piece broken through, or part of the house brought down. Capped like breakage, except a collapse, which pays full price.")]
+        public float structureBroken = 6f;
+        [Tooltip("Seconds per culprit before another broken wall costs anything: a truck through a fence and the wall behind it is one annoyance.")]
+        public float structureCooldown = 3f;
+        [Tooltip("A hedge, a bush, the mailbox, a garden post... Garden damage, never a wall.")]
+        public float gardenBroken = 1.5f;
 
         [Header("The crew's behaviour")]
         public float bumped = 2f;
         public float bumpCooldown = 2f;
+        [Tooltip("The truck (or another vehicle) hit her at runOverMinSpeed or more.")]
+        public float runOver = 10f;
+        public float runOverCooldown = 3f;
+        [Tooltip("Speed a knock gives her (m/s, GrandmaMover.Knock) from which it is being run over; slower, a nudge at walking pace, it is a bump.")]
+        public float runOverMinSpeed = 3f;
         public float smokingPuff = 1f;
         public float smokingCooldown = 10f;
         public float drinking = 1.5f;
@@ -67,14 +83,34 @@ namespace Movers
         [Header("A bit deaf")]
         [Tooltip("Share of the normal hearing radius (WorldEvents.HearingRadius) she hears at. 1 = sharp ears.")]
         [Range(0.2f, 1f)] public float hearing = 0.6f;
+        [Tooltip("The same share for explosions. 1: she hears a grenade 30 m away, deaf or not.")]
+        [Range(0.2f, 1f)] public float explosionHearing = 1f;
+
+        [Header("How loud breakage is when the raiser gave no loudness (WorldEvents.HearingRadius)")]
+        public float objectDestroyedLoudness = 0.5f;
+        public float objectDamagedLoudness = 0.4f;
+        public float contractDamagedLoudness = 0.4f;
+        public float contractDestroyedLoudness = 0.5f;
+        public float windowBrokenLoudness = 0.6f;
+        public float doorBrokenLoudness = 0.7f;
+        public float structureBrokenLoudness = 0.8f;
+        public float gardenBrokenLoudness = 0.5f;
 
         [Header("Leniency")]
         [Tooltip("The most patience she can lose within lossWindow seconds: a grenade chain is one catastrophe, not the end of the run.")]
         public float maxLossPerWindow = 20f;
         public float lossWindow = 10f;
-        [Tooltip("At zero she warns first. Another offence during these seconds and she calls the police; none, and she gets lastWarningRecover back. 0 = call at once.")]
+        [Tooltip("On: the cap above only holds back noise and breakage, offences (theft, bumps, smoking...) always pay full price. Off: everything is capped (the old rule).")]
+        public bool capOnlyBreakage = true;
+        [Tooltip("At zero she warns first. A player's offence during these seconds and she calls the police; none, and she gets lastWarningRecover back. 0 = call at once.")]
         public float lastWarningSeconds = 25f;
         public float lastWarningRecover = 10f;
+        [Tooltip("Warnings she gives in one run. Used up: patience 0 calls the police at once.")]
+        public int lastWarningsPerRun = 1;
+        [Tooltip("During the warning only a player's own offence costing at least this much ends it with the call. Anything cheaper, a noise, the schedule, or nobody's doing costs nothing.")]
+        public float warningOffenceMinCost = 2f;
+        [Tooltip("Seconds after the warning began before an offence can end it: what made her warn cannot also make her call.")]
+        public float warningGraceSeconds = 3f;
     }
 
     // The asset form of the table. Create one under Assets/_Movers/Data/ and assign it to
