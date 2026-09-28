@@ -16,7 +16,7 @@ namespace Movers
         ExcuseMe, Blocked, BreakIn, Goodbye,
         Rock, Read, TV, Tea, Cook, Water, Fire, LookOutside,
         // DEV 2 (ADR-013). Values travel on the wire (GrandmaSync Speech): append only.
-        StructureBroken, GardenBroken, RunOver,
+        StructureBroken, GardenBroken, RunOver, PoliceArrived,
         Count
     }
 
@@ -48,9 +48,10 @@ namespace Movers
             }
         }
 
-        // Lines that stay up for their whole time (GrandmaSpeech): the warning and the call must
-        // be read, whatever else she notices meanwhile.
-        public static bool IsHeld(Line line) => line == Line.LastWarning || line == Line.Police || line == Line.OnThePhone;
+        // Lines that stay up for their whole time (GrandmaSpeech): the warning, the call and the
+        // police's arrival must be read, whatever else she notices meanwhile.
+        public static bool IsHeld(Line line) => line == Line.LastWarning || line == Line.Police || line == Line.OnThePhone
+                                              || line == Line.PoliceArrived;
 
         // "my rocking chair": the object's display name, as she would say it.
         public static string NameOf(MovableObject item)
@@ -192,6 +193,7 @@ namespace Movers
             t[(int)Line.StructureBroken] = fr ? new[] { "Mes murs !" } : new[] { "My walls!" };
             t[(int)Line.GardenBroken] = fr ? new[] { "Mes rosiers !" } : new[] { "My roses!" };
             t[(int)Line.RunOver] = fr ? new[] { "Vous voulez m'écraser ?!" } : new[] { "Are you trying to run me over?!" };
+            t[(int)Line.PoliceArrived] = fr ? new[] { "Ils sont partis par là, monsieur l'agent !" } : new[] { "They went that way, officer!" };
             return t;
         }
     }

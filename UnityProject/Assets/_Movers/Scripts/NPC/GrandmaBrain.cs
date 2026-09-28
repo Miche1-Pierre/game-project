@@ -24,7 +24,9 @@ namespace Movers
     //   React            she saw it: she faces the culprit, says so, shakes her fist
     //   Confront         at the end of her patience she follows the worst offender and scolds
     //                    him, and he drops what of hers he is holding
-    //   CallPolice       patience 0: GrandmaCalledPolice, once, and the run fails
+    //   CallPolice       patience 0: GrandmaCalledPolice, once. The police come and the crew
+    //                    flees (EscapeMission), or, in a scene without one, the run fails.
+    //                    When the police arrive (PoliceArrived) she points them the way.
     //
     // Senses feed her Stimulus values, the mood table prices them, and this decides what she
     // does. She announces the facts other systems care about as world events (KeysHandedOver,
@@ -122,7 +124,7 @@ namespace Movers
         bool wandering;
         float nextConfrontCheck;
         float lastBreakInHeard = -99f;
-        bool policePending, sessionOver, sessionOverPending, startRoutinePending;
+        bool policePending, policeHere, sessionOver, sessionOverPending, startRoutinePending;
         SessionState endedAs;
 
         Action<Stimulus> onPerceived;
@@ -199,7 +201,7 @@ namespace Movers
                 Enter(GrandmaState.GiveKeys);   // stops the mover
                 return;
             }
-            if (State == GrandmaState.CallPolice) { speech.Say(Line.OnThePhone); return; }
+            if (State == GrandmaState.CallPolice) { speech.Say(policeHere ? Line.PoliceArrived : Line.OnThePhone); return; }
             bool grumpy = State == GrandmaState.Confront || mood.Tier >= MoodTier.Angry;
             speech.Say(grumpy ? Line.ChatGrumpy : Line.Chat);
         }
@@ -876,7 +878,7 @@ namespace Movers
         {
             CrewMember near = CrewRoster.Nearest(transform.position, 20f);
             if (near != null) mover.Face(near.Position);
-            if (Time.time < nextPhoneLine) return;
+            if (policeHere || Time.time < nextPhoneLine) return;   // off the phone: they are here
             nextPhoneLine = Time.time + 7f;
             speech.Say(Line.OnThePhone);
         }
@@ -886,6 +888,7 @@ namespace Movers
         void OnWorldEvent(WorldEvent e)
         {
             if (!Net.HasAuthority) return;
+            if (e.type == WorldEventType.PoliceArrived) { OnPoliceArrived(); return; }
             if (e.type != WorldEventType.SessionStateChanged) return;
             var st = (SessionState)Mathf.RoundToInt(e.magnitude);
             if (st == SessionState.ContractStarted || st == SessionState.InProgress)
@@ -898,6 +901,16 @@ namespace Movers
                 sessionOverPending = true;
                 endedAs = st;
             }
+        }
+
+        // The lead police car is at the house: she points the officers after the crew.
+        void OnPoliceArrived()
+        {
+            if (policeHere) return;
+            policeHere = true;
+            if (!AIEnabled || sessionOver) return;
+            speech.Say(Line.PoliceArrived);
+            anim.PlayUpper(GrandmaAnimation.Point);
         }
 
         // Online client (GrandmaSync Flags): the host's state and flags, no side effects.
@@ -932,7 +945,8 @@ namespace Movers
                 if (senses != null) senses.asleep = true;
                 mover.Stop();
                 activities.Interrupt(false);
-                if (endedAs == SessionState.Completed) speech.Say(Line.Goodbye);
+                // A run completed after her call is an escape (Session.Escaped): no thanks for that.
+                if (endedAs == SessionState.Completed) { if (!Session.Escaped && !PoliceCalled) speech.Say(Line.Goodbye); }
                 else if (!PoliceCalled) speech.Say(Line.TooSlow);
             }
         }
