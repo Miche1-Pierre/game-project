@@ -44,7 +44,9 @@ namespace Movers
         [Header("Riding in a moving truck")]
         public float movingSpeed = 1.5f;        // m/s: above this the truck counts as moving
         // Light things are thin and fast enough to slip through an 8 cm wall in one physics step
-        // when the truck stops dead; they get continuous collision while the truck moves.
+        // when the truck stops dead; they get continuous collision while the truck moves. Above
+        // TruckTuning.cargoCcdSpeed everything riding gets it: at 90 km/h a ram stops the box
+        // faster than any crate can follow.
         public float lightCargoKg = 40f;
         // An object that ends up inside a wall anyway is eased out, not fired across the street.
         public float ridingDepenetrationSpeed = 2f;
@@ -60,6 +62,7 @@ namespace Movers
             public int stamp;
             public float insideSince = -1f;
             public bool riding;
+            public bool continuous;             // riding with ContinuousDynamic set by this box
             public CollisionDetectionMode savedMode;
             public float savedDepenetration;
         }
@@ -76,6 +79,7 @@ namespace Movers
         Vector3 boxCentreInTruck;
         Quaternion boxRotationInTruck;
         int stamp;
+        bool fast;                              // this check: the truck is over cargoCcdSpeed
         float nextCheck;
         bool warnedFull;
         int replicaCount;
@@ -126,6 +130,8 @@ namespace Movers
             Quaternion toBox = Quaternion.Inverse(rotation);
             float now = Time.time;
             bool moving = truck != null && truck.linearVelocity.sqrMagnitude > movingSpeed * movingSpeed;
+            float ccdSpeed = vehicle != null ? vehicle.Tuning.cargoCcdSpeed : float.PositiveInfinity;
+            fast = truck != null && truck.linearVelocity.sqrMagnitude > ccdSpeed * ccdSpeed;
             stamp++;
 
             Vector3 reach = half + Vector3.one * exitMargin;
@@ -275,18 +281,28 @@ namespace Movers
 
         void StartRiding(MovableObject m, Track t)
         {
-            if (t.riding || m.rb == null || m.rb.isKinematic) return;
-            t.riding = true;
-            t.savedMode = m.rb.collisionDetectionMode;
-            t.savedDepenetration = m.rb.maxDepenetrationVelocity;
-            if (m.Mass <= lightCargoKg) m.rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-            m.rb.maxDepenetrationVelocity = ridingDepenetrationSpeed;
+            if (m.rb == null || m.rb.isKinematic) return;
+            if (!t.riding)
+            {
+                t.riding = true;
+                t.continuous = false;
+                t.savedMode = m.rb.collisionDetectionMode;
+                t.savedDepenetration = m.rb.maxDepenetrationVelocity;
+                m.rb.maxDepenetrationVelocity = ridingDepenetrationSpeed;
+            }
+            // Light cargo always, the rest once the truck is fast; back to its own mode when
+            // the truck slows again.
+            bool wantContinuous = m.Mass <= lightCargoKg || fast;
+            if (wantContinuous == t.continuous) return;
+            t.continuous = wantContinuous;
+            m.rb.collisionDetectionMode = wantContinuous ? CollisionDetectionMode.ContinuousDynamic : t.savedMode;
         }
 
         void StopRiding(MovableObject m, Track t)
         {
             if (!t.riding) return;
             t.riding = false;
+            t.continuous = false;
             if (m == null || m.rb == null) return;
             // A body turned kinematic meanwhile (picked up, worn) cannot take ContinuousDynamic back.
             if (!m.rb.isKinematic || t.savedMode != CollisionDetectionMode.ContinuousDynamic)

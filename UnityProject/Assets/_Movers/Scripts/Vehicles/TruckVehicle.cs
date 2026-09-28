@@ -14,10 +14,18 @@ namespace Movers
     //
     // The root sits on the ground: its local y = 0 is the road under the wheels, and local +z is
     // the way the cab faces. The integration recipe (INTEGRATION.md, TRUCK) builds it that way.
+    //
+    // DEV 2 (03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md 6): the driving numbers come from a
+    // TruckTuning asset (90 km/h, a power-limited engine, brakes that stop it in the same distance
+    // loaded or empty, steering limited by lateral grip). Without an asset the fields below are
+    // the fallback, so an old scene drives as it did.
     [RequireComponent(typeof(Rigidbody))]
     [DisallowMultipleComponent]
     public sealed class TruckVehicle : MonoBehaviour
     {
+        [Tooltip("The driving, ram and feel numbers. Empty: the fields below, today's truck.")]
+        public TruckTuning tuning;
+
         [Header("Wiring")]
         public WheelCollider frontLeft;
         public WheelCollider frontRight;
@@ -52,21 +60,21 @@ namespace Movers
         public float forwardGrip = 1.5f;
         public float sidewaysGrip = 1.6f;
 
-        [Header("Engine and brakes")]
+        [Header("Engine and brakes (fallback when no tuning asset is set)")]
         public float maxSpeedKmh = 40f;             // a speed cap is the first defence against cargo tunnelling
         public float maxReverseKmh = 12f;
         // Nm per rear wheel. Rig, empty: 4.8 m in the first 2 s, 38.7 km/h top (the governor).
         public float motorTorque = 2500f;
         public float reverseTorque = 1800f;         // rig: 11.8 km/h top in reverse
-        public float brakeTorque = 3000f;           // per wheel. Rig: 9.2 m to stop from the cap
+        public float brakeTorque = 3000f;           // per wheel, empty. Rig: 9.2 m to stop from the cap
         public float handbrakeTorque = 6000f;       // rear wheels
         public float handbrakeSidewaysGrip = 0.7f;  // the rear lets go a little: the handbrake swings the tail
         public float coastBrakeTorque = 150f;       // engine braking with the pedal up
         public float holdBrakeTorque = 3000f;       // parked, or stopped with no pedal: it stays put on a slope
 
-        [Header("Steering")]
+        [Header("Steering (fallback when no tuning asset is set)")]
         public float maxSteerSlow = 35f;            // degrees at a standstill
-        public float maxSteerFast = 10f;            // degrees at the speed cap
+        public float maxSteerFast = 10f;            // degrees at speed, at least
         public float steerRate = 120f;              // degrees per second: the keyboard snaps, the wheels do not
 
         [Header("Safety and noise")]
@@ -77,6 +85,9 @@ namespace Movers
 
         [Header("Crew in the way")]
         public CrewBumper crewBumper = new CrewBumper();
+
+        // The asset, or the fallback built from the fields above.
+        public TruckTuning Tuning => tuning != null ? tuning : Fallback();
 
         public CrewMember Driver { get; private set; }
         public int DriverActor => Driver != null ? Driver.index : Actors.World;
@@ -116,6 +127,9 @@ namespace Movers
         float pedalNow;
         bool handbrakeNow;
         Vector3 replicaVelocity;
+        float wheelbase = 4f;
+        float tippedFor;
+        TruckTuning fallback;
 
         void Awake()
         {
@@ -128,8 +142,46 @@ namespace Movers
             if (!wheelsReady)
                 Debug.LogWarning("[TruckVehicle] " + name + " is missing a WheelCollider: it will not drive.");
 
+            if (wheelsReady) wheelbase = Mathf.Max(1f, Mathf.Abs(AxleZ(frontLeft, frontRight) - AxleZ(rearLeft, rearRight)));
             ConfigureBody();
             if (wheelsReady) ConfigureWheels();
+        }
+
+        void OnDestroy()
+        {
+            if (fallback != null) Destroy(fallback);
+        }
+
+        // Today's truck as a tuning: what the component's own fields say, the resistances it
+        // never had at zero, and the new systems (ram, auto-right, feel) at the asset's defaults.
+        TruckTuning Fallback()
+        {
+            if (fallback != null) return fallback;
+            fallback = ScriptableObject.CreateInstance<TruckTuning>();
+            fallback.name = name + " (fallback tuning)";
+            fallback.hideFlags = HideFlags.HideAndDontSave;
+            fallback.maxSpeedKmh = maxSpeedKmh;
+            fallback.governorBand = 0.15f;
+            fallback.motorTorque = motorTorque;
+            fallback.maxReverseKmh = maxReverseKmh;
+            fallback.reverseTorque = reverseTorque;
+            fallback.linearDamping = 0.05f;
+            fallback.aeroDrag = 0f;
+            fallback.rollingResistance = 0f;
+            // The stop the fixed torque gave the empty truck, now whatever the load.
+            fallback.brakeDecel = 4f * brakeTorque / Mathf.Max(1f, mass * wheelRadius);
+            fallback.handbrakeTorque = handbrakeTorque;
+            fallback.handbrakeSidewaysGrip = handbrakeSidewaysGrip;
+            fallback.coastBrakeTorque = coastBrakeTorque;
+            fallback.holdBrakeTorque = holdBrakeTorque;
+            fallback.maxSteerSlow = maxSteerSlow;
+            fallback.maxSteerFast = maxSteerFast;
+            fallback.steerRate = steerRate;
+            fallback.forwardGrip = forwardGrip;
+            fallback.sidewaysGrip = sidewaysGrip;
+            fallback.substepsAbove = 15;
+            fallback.audioTopSpeed = 8f;
+            return fallback;
         }
 
         void Start()
@@ -172,7 +224,7 @@ namespace Movers
             rb.isKinematic = false;
             rb.useGravity = true;
             rb.mass = mass;
-            rb.linearDamping = 0.05f;
+            rb.linearDamping = Tuning.linearDamping;
             rb.angularDamping = 0.3f;
             rb.interpolation = RigidbodyInterpolation.Interpolate;   // the chase camera and the driver ride on it
             // Continuous on the truck lets the light cargo, switched to ContinuousDynamic while the
@@ -185,20 +237,22 @@ namespace Movers
 
         void ConfigureWheels()
         {
-            Setup(frontLeft);
-            Setup(frontRight);
-            Setup(rearLeft);
-            Setup(rearRight);
+            var t = Tuning;
+            Setup(frontLeft, t);
+            Setup(frontRight, t);
+            Setup(rearLeft, t);
+            Setup(rearRight, t);
 
-            // More solver substeps at walking pace, where WheelColliders jitter the most.
-            frontLeft.ConfigureVehicleSubsteps(5f, 12, 15);
+            // More solver substeps at walking pace, where WheelColliders jitter the most, and at
+            // speed, where one physics step is half a metre of road.
+            frontLeft.ConfigureVehicleSubsteps(t.substepSpeedThreshold, t.substepsBelow, t.substepsAbove);
 
             rearSideways = rearLeft.sidewaysFriction;
             rearSidewaysHandbrake = rearSideways;
-            rearSidewaysHandbrake.stiffness = handbrakeSidewaysGrip;
+            rearSidewaysHandbrake.stiffness = t.handbrakeSidewaysGrip;
         }
 
-        void Setup(WheelCollider w)
+        void Setup(WheelCollider w, TruckTuning t)
         {
             w.radius = wheelRadius;
             w.mass = wheelMass;
@@ -206,8 +260,8 @@ namespace Movers
             w.suspensionDistance = suspensionDistance;
             w.forceAppPointDistance = forceAppPointDistance;
             w.suspensionSpring = new JointSpring { spring = springRate, damper = damperRate, targetPosition = suspensionTarget };
-            w.forwardFriction = Curve(0.4f, 1f, 0.8f, 0.5f, forwardGrip);
-            w.sidewaysFriction = Curve(0.2f, 1f, 0.5f, 0.75f, sidewaysGrip);
+            w.forwardFriction = Curve(0.4f, 1f, 0.8f, 0.5f, t.forwardGrip);
+            w.sidewaysFriction = Curve(0.2f, 1f, 0.5f, 0.75f, t.sidewaysGrip);
 
             // Hang the wheel so the truck rests at its authored height whatever the suspension numbers.
             // The spring carries the wheel's share of the body at suspensionTarget, so the wheel
@@ -288,7 +342,9 @@ namespace Movers
             }
             if (!wheelsReady) return;
 
+            var t = Tuning;
             ForwardSpeed = Vector3.Dot(rb.linearVelocity, rb.rotation * Vector3.forward);
+            if (AutoRight(t)) return;
 
             // Driver is a UnityEngine.Object: a destroyed crew member reads as nobody at the wheel.
             bool driving = Driver != null && CanDrive;
@@ -305,8 +361,9 @@ namespace Movers
             // A body that went to sleep while parked does not wake for wheel torque on its own.
             if (driving && (Mathf.Abs(move.y) > 0.05f || Mathf.Abs(move.x) > 0.05f) && rb.IsSleeping()) rb.WakeUp();
 
-            Steer(move.x);
-            DriveAndBrake(driving, move.y, handbrake);
+            Steer(move.x, t);
+            DriveAndBrake(driving, move.y, handbrake, t);
+            Resist(t);
             AntiRoll(frontLeft, frontRight);
             AntiRoll(rearLeft, rearRight);
             crewBumper.Tick(rb, Hull);
@@ -316,47 +373,62 @@ namespace Movers
                 ramp.Deploy();
         }
 
-        void Steer(float input)
+        // The lock that keeps the lateral acceleration under maxLateralAccel at this speed
+        // (tan(angle) = a * wheelbase / v^2), clamped between the fast and the slow limits: full
+        // lock never slides the truck at speed, and at a crawl it turns as tight as it can.
+        void Steer(float input, TruckTuning t)
         {
-            float speed01 = Mathf.Clamp01(Mathf.Abs(ForwardSpeed) / (maxSpeedKmh / 3.6f));
-            float limit = Mathf.Lerp(maxSteerSlow, maxSteerFast, speed01);
-            SteerAngle = Mathf.MoveTowards(SteerAngle, input * limit, steerRate * Time.fixedDeltaTime);
+            float v = Mathf.Abs(ForwardSpeed);
+            float limit = v > 0.1f ? Mathf.Atan(t.maxLateralAccel * wheelbase / (v * v)) * Mathf.Rad2Deg : t.maxSteerSlow;
+            limit = Mathf.Clamp(limit, Mathf.Min(t.maxSteerFast, t.maxSteerSlow), t.maxSteerSlow);
+            SteerAngle = Mathf.MoveTowards(SteerAngle, input * limit, t.steerRate * Time.fixedDeltaTime);
             frontLeft.steerAngle = SteerAngle;
             frontRight.steerAngle = SteerAngle;
         }
 
         // One pedal, arcade style: forward accelerates, or brakes while rolling back; back brakes
         // while rolling forward, then reverses. Rear-wheel drive.
-        void DriveAndBrake(bool driving, float pedal, bool handbrake)
+        //
+        // The engine pushes each driven wheel with min(torque / r, half the power / v): a strong
+        // launch that tapers as the speed grows, no gears in the physics. The brakes aim at a
+        // deceleration, so their torque follows the mass (the truck and its load) and a stop
+        // takes the same distance loaded or empty; a wheel slipping past absSlip lets go of the
+        // service brake for the step (ABS).
+        void DriveAndBrake(bool driving, float pedal, bool handbrake, TruckTuning t)
         {
             float v = ForwardSpeed;
-            float motor = 0f, brake = 0f;
+            float motor = 0f, held = 0f, service = 0f;   // held: Nm per wheel; service: share of the full brake
 
-            if (!driving) brake = holdBrakeTorque;
+            if (!driving) held = t.holdBrakeTorque;
             else if (pedal > 0.05f)
             {
-                if (v < -0.5f) brake = brakeTorque * pedal;
-                else motor = motorTorque * pedal * Governor(v, maxSpeedKmh / 3.6f);
+                if (v < -0.5f) service = pedal;
+                else motor = DriveTorque(v, t) * pedal * Governor(v, t.maxSpeedKmh / 3.6f, t.governorBand);
             }
             else if (pedal < -0.05f)
             {
-                if (v > 0.5f) brake = brakeTorque * -pedal;
-                else motor = -reverseTorque * -pedal * Governor(-v, maxReverseKmh / 3.6f);
+                if (v > 0.5f) service = -pedal;
+                else motor = -t.reverseTorque * -pedal * Governor(-v, t.maxReverseKmh / 3.6f, ReverseGovernorBand);
             }
-            else brake = Mathf.Abs(v) < 0.4f ? holdBrakeTorque : coastBrakeTorque;
+            else held = Mathf.Abs(v) < 0.4f ? t.holdBrakeTorque : t.coastBrakeTorque;
 
             // Over the cap (downhill, or shoved by something): the engine holds it back.
-            float cap = (v >= 0f ? maxSpeedKmh : maxReverseKmh) / 3.6f;
-            if (Mathf.Abs(v) > cap + 0.5f) brake = Mathf.Max(brake, coastBrakeTorque * 4f);
+            float cap = (v >= 0f ? t.maxSpeedKmh : t.maxReverseKmh) / 3.6f;
+            if (Mathf.Abs(v) > cap + 0.5f) held = Mathf.Max(held, t.coastBrakeTorque * 4f);
+
+            // The full service brake per wheel for the aimed deceleration, split front and rear.
+            float full = t.brakeDecel * BrakingMass() * wheelRadius;
+            float front = full * t.brakeBiasFront * 0.5f * service;
+            float rear = full * (1f - t.brakeBiasFront) * 0.5f * service;
 
             bool pulled = driving && handbrake;
+            float rearHeld = pulled ? Mathf.Max(held, t.handbrakeTorque) : held;
             rearLeft.motorTorque = motor;
             rearRight.motorTorque = motor;
-            frontLeft.brakeTorque = brake;
-            frontRight.brakeTorque = brake;
-            float rearBrake = pulled ? Mathf.Max(brake, handbrakeTorque) : brake;
-            rearLeft.brakeTorque = rearBrake;
-            rearRight.brakeTorque = rearBrake;
+            frontLeft.brakeTorque = Brake(frontLeft, held, front, t.absSlip);
+            frontRight.brakeTorque = Brake(frontRight, held, front, t.absSlip);
+            rearLeft.brakeTorque = Brake(rearLeft, rearHeld, rear, t.absSlip);
+            rearRight.brakeTorque = Brake(rearRight, rearHeld, rear, t.absSlip);
 
             if (pulled != handbrakeGrip)
             {
@@ -366,10 +438,65 @@ namespace Movers
             }
         }
 
-        // Full torque until 85 % of the cap, then fading to nothing at the cap.
-        static float Governor(float speed, float cap)
+        const float ReverseGovernorBand = 0.15f;
+
+        // Nm on each driven wheel: the torque limit at a launch, the power limit above it.
+        float DriveTorque(float v, TruckTuning t)
         {
-            return Mathf.Clamp01((cap - speed) / (cap * 0.15f));
+            if (!(t.enginePowerKw > 0f)) return t.motorTorque;
+            float byPower = t.enginePowerKw * 1000f * 0.5f / Mathf.Max(1f, v) * wheelRadius;
+            return Mathf.Min(t.motorTorque, byPower);
+        }
+
+        // What the brakes stop: the body and what rides loose in the box.
+        float BrakingMass() => rb.mass + (cargo != null ? cargo.LoadedKg : 0f);
+
+        // ABS: the service brake lets go of a wheel that slips; the parking, coast and hand
+        // brakes do not.
+        static float Brake(WheelCollider w, float held, float service, float absSlip)
+        {
+            if (service > 0f && absSlip > 0f && w.GetGroundHit(out WheelHit hit) && Mathf.Abs(hit.forwardSlip) > absSlip)
+                service = 0f;
+            return Mathf.Max(held, service);
+        }
+
+        // Full drive until the last 'band' share of the cap, then fading to nothing at the cap.
+        static float Governor(float speed, float cap, float band)
+        {
+            return Mathf.Clamp01((cap - speed) / (cap * Mathf.Max(0.01f, band)));
+        }
+
+        // Air and rolling resistance along the velocity: the top speed and the coast-down come
+        // from here rather than from a big damping.
+        void Resist(TruckTuning t)
+        {
+            Vector3 vel = rb.linearVelocity;
+            float speed = vel.magnitude;
+            if (speed < 0.05f) return;
+            float rolling = t.rollingResistance * rb.mass * -Physics.gravity.y * Mathf.Clamp01(speed / 0.5f);
+            float drag = t.aeroDrag * speed * speed;
+            rb.AddForce(vel * (-(drag + rolling) / speed), ForceMode.Force);
+        }
+
+        // On its side or its roof and nearly still for a while (a grenade, a ditch): set back on
+        // its wheels a metre up, facing the way it was heading. Host only, like all driving.
+        bool AutoRight(TruckTuning t)
+        {
+            bool tipped = Vector3.Dot(rb.rotation * Vector3.up, Vector3.up) < t.autoRightUpDot
+                          && rb.linearVelocity.sqrMagnitude < 1f;
+            tippedFor = tipped ? tippedFor + Time.fixedDeltaTime : 0f;
+            if (tippedFor < t.autoRightSeconds) return false;
+            tippedFor = 0f;
+            Vector3 heading = rb.rotation * Vector3.forward;
+            heading.y = 0f;
+            if (heading.sqrMagnitude < 0.01f)
+            {
+                heading = rb.rotation * Vector3.up;   // on its nose or its tail
+                heading.y = 0f;
+            }
+            Quaternion yaw = heading.sqrMagnitude > 1e-4f ? Quaternion.LookRotation(heading.normalized, Vector3.up) : Quaternion.identity;
+            PlaceAt(rb.position + Vector3.up, yaw);
+            return true;
         }
 
         // An anti-roll bar: the wheel whose spring is more extended is pulled down, the other one
