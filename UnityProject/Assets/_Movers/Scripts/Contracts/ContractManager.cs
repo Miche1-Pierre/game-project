@@ -16,7 +16,7 @@ namespace Movers
         [Tooltip("Every movable object of the house: the list is the ones marked requiredForContract, the rest is hers to lose.")]
         public MovableObject[] allObjects;
         [Tooltip("Seconds to finish the job once it starts (the keys, or a break-in). 0 = no limit.")]
-        public float timeLimit = 600f;
+        public float timeLimit = 1200f;
 
         // The session owns the clock now; kept readable here for older code.
         public float timeLeft => Session.TimeLeft;
