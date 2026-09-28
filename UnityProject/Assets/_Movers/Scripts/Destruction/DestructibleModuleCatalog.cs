@@ -150,12 +150,12 @@ namespace Movers
             return c;
         }
 
-        // Health numbers are HouseDestruction's old table, unchanged. chunkHealth is new, set
-        // against the wall focus of the material table (0.5 m): a grenade on the floor next to
-        // a wall takes out the chunks within about 0.7 m (exterior, 500) or 0.8 m (interior, 350),
-        // cracks the ring around them, and a second grenade at the same spot reaches about 1 m.
-        // Checked offline on the A7 prototype chunk sets (a Python port of these rules, chunk boxes
-        // for hulls); first guesses, to tune in play.
+        // Health numbers are HouseDestruction's old table, unchanged. chunkHealth is set against
+        // the structure falloff curve of the material table (DestructionMaterialTable.Focus) for
+        // the re-fractured house walls (about 20 chunks, DEV 2 3.9): 300 exterior and garage, 210
+        // interior, so a wall keeps the toughness it had as 12 chunks of 500 and 350, and breaks
+        // up at 120 and 84 (fractureAtShare 0.4), which ImpactDamage's calibration assumes.
+        // First guesses, to tune in play.
         public static Entry[] Defaults()
         {
             const Kind W = Kind.Wall, E = Kind.Element;
@@ -165,15 +165,15 @@ namespace Movers
             return new[]
             {
                 // Exterior walls.
-                new Entry("PK_Wall_Plain", W, Plaster, 1400f, 500f),
-                new Entry("PK_Wall_Window_Small", W, Plaster, 1400f, 500f),
-                new Entry("PK_Wall_Window_Big", W, Plaster, 1400f, 500f),
-                new Entry("PK_Wall_Door", W, Plaster, 1400f, 500f),
-                new Entry("PKX_Wall_Garage", W, Plaster, 1400f, 500f),
+                new Entry("PK_Wall_Plain", W, Plaster, 1400f, 300f),
+                new Entry("PK_Wall_Window_Small", W, Plaster, 1400f, 300f),
+                new Entry("PK_Wall_Window_Big", W, Plaster, 1400f, 300f),
+                new Entry("PK_Wall_Door", W, Plaster, 1400f, 300f),
+                new Entry("PKX_Wall_Garage", W, Plaster, 1400f, 300f),
                 // Interior walls.
-                new Entry("PK_Wall_Interior", W, Plaster, 650f, 350f),
-                new Entry("PKX_Wall_Int_Door", W, Plaster, 650f, 350f),
-                new Entry("PKX_Wall_Int_Arch", W, Plaster, 650f, 350f),
+                new Entry("PK_Wall_Interior", W, Plaster, 650f, 210f),
+                new Entry("PKX_Wall_Int_Door", W, Plaster, 650f, 210f),
+                new Entry("PKX_Wall_Int_Arch", W, Plaster, 650f, 210f),
                 // The foundation: Damaged at most, and it holds the house up.
                 new Entry("PKX_Wall_Cellar", Kind.Foundation, Stone, 2600f),
                 // Gables sit under Roofs in the kit, next to the roof pieces they hold up.

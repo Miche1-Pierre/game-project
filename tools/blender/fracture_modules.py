@@ -34,9 +34,10 @@ Options after a bare `--`:
 Eight decisions worth reading before changing anything:
 
 1. **Walls are cut through their thickness, denser in the middle.** Seeds lie on the wall's mid-plane, so every
-   Voronoi plane is perpendicular to the wall and every cell goes through it. A warp sign(t)|t|^1.5 and a spacing
-   that tightens towards the centre put small chunks in the middle and big ones at the edges. A seed is kept only
-   where a ray through the thickness hits masonry, so no cell starts in a door or a window.
+   Voronoi plane is perpendicular to the wall and every cell goes through it. A warp sign(t)|t|^gamma (1.5; 1.0,
+   uniform, for the eight re-fractured house walls) and a spacing that tightens towards the centre put smaller
+   chunks in the middle. A seed is kept only where a ray through the thickness hits masonry, so no cell starts in
+   a door or a window.
 
 2. **Wood is never cut, glass is never exported.** Every wood part (wood, wood.001, metal: jambs, lintels,
    posts, the fixed window frame, the gable's beam and braces) is one chunk of kind "frame", whole. Glass stays a
@@ -66,7 +67,8 @@ Eight decisions worth reading before changing anything:
    every chunk is a convex slab or block. The joints are up to 2.7 cm wide (measured), so their contact tolerance
    is 3 cm instead of 1 cm.
 
-6. **Sizes.** 8 to 15 masonry chunks per wall (4 to 6 quoin, 6 to 10 chimney). A masonry chunk is at least the
+6. **Sizes.** 16 to 24 masonry chunks for the eight house walls (12 to 20 for the garage and the arch; DEV 2),
+   8 to 15 for the cellar and the gables (4 to 6 quoin, 6 to 10 chimney). A masonry chunk is at least the
    module's floor wide in the wall plane (0.12 m, 0.18 in Unity; 0.10 for the arch and 0.045 for the garage,
    whose plaster is that narrow once the posts are out of it) and at least 20 % of the mean volume. Undersized
    cells lose their seed and are recut; undersized pieces merge into the neighbour sharing the most cut area; a
@@ -125,23 +127,28 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 ART = os.path.join(ROOT, 'UnityProject', 'Assets', '_Project', 'Art')
 OUT_FOLDER = 'PierreKit_Fracture'
 
-# Every module: (name, kit folder, kind, min, max, target structural chunks, size floor in Blender m).
+# Every module: (name, kit folder, kind, min, max, target structural chunks, size floor in Blender m, seed gamma).
 # The floor is the smallest caliper width of a masonry chunk in the wall plane (x1.5 in Unity). It is 0.12
 # except where the masonry itself is narrower once the embedded wood is taken out of it (decision 3).
+# The gamma warps the seeds towards the middle of the wall (decision 1): 1.5 puts small chunks in the middle
+# and big ones at the edges, 1.0 seeds uniformly.
+# DEV 2 (ADR-013, 03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md 3.9): the eight house walls are cut finer and
+# uniformly (about 20 masonry chunks, 16 for the garage and the arch), because QA read the 12 big slabs as a
+# jigsaw of metre slabs. The cellar, the gables, the quoin and the chimney keep their A7 cut.
 MODULES = [
-    ('PK_Wall_Plain', 'PierreKit', 'wall', 8, 15, 12, 0.12),
-    ('PK_Wall_Window_Small', 'PierreKit', 'wall', 8, 15, 12, 0.12),
-    ('PK_Wall_Window_Big', 'PierreKit', 'wall', 8, 15, 12, 0.12),
-    ('PK_Wall_Door', 'PierreKit', 'wall', 8, 15, 12, 0.12),
-    ('PKX_Wall_Garage', 'PierreKit_Ext', 'wall', 8, 15, 10, 0.045),
-    ('PK_Wall_Interior', 'PierreKit', 'wall', 8, 15, 12, 0.12),
-    ('PKX_Wall_Int_Door', 'PierreKit_Ext', 'wall', 8, 15, 12, 0.12),
-    ('PKX_Wall_Int_Arch', 'PierreKit_Ext', 'wall', 8, 15, 10, 0.10),
-    ('PKX_Wall_Cellar', 'PierreKit_Ext', 'wall', 8, 15, 12, 0.12),
-    ('PKX_Corner_Quoin', 'PierreKit_Ext', 'stack', 4, 6, 5, 0.12),
-    ('PKX_Gable_4m', 'PierreKit_Ext', 'wall', 8, 15, 12, 0.12),
-    ('PKX_Gable_4m_Window', 'PierreKit_Ext', 'wall', 8, 15, 12, 0.12),
-    ('PKX_Chimney_Stack', 'PierreKit_Ext', 'stack', 6, 10, 8, 0.12),
+    ('PK_Wall_Plain', 'PierreKit', 'wall', 16, 24, 20, 0.12, 1.0),
+    ('PK_Wall_Window_Small', 'PierreKit', 'wall', 16, 24, 20, 0.12, 1.0),
+    ('PK_Wall_Window_Big', 'PierreKit', 'wall', 16, 24, 20, 0.12, 1.0),
+    ('PK_Wall_Door', 'PierreKit', 'wall', 16, 24, 20, 0.12, 1.0),
+    ('PKX_Wall_Garage', 'PierreKit_Ext', 'wall', 12, 20, 16, 0.045, 1.0),
+    ('PK_Wall_Interior', 'PierreKit', 'wall', 16, 24, 20, 0.12, 1.0),
+    ('PKX_Wall_Int_Door', 'PierreKit_Ext', 'wall', 16, 24, 20, 0.12, 1.0),
+    ('PKX_Wall_Int_Arch', 'PierreKit_Ext', 'wall', 12, 20, 16, 0.10, 1.0),
+    ('PKX_Wall_Cellar', 'PierreKit_Ext', 'wall', 8, 15, 12, 0.12, 1.5),
+    ('PKX_Corner_Quoin', 'PierreKit_Ext', 'stack', 4, 6, 5, 0.12, 1.5),
+    ('PKX_Gable_4m', 'PierreKit_Ext', 'wall', 8, 15, 12, 0.12, 1.5),
+    ('PKX_Gable_4m_Window', 'PierreKit_Ext', 'wall', 8, 15, 12, 0.12, 1.5),
+    ('PKX_Chimney_Stack', 'PierreKit_Ext', 'stack', 6, 10, 8, 0.12, 1.5),
 ]
 
 FBX_SETTINGS = dict(use_selection=True, object_types={'MESH'}, apply_unit_scale=True, global_scale=1.0,
@@ -165,6 +172,9 @@ OVER_WEIGHT = 0.25      # overlap counts a quarter of opening area when choosing
 TAG_SPLIT = 20000       # cap tags: 1..19999 Voronoi planes, 20000.. opening splits, 30000 frame notch faces
 TAG_NOTCH = 30000
 SLIVER_VOL = 1e-4       # m3 (Blender): a masonry shell or island smaller than this is a boolean or Voronoi sliver
+SEED_ATTEMPTS = 10      # seed sets a wall variant tries before keeping its best (decision 6)
+SEED_ATTEMPTS_FINE = 30  # the same for the finer uniform cut (gamma 1.0): more, smaller cells meet the size floor
+                         # less often, and a set that stops early never looks further, so the others are unchanged
 BOUNDS_TOL = 0.005      # m (Blender): chunks vs intact module bounds after re-import. A dropped sliver at the outline
                         # (the garage brick end, 4.3 mm) is the largest measured difference; a wrong transform is metres
 
@@ -866,6 +876,7 @@ class WallJob:
         self.probe = probe; self.planes = planes; self.stats = stats
         self.split_tag = TAG_SPLIT
         self.min_frac = 0.2
+        self.attempts = SEED_ATTEMPTS
         self.dropped_vol = 0.0
         self.s2 = 2.25
         self.has_uv = any(p['bm'].loops.layers.uv.active is not None for p in masonry)
@@ -1012,7 +1023,7 @@ class WallJob:
     def run(self, seed_rng_base, ok_fn, fixed, gamma):
         best = None; attempts = []
         N = self.target
-        for attempt in range(10):
+        for attempt in range(self.attempts):
             rng = random.Random(seed_rng_base * 1000 + attempt)
             self.dropped_vol = 0.0
             seeds = gen_seeds(N, rng, self.clo, self.chi, self.axes, fixed, gamma, ok_fn)
@@ -1421,7 +1432,7 @@ def module_seed(name, k):
 
 
 def fracture_module(spec, src_fbx, uscale, A, renders):
-    name, folder, kind, lo_n, hi_n, target, floor = spec
+    name, folder, kind, lo_n, hi_n, target, floor, gamma = spec
     T = {}; t0 = time.perf_counter(); tl = [t0]
 
     def lap(k):
@@ -1481,8 +1492,9 @@ def fracture_module(spec, src_fbx, uscale, A, renders):
                 return core_bvh.ray_cast(o, d, dims[t_ax] + 2.0)[0] is not None
             job = WallJob(masonry, core, t_ax, axes, clo, chi, band, floor, lo_n, hi_n, target, probe, planes, stats)
             job.s2 = uscale * uscale
+            job.attempts = SEED_ATTEMPTS_FINE if gamma < 1.5 else SEED_ATTEMPTS
             job.frame_bvh = [BVHTree.FromBMesh(f['bm']) for f in frames]
-            sres = job.run(seed, ok_fn, {t_ax: t_mid}, 1.5)
+            sres = job.run(seed, ok_fn, {t_ax: t_mid}, gamma)
             m_chunks = sres['chunks']
             variant_dropped = sres['dropped_vol']
             frac_info = {'structure': {'seeds': [[round(x, 5) for x in s] for s in sres['seeds']], 'cells': sres['cells'],
@@ -1503,7 +1515,7 @@ def fracture_module(spec, src_fbx, uscale, A, renders):
                                           raw_volume=raw_volume, removed=removed, body_volume=body_volume,
                                           dropped=variant_dropped,
                                           glass=glass, open_parts=open_parts, floor=floor, lo_n=lo_n, hi_n=hi_n,
-                                          target=target, seed=seed, src_fbx=src_fbx, core_count=len(core),
+                                          target=target, gamma=gamma, seed=seed, src_fbx=src_fbx, core_count=len(core),
                                           band=band), src_objs, renders)
         results.append(r)
     T['total'] = round(time.perf_counter() - t0, 3)
@@ -1735,7 +1747,7 @@ def build_variant(name, k, kind, m_chunks, f_chunks, mats, axes, t_ax, clo, chi,
                   'units_note': 'values without suffix are Blender module space (m, Z up, before import scale); *_unity '
                                 'values are in the Unity model space of the module'},
         'params': {'seed': info['seed'], 'target_chunks': info['target'], 'range': [info['lo_n'], info['hi_n']],
-                   'gamma': 1.5, 'min_extent': floor, 'min_vol_frac': 0.2,
+                   'gamma': info['gamma'], 'min_extent': floor, 'min_vol_frac': 0.2,
                    'touch_tolerance': tol, 'anchor_tolerance': TOUCH, 'hull_void_limit_unity': VOID_MAX_UNITY},
         'frame': {'thickness_axis': 'xyz'[t_ax] if t_ax is not None else None, 'plane_axes': ['xyz'[a] for a in axes],
                   'core_bounds': {'min': R(clo), 'max': R(chi)}, 'core_bounds_unity': UB(clo, chi),

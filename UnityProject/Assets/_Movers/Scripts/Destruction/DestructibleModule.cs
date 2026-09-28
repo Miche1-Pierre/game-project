@@ -7,9 +7,9 @@ namespace Movers
     //
     // At rest it is the kit module exactly as Pierre built it: one mesh, one collider, one node
     // in the structure graph, no cost. The first real hit swaps it for its pre-fractured chunk
-    // set (8 to 15 pieces cut in Blender, PKF_<Module>_vN): the chunks are instantiated in place
-    // under the module, the intact mesh and its collider are hidden, and from then on damage
-    // lands per chunk, by distance. What the wall carries stays: its window panes, casements,
+    // set (up to 24 masonry pieces cut in Blender, PKF_<Module>_vN): the chunks are instantiated
+    // in place under the module, the intact mesh and its collider are hidden, and from then on
+    // damage lands per chunk, by distance. What the wall carries stays: its window panes, casements,
     // door leaf and hinges are children and are left alone, and break only when no chunk is
     // left around them.
     //

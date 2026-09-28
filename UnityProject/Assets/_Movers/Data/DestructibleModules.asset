@@ -17,7 +17,7 @@ MonoBehaviour:
     kind: 0
     material: 7
     health: 1400
-    chunkHealth: 500
+    chunkHealth: 300
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
@@ -31,7 +31,7 @@ MonoBehaviour:
     kind: 0
     material: 7
     health: 1400
-    chunkHealth: 500
+    chunkHealth: 300
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
@@ -45,7 +45,7 @@ MonoBehaviour:
     kind: 0
     material: 7
     health: 1400
-    chunkHealth: 500
+    chunkHealth: 300
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
@@ -59,7 +59,7 @@ MonoBehaviour:
     kind: 0
     material: 7
     health: 1400
-    chunkHealth: 500
+    chunkHealth: 300
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
@@ -73,7 +73,7 @@ MonoBehaviour:
     kind: 0
     material: 7
     health: 1400
-    chunkHealth: 500
+    chunkHealth: 300
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
@@ -87,7 +87,7 @@ MonoBehaviour:
     kind: 0
     material: 7
     health: 650
-    chunkHealth: 350
+    chunkHealth: 210
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
@@ -101,7 +101,7 @@ MonoBehaviour:
     kind: 0
     material: 7
     health: 650
-    chunkHealth: 350
+    chunkHealth: 210
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
@@ -115,7 +115,7 @@ MonoBehaviour:
     kind: 0
     material: 7
     health: 650
-    chunkHealth: 350
+    chunkHealth: 210
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
