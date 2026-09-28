@@ -3,7 +3,8 @@ using UnityEngine;
 namespace Movers
 {
     // Where damage comes from. The receiver never needs to know the source object, only this.
-    public enum DamageType : byte { Blast, Impact, Thrown, Fall, Crush, Tool }
+    // Values travel as bytes: append only. Vehicle = a truck or a police car driving into it.
+    public enum DamageType : byte { Blast, Impact, Thrown, Fall, Crush, Tool, Vehicle }
 
     // One ladder for everything that breaks. Each kind caps it and names the steps:
     //   glass       Intact > Damaged ("Cracked") > Destroyed ("Broken")
@@ -21,13 +22,17 @@ namespace Movers
         public readonly Vector3 direction;    // unit, away from the source
         public readonly float damage;         // before the receiver's material resistance
         public readonly float impulse;        // N.s along direction, for the debris
-        public readonly float radius;         // blast radius, 0 for a point hit
+        public readonly float radius;         // Blast: blast radius. Any other type: impact spread (m), 0 = point hit
         public readonly DamageType type;
         public readonly int instigator;       // see Actors
         public readonly Object sourceObject;  // local only, may be null (the grenade is already gone)
+        // m/s. Impacts: the striker's approach speed along the normal. Blasts: the eject speed at
+        // this point (BlastSolver). 0 = unknown (older callers): receivers fall back to impulse / mass.
+        public readonly float speed;
 
         public DamageEvent(Vector3 position, Vector3 direction, float damage, float impulse, float radius,
-                           DamageType type, int instigator = Actors.World, Object sourceObject = null)
+                           DamageType type, int instigator = Actors.World, Object sourceObject = null,
+                           float speed = 0f)
         {
             this.position = position;
             this.direction = direction.sqrMagnitude > 1e-8f ? direction.normalized : Vector3.up;
@@ -37,20 +42,28 @@ namespace Movers
             this.type = type;
             this.instigator = instigator;
             this.sourceObject = sourceObject;
+            this.speed = speed;
         }
 
         public Vector3 ImpulseVector => direction * impulse;
 
-        // The per-target copy a blast makes: same type, radius and instigator, local numbers.
+        // The per-target copy a blast makes: same type, radius, instigator and speed, local numbers.
         public DamageEvent With(float newDamage, float newImpulse, Vector3 at, Vector3 dir)
         {
-            return new DamageEvent(at, dir, newDamage, newImpulse, radius, type, instigator, sourceObject);
+            return new DamageEvent(at, dir, newDamage, newImpulse, radius, type, instigator, sourceObject, speed);
+        }
+
+        public DamageEvent WithSpeed(float newSpeed)
+        {
+            return new DamageEvent(position, direction, damage, impulse, radius, type, instigator, sourceObject, newSpeed);
         }
     }
 
     public struct DamageResult
     {
-        public float applied;                 // after resistance
+        // HP actually removed after resistance, capped at each target's or chunk's remaining
+        // health, summed over the chunks a spread hit reached.
+        public float applied;
         public DestructionState before, after;
         public bool removed;                  // this hit took the thing (or a chunk) out of the world
 

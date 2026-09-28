@@ -46,6 +46,14 @@ namespace Movers
             WorldEvents.Raise(WorldEventType.StructureCollapsed, at, instigator, 0f, massKg, 0, subject);
         }
 
+        // A yard piece (hedge, bush, mailbox, garden post) broke: garden damage, never a wall
+        // (Breakable.isYard), so it is neither a break-in nor a broken wall for the grandmother.
+        public static void Garden(UnityEngine.Object subject, Vector3 at, int instigator)
+        {
+            if (!Net.HasAuthority) return;
+            WorldEvents.Raise(WorldEventType.GardenDamaged, at, instigator, 0f, (float)DestructionState.Destroyed, 0, subject);
+        }
+
         internal static void Window(GlassPane pane, Vector3 at, int instigator)
         {
             if (!Net.HasAuthority) return;

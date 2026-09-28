@@ -161,9 +161,9 @@ namespace Movers
             if (mutedByUs)
             {
                 mutedByUs = false;
-                // The session may have frozen the crew meanwhile (the run ended): it keeps them.
+                // The session may have frozen the crew meanwhile (the run ended, an arrest): it keeps them.
                 var s = GameSession.Current;
-                bool sessionHolds = Session.IsOver || (s != null && (s.IntroCardShowing || s.CrewReleasePending));
+                bool sessionHolds = s == null ? Session.IsOver : s.Holds(member);
                 if (member != null && member.Input != null && !sessionHolds) member.Input.Muted = false;
             }
             SyncWorldPause();

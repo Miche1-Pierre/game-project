@@ -49,7 +49,7 @@ namespace Movers
         KeysHandedOver,         // instigator = the player who received them
         GrandmaNoticed,         // she saw or heard something. magnitude = how bad (patience lost)
         GrandmaMoodChanged,     // magnitude = patience 0..100 after the change
-        GrandmaCalledPolice,    // her patience ran out: the session fails
+        GrandmaCalledPolice,    // her patience ran out: the police are coming (EscapeMission) or the run fails
         GrandmaBumped,          // a player walked or pushed into her, or hit her with something
 
         // The session.
@@ -60,6 +60,14 @@ namespace Movers
         PlayerKnockedDown,      // an explosion threw them. magnitude = shove speed (m/s)
         PlayerSmoking,          // a puff. subject = the cigarette
         PlayerDrinking,         // a swallow. subject = the beer
+
+        // Appended by DEV 2 (ADR-013): values travel on the wire, never reorder.
+        GrandmaLastWarning,     // her one warning began. instigator = worst offender, magnitude = seconds of warning
+        PoliceArrived,          // the lead police car reached the arrival point. subject = its Rigidbody
+        CrewArrested,           // instigator = the member, subject = the CrewMember
+        TruckIntercepted,       // the police stopped the truck or surrounded the house: the run fails. subject = the TruckVehicle
+        EscapeReached,          // the truck entered the exit with crew aboard. value = the payout
+        GardenDamaged,          // a yard piece (hedge, bush, mailbox...) broke. subject = its Breakable, magnitude = DestructionState
     }
 
     public readonly struct WorldEvent

@@ -92,6 +92,14 @@ namespace Movers
         // the hit landed; the velocity model does not need it today, it is in the signature so
         // callers do not have to change when it does. 'instigator' is who broke it (see Actors):
         // a heavy piece that lands on something crushes it in that player's name.
+        // One wall chunk cut into rubble, every piece moving at velocity (a chunk launched by a big
+        // hit). The chunk itself is left for the caller to remove.
+        public static List<GameObject> ShatterChunk(Renderer chunk, int pieces, float totalMass, Vector3 velocity,
+                                                    Vector3 point, float lifetime, int instigator)
+        {
+            return Shatter(new[] { chunk }, pieces, totalMass, velocity, point, Vector3.zero, lifetime, instigator);
+        }
+
         public static List<GameObject> Shatter(IList<Renderer> sources, int pieces, float totalMass,
                                                Vector3 inheritVelocity, Vector3 point, Vector3 impulse,
                                                float lifetime, int instigator = Actors.World)

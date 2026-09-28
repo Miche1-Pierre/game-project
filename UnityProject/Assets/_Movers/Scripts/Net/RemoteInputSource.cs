@@ -25,6 +25,7 @@ namespace Movers
         struct Change { public ushort frameSeq; public float dt; public uint held; public float queuedAt; }
 
         readonly CrewInput input;
+        readonly CrewMember member;   // CrewInput sits on the member (CrewMember.Awake)
         readonly Queue<Change> changes = new Queue<Change>();
         uint held;             // what the host plays now
         uint latestHeld;       // the newest change taken, applied or not (used while paused)
@@ -36,7 +37,11 @@ namespace Movers
         bool paused, mutedByUs;
 
         public RemoteInputSource() { }
-        public RemoteInputSource(CrewInput input) { this.input = input; }
+        public RemoteInputSource(CrewInput input)
+        {
+            this.input = input;
+            member = input != null ? input.GetComponent<CrewMember>() : null;
+        }
 
         public string Label => "Remote";
         public bool IsGamepad { get; set; }
@@ -82,9 +87,9 @@ namespace Movers
             input.ResyncHeld();
             if (!mutedByUs) return;
             mutedByUs = false;
-            // The session may have frozen the crew meanwhile: it keeps them (as HudPauseMenu).
+            // The session may have frozen the crew meanwhile (an arrest too): it keeps them (as HudPauseMenu).
             var s = GameSession.Current;
-            bool sessionHolds = Session.IsOver || (s != null && (s.IntroCardShowing || s.CrewReleasePending));
+            bool sessionHolds = s == null ? Session.IsOver : s.Holds(member);
             if (!sessionHolds) input.Muted = false;
         }
 

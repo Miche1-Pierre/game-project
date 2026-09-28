@@ -133,6 +133,14 @@ namespace Movers
             return granted > 0;
         }
 
+        // A blast or a ram is about to break about this many wall chunks this frame: part of the
+        // spawn budget is kept for them (structureReservePerFrame), so a chunk never waits behind
+        // props. Nothing is kept in a frame nobody announced chunks.
+        public static void ExpectStructure(int chunks) { }
+
+        // TryReserve for a wall chunk: may take the slots ExpectStructure kept.
+        public bool TryReserveStructure(int wanted, out int granted) => TryReserve(wanted, out granted);
+
         // The same, for callers that have no manager yet: builds it on first use. 0 while the
         // game is closing.
         public static int Reserve(int wanted)

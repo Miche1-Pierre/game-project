@@ -406,6 +406,10 @@ namespace Movers
             BodyOn();
         }
 
+        // Host: something (the truck, CrewBumper) is about to hit her. She staggers aside and
+        // perceives being run over or bumped, blamed on 'by'.
+        public void Knock(Vector3 velocityChange, int by) { }
+
         // Puts her somewhere at once (debug, tests, the intro placement).
         public void Teleport(Vector3 position, Vector3 facing)
         {

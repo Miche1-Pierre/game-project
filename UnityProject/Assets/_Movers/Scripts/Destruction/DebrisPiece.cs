@@ -29,6 +29,12 @@ namespace Movers
         internal BreakMaterial material = BreakMaterial.Plaster;
         // Never aged out, never culled: a fallen roof section stays where it landed.
         internal bool pinned;
+        // A wall chunk its wall launched (host RemoveChunk, client NetDetach): the blast that
+        // launched it does not push it again within structureLaunchGrace of launchedAt, and it
+        // never damages the attached chunks of structureSource (the DestructibleModule).
+        public bool structureChunk;
+        public Component structureSource;
+        public float launchedAt = float.NegativeInfinity;
 
         // The fragment mesh is built for this piece alone, so it dies with it. Box chunks use
         // Unity's shared cube and own nothing; wall chunks use their FBX's mesh.

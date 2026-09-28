@@ -20,6 +20,7 @@ namespace Movers
             public float speedAllowance;   // m/s added to the material's minimum speed
             public float maxRatio;         // how heavy the other side may count, at most
             public float debrisMinMass;    // debris lighter than this does not count at all
+            public float minRatio;         // how light the other side may count, at least; <= 0: the table's minMassRatio
         }
 
         // The other body's weight counts up to three times this one's. Anything static or
@@ -55,7 +56,98 @@ namespace Movers
             speedAllowance = 0f,
             maxRatio = MaxRatio,
             debrisMinMass = GlassDebrisMinMass,
+            minRatio = DestructionMaterialTable.Current.glassMinMassRatio,
         };
+
+        // Cargo knocking against its own truck's box: cushioned, so one ram does not wipe the load.
+        public static Rules Cargo
+        {
+            get
+            {
+                var t = DestructionMaterialTable.Current;
+                return new Rules
+                {
+                    speedAllowance = t.cargoSpeedAllowance,
+                    maxRatio = t.cargoMaxMassRatio,
+                    debrisMinMass = t.crushMinMass,
+                };
+            }
+        }
+
+        // ---- the energy model (DEV 2, 03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md section 2) ----
+
+        public struct ImpactInput
+        {
+            public float normalSpeed;       // m/s, >= 0
+            public float strikerMass;       // kg of the other side; float.PositiveInfinity when static or kinematic
+            public float receiverMass;      // kg: its own body, a pane's mass, or structureReferenceMass for a built piece
+            public bool receiverAnchored;   // built piece: infinitely heavy in the reduced mass
+            public BreakMaterial material;
+            public DamageType type;
+            public float speedAllowance;    // m/s added to the material's minimum speed
+            public float minMassRatio;      // <= 0: the table's minMassRatio
+            public float maxMassRatio;      // <= 0: the table's (vehicleMaxMassRatio for Vehicle, else maxMassRatio)
+            public float strikeFactor;      // <= 0: 1. structureChunkStrikeFactor for a launched wall chunk
+        }
+
+        public struct ImpactOutcome
+        {
+            public float energy;            // J, 0.5 * mu * v^2
+            public float effectiveSpeed;    // m/s
+            public float damage;            // HP before the receiver's material factor
+            public float spread;            // m (0 for Blast)
+            public float push;              // N.s
+            public bool Hurts => damage > 0f;
+        }
+
+        // One rule for every collision: the collision energy E = 0.5 * mu * v^2 (mu the reduced
+        // mass of the two sides) against the receiver's resisting mass m_res gives an effective
+        // speed v_eff = v * sqrt(clamp(mu / m_res)); past the material's minimum speed the damage
+        // grows with its square. A prop hit by something static has ratio 1, so energyDamageScale
+        // 27 = 9 x 3 keeps every number a prop suffered before. The receiver applies its material
+        // factor afterwards, as before.
+        public static ImpactOutcome Evaluate(in ImpactInput input)
+        {
+            var o = default(ImpactOutcome);
+            float v = Mathf.Max(0f, input.normalSpeed);
+            float mRes = Mathf.Max(0.01f, input.receiverMass);
+            float mu = ReducedMass(input.receiverAnchored ? float.PositiveInfinity : mRes, input.strikerMass);
+            if (!(v > 0f) || !(mu > 0f)) return o;
+
+            var t = DestructionMaterialTable.Current;
+            float minRatio = input.minMassRatio > 0f ? input.minMassRatio : t.minMassRatio;
+            float maxRatio = input.maxMassRatio > 0f ? input.maxMassRatio
+                           : input.type == DamageType.Vehicle ? t.vehicleMaxMassRatio : t.maxMassRatio;
+            minRatio = Mathf.Max(0f, minRatio);
+            maxRatio = Mathf.Max(minRatio, maxRatio);
+            float ratio = Mathf.Clamp(mu / mRes, minRatio, maxRatio);
+
+            o.energy = 0.5f * mu * v * v;
+            o.effectiveSpeed = v * Mathf.Sqrt(ratio);
+            float gate = DestructionMaterialTable.Get(input.material).minImpactSpeed + Mathf.Max(0f, input.speedAllowance);
+            float extra = Mathf.Max(0f, o.effectiveSpeed - gate);
+            float strike = input.strikeFactor > 0f ? input.strikeFactor : 1f;
+            o.damage = t.energyDamageScale * DestructionMaterialTable.TypeMultiplier(input.type) * strike * extra * extra;
+            o.spread = input.type != DamageType.Blast && o.damage > 0f
+                ? Mathf.Min(t.impactMaxSpread, t.impactSpreadPerCubeRootKJ * Mathf.Pow(o.energy / 1000f, 1f / 3f))
+                : 0f;
+            o.push = t.impactPushFactor * v * Mathf.Min(mu, mRes);
+            return o;
+        }
+
+        // m_a * m_b / (m_a + m_b), where an infinite side (static, kinematic, anchored) leaves the
+        // other side's mass. 0 when both are infinite: two immovable things do not collide.
+        public static float ReducedMass(float a, float b)
+        {
+            bool aInf = float.IsPositiveInfinity(a), bInf = float.IsPositiveInfinity(b);
+            if (aInf && bInf) return 0f;
+            if (aInf) return Mathf.Max(0f, b);
+            if (bInf) return Mathf.Max(0f, a);
+            a = Mathf.Max(0f, a);
+            b = Mathf.Max(0f, b);
+            float sum = a + b;
+            return sum > 0f ? a * b / sum : 0f;
+        }
 
         // False means "this contact does not hurt". myBody is the receiver's own dynamic body
         // (a thrown vase), or null for something built in.

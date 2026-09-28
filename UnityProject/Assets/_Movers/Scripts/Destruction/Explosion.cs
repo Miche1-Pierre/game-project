@@ -40,6 +40,9 @@ namespace Movers
         public static float LastFrameBlastMs { get; private set; }
         public static int LastBlastFrame { get; private set; } = -1;
         public static int BlastCount { get; private set; }
+        // Worst frame over the 5 frames after the last blast, minus the median of the frames before
+        // it (ms): the deferred detaches, rubble and client bursts a blast leaves behind.
+        public static float MaxFrameMsAfterBlast { get; private set; }
 
         const float PushImpulse = 900f;         // N.s at the centre, linear falloff, like AddExplosionForce
         const float Uplift = 0.8f;              // metres the push centre is lowered, so things lift as they fly

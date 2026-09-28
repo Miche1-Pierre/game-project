@@ -52,6 +52,14 @@ namespace Movers
         public bool IntroCardShowing => cardShowing;
         // The card is gone and the crew gets its hands back on the next frame (HideIntroCard).
         public bool CrewReleasePending => releaseFrame >= 0;
+        // The session keeps this member frozen: closing a pause menu must not give the controls
+        // back (HudPauseMenu, RemoteInputSource). An arrested member stays frozen for the run.
+        public bool Holds(CrewMember m) =>
+            Session.IsOver || IntroCardShowing || CrewReleasePending || (m != null && Session.IsArrested(m.index));
+        // PoliceHere: seconds of escape left before the house is surrounded, else -1 (EscapeMission).
+        public float FleeLeft => -1f;
+        // Seconds before the police stop the truck while that warning is on, else -1 (EscapeMission).
+        public float InterceptLeft => -1f;
         public float IntroCardAge => Time.unscaledTime - cardSince;
         public float EndAge => Session.IsOver ? Time.unscaledTime - overSince : 0f;
         public bool CanRestart => Session.IsOver && EndAge >= Numbers.restartDelay;
@@ -95,6 +103,7 @@ namespace Movers
             // Session survives a scene reload (it is static), so every run writes it afresh.
             HasIntro = grandmother != null && grandmother.activeInHierarchy;
             Session.Failure = FailReason.None;
+            Session.ResetMission();
             Session.TimeLimit = contract != null ? contract.timeLimit : Numbers.defaultTimeLimit;
             Session.TimeLeft = Session.TimeLimit;
             Session.State = HasIntro ? SessionState.Intro : SessionState.InProgress;
@@ -124,6 +133,7 @@ namespace Movers
             Session.Failure = FailReason.None;
             Session.TimeLeft = 0f;
             Session.TimeLimit = 0f;
+            Session.ResetMission();
         }
 
         void Start()

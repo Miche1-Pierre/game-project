@@ -28,7 +28,7 @@ namespace Movers
     public sealed class NetSession : MonoBehaviour
     {
         public const ushort DefaultPort = 7777;
-        public const ushort Protocol = 1;
+        public const ushort Protocol = 2;
 
         const string ReliableName = "mv.r";
         const string UnreliableName = "mv.u";

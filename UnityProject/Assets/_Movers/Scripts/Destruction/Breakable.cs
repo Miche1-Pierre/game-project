@@ -35,6 +35,8 @@ namespace Movers
         public float referenceMass = 100f;
         [Tooltip("How far down the damage ladder it may go. Damaged = the foundation: it never breaks.")]
         public DestructionState stateCap = DestructionState.Destroyed;
+        [Tooltip("A garden piece (hedge, bush, mailbox, post): its destruction is garden damage (DestructionEvents.Garden), never a wall.")]
+        public bool isYard;
 
         public bool IsDestroyed { get; private set; }
         public float Health { get { Init(); return health; } private set { health = value; } }

@@ -237,6 +237,13 @@ namespace Movers
             return (transform.InverseTransformPoint(a.transform.position).z + transform.InverseTransformPoint(b.transform.position).z) * 0.5f;
         }
 
+        // On board for the police flee (EscapeMission): seated in one of its seats, or standing in
+        // the cargo box while the truck is nearly stopped.
+        public bool IsAboard(CrewMember m) => m != null && Driver == m;
+
+        // In the driving seat. CrewMember.IsDriving means "seated in the truck" (driver or passenger).
+        public static bool IsAtWheel(CrewMember m) => m != null && m.IsDriving;
+
         // VehicleSeat calls this when someone sits down (member) or gets out (null).
         public void SetDriver(CrewMember member)
         {

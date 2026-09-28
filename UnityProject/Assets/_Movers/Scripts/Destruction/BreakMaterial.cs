@@ -4,5 +4,6 @@ namespace Movers
     // how much the thing can take, how much a blast bites into it, and which sound it makes
     // when it goes (see the destruction material table).
     // Other systems store and compare these values: add new ones at the end, never reorder.
-    public enum BreakMaterial { Glass, Ceramic, Plastic, Wood, Fabric, Metal, Stone, Plaster, Brick, Concrete }
+    // Plant: hedges and bushes of the garden (yard pieces, ADR-013).
+    public enum BreakMaterial { Glass, Ceramic, Plastic, Wood, Fabric, Metal, Stone, Plaster, Brick, Concrete, Plant }
 }
