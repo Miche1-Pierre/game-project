@@ -2,6 +2,28 @@
 
 _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSINESS, MARKETING._
 
+## 2026-09-28
+
+### Hot-fix: your own legs and feet, seen when you look down
+
+- **TECH, the cause:** your own camera drew nothing of your body (`FirstPersonBody` made all of it shadows-only), so looking down showed the floor, and neither the slippers nor the gown were ever seen on you.
+- **TECH, the legs:** each skinned mesh on the body (the body, the gown) gets a copy for your camera alone, on the same bones, with only what hangs from the hips and legs, from 10 cm under the hip joints down.
+  - Not the hips: the eyes are right above them, and the belt, 18 cm deep in front, hid the whole of the legs (measured).
+  - On the body, the cut is closed with flat caps (the tops of the thighs). A worn piece stays open and two-sided, so you look into the gown at your legs.
+  - A rigid piece on a leg bone (the slippers) is simply left drawn.
+  - Your shadow, the other player's view and the mirror still show the whole body, as before.
+  - The copies are rebuilt when a gown goes on or comes off. The body model (`male01_1.fbx`, all four crew) now imports with Read/Write, which the copy needs.
+- **TECH, the look down:** the camera sits in the middle of the skull, 0.15 m behind the body's own eyes (measured), right above the hips. From 25 degrees down to 75, the picture moves up to 0.25 m forward, like the face and a lean over the feet (`ViewOffset`, the picture only: the carry, the grab and every cast still go from the camera). It turns so the floor point you aim at stays in the middle of the view. 0.25 m stays inside the capsule (0.35 m radius) with the near plane, so it never goes through a wall. It fades out while your hands hold something (the carry keeps things 10 cm from the eyes), at the wheel and during a fall.
+- **TECH, the knock-down:** while the view tumbles or the body is down, the whole body is hidden again. The body lies on the floor on its own clock while the view stands back up. Found by an adversarial review, four reviewers out of four.
+- **Measured in Play, scripted, Map01:**
+  - looking down 60 and 85 degrees: legs, shoes and hands in view, bare and in the gown;
+  - crouched and looking down: knees, gown and shoes; the nearest leg vertex 0.36 m from the eye (near plane 0.05);
+  - the other player sees the whole body in the gown;
+  - 35 own-view frames during a knock-down: legs and slippers drawn in none.
+  - Console: 0 errors.
+- **Not fixed here, seen while testing:** the scene's `Slippers` sit upright on the feet (30 cm tall, their length along the leg), for every view. It is the fit authored on the item, not this change.
+- **Not verified by a person:** the feel in hand, the carry fade (code only), online.
+
 ## 2026-09-27
 
 ### Hot-fix: the two-hand carry, hands on the object
