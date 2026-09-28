@@ -23,7 +23,16 @@ namespace Movers
         const string Owner = "DESTRUCTION";
         const float Reach = 12f;
         const float ExplosionReach = 40f;
+        // ms: what a blast may cost its frame and the 5 after it (DEV 2 section 11).
+        const float FrameBudgetMs = 16f;
         static readonly float[] DamageSteps = { 0.10f, 0.25f, 0.50f, 1f };
+
+        // ImpactDamage counts the launched-debris strikes it lets through each frame (DEV 2 3.14).
+        // Read by name, once, so this overlay does not depend on the counter being there: "n/a"
+        // until it is.
+        const string StrikesCounter = "DebrisStrikesLastFrame";
+        static System.Func<int> strikesReader;
+        static bool strikesLooked;
 
         public static bool OverlayOn { get; private set; }
         public static bool CollidersOn { get; private set; }
@@ -98,7 +107,8 @@ namespace Movers
             Vector3 at = Physics.Raycast(ray, out RaycastHit hit, ExplosionReach, DestructionLayers.QueryMask, QueryTriggerInteraction.Ignore)
                 ? hit.point + hit.normal * 0.2f
                 : ray.GetPoint(5f);
-            Explosion.Detonate(at, 6.5f, 1f, m.index);
+            var table = DestructionMaterialTable.Current;
+            Explosion.Detonate(at, table.grenadeRadius, table.grenadePower, m.index);
         }
 
         static void DamageAtCrosshair()
@@ -198,12 +208,19 @@ namespace Movers
 
             var debris = DebrisManager.Existing;
             var graph = StructureGraph.Current;
+            var table = DestructionMaterialTable.Current;
             sb.Append("\ndebris ").Append(debris != null ? debris.Count : 0).Append('/').Append(debris != null ? debris.maxPieces : 0)
               .Append(", spawned this frame ").Append(debris != null ? debris.SpawnedThisFrame : 0)
               .Append(" (last ").Append(debris != null ? debris.SpawnedLastFrame : 0).Append(')')
+              .Append("\ndebris strikes last frame ").Append(DebrisStrikes()).Append('/').Append(table.debrisStrikesPerFrame)
               .Append("\nlast blast ").Append(Explosion.LastBlastMs.ToString("0.0")).Append(" ms (its frame ")
-              .Append(Explosion.LastFrameBlastMs.ToString("0.0")).Append(" ms), last wall swap ")
-              .Append(DestructibleModule.LastFractureMs.ToString("0.0")).Append(" ms");
+              .Append(Explosion.LastFrameBlastMs.ToString("0.0")).Append(" ms), after it ")
+              .Append(Explosion.MaxFrameMsAfterBlast.ToString("0.0")).Append(" ms of ").Append(FrameBudgetMs.ToString("0"))
+              .Append("\n  ").Append(BlastSolver.LastTargetCount).Append(" targets, ")
+              .Append(BlastSolver.LastExpectedChunks).Append(" chunks announced, last wall swap ")
+              .Append(DestructibleModule.LastFractureMs.ToString("0.0")).Append(" ms")
+              .Append("\nhit feedback ").Append(ImpactFeedback.HitsLastBusyFrame).Append(" in a frame, last ")
+              .Append((ImpactFeedback.LastEnergy / 1000f).ToString("0.0")).Append(" kJ");
             if (graph != null)
                 sb.Append("\ngraph ").Append(graph.LiveCount).Append('/').Append(graph.NodeCount).Append(" nodes, ")
                   .Append(graph.QueuedCount).Append(" falling, ").Append(graph.SelfSupportedCount).Append(" held as built");
@@ -288,6 +305,21 @@ namespace Movers
               .Append(Actors.Name(e.instigator)).Append(", ").Append((Time.time - time).ToString("0.0")).Append(" s ago\n");
         }
 
+        static string DebrisStrikes()
+        {
+            if (!strikesLooked)
+            {
+                strikesLooked = true;
+                const System.Reflection.BindingFlags Static =
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
+                var p = typeof(ImpactDamage).GetProperty(StrikesCounter, Static);
+                if (p != null && p.PropertyType == typeof(int)) strikesReader = () => (int)p.GetValue(null);
+                var f = p == null ? typeof(ImpactDamage).GetField(StrikesCounter, Static) : null;
+                if (f != null && f.FieldType == typeof(int)) strikesReader = () => (int)f.GetValue(null);
+            }
+            return strikesReader != null ? strikesReader().ToString() : "n/a";
+        }
+
         static string StateName(DestructionState s, bool glass, bool foundation)
         {
             if (glass) return s == DestructionState.Destroyed ? "Broken" : s == DestructionState.Damaged ? "Cracked" : "Intact";
@@ -302,7 +334,7 @@ namespace Movers
             Rect view = ViewportGUI.RectFor(m);
             int size = ViewportGUI.FontSize(view, 14);
             float w = Mathf.Min(460f, view.width * 0.45f);
-            float h = (size + 5) * 12;
+            float h = (size + 5) * 16;
             // Left edge, below the contract panel, clear of the crosshair.
             var box = new Rect(view.x + 12f, view.y + view.height * 0.32f, w, h);
             ViewportGUI.Panel(box, 0.6f);

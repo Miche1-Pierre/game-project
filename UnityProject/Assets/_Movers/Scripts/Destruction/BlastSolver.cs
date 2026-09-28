@@ -18,12 +18,19 @@ namespace Movers
     //   already is (DestructionMaterialTable.CoverOf), not one 0.35 for everything standing;
     // - each target gets its own DamageEvent, with the blast's instigator;
     // - the material's blast factor is applied by the receiver (damage is sent raw).
+    //
+    // DEV 2 (03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md section 4): every number comes from the
+    // table; walls and structural pieces follow its structure curve (distance over the cube root
+    // of the power); each chunk's event carries the speed it flies out at; the debris budget is
+    // told how many chunks to expect before anything breaks.
     public static class BlastSolver
     {
-        // Falloff is (1 - d/r) to this power: a little steeper than linear, so the edge of the
-        // blast is a nudge and the middle of it is the real thing.
-        public const float Exponent = 1.3f;
-        const float DamageImpulse = 40f;        // handed to whatever breaks, for its fragments
+        // Falloff is (1 - d/r) to this power (the table's blastExponent): a little steeper than
+        // linear, so the edge of the blast is a nudge and the middle of it is the real thing.
+        public static float Exponent => DestructionMaterialTable.Current.blastExponent;
+        // Chunks announced for an intact wall the blast will break up: they do not exist until
+        // it does. The ram announces as many for one wall hit.
+        const int IntactWallChunkGuess = 8;
         // Small loose things this close to the centre never count as cover: they are the bomb
         // itself, or what it was lying in, and they are about to fly.
         const float LooseNearOrigin = 0.35f;
@@ -69,11 +76,20 @@ namespace Movers
         static readonly NearestFirst nearestFirst = new NearestFirst();
         static readonly List<int> chunkOrder = new List<int>(16);
         static float[] chunkDistance = new float[16];
+        static Vector3[] chunkPoint = new Vector3[16];
         static readonly Vector3[] Axes =
             { Vector3.right, Vector3.left, Vector3.up, Vector3.down, Vector3.forward, Vector3.back };
         static bool warnedFull;
 
         public static int LastTargetCount { get; private set; }
+        // Wall chunks the last blast announced to the debris budget (DebrisManager.ExpectStructure).
+        public static int LastExpectedChunks { get; private set; }
+
+        // The blast being applied, while Apply runs: a wall asks WithinBreach whether a chunk it
+        // removes was close enough to the centre to come out as rubble (DEV 2, 3.7).
+        public static bool Applying { get; private set; }
+        static Vector3 applyCenter;
+        static float applyBreach;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
@@ -84,6 +100,8 @@ namespace Movers
             owners.Clear();
             warnedFull = false;
             LastTargetCount = 0;
+            LastExpectedChunks = 0;
+            Applying = false;
         }
 
         // The collider-to-breakable cache is per scene: HouseDestruction clears it when the
@@ -196,49 +214,108 @@ namespace Movers
 
         // ---- 2. damage, nearest first ----
 
-        public static void Apply(Vector3 c, float radius, float power, int instigator)
+        // Keeps room in the debris budget for the wall chunks this blast is about to break, so
+        // none waits behind a shower of prop shards (DebrisManager.ExpectStructure). Called after
+        // the cover is measured and before anything breaks: the chunks of broken-up walls in reach
+        // are counted one by one, an intact wall that will break up is a guess.
+        public static int ExpectChunks(float radius, float power)
         {
-            float baseDamage = power * DestructionMaterialTable.Current.blastDamage;
-            for (int i = 0; i < targets.Count; i++)
+            var table = DestructionMaterialTable.Current;
+            int cap = Mathf.Max(0, table.structureReservePerFrame);
+            float baseDamage = power * table.blastDamage;
+            int n = 0;
+            for (int i = 0; i < targets.Count && n < cap; i++)
             {
                 var t = targets[i];
-                if (IsGone(t)) continue;   // taken out earlier in this same blast
-
-                float f = Falloff(t.distance, radius);
+                if (t.module == null || IsGone(t)) continue;
+                float f = Falloff(t.distance, radius) * DestructionMaterialTable.Focus(t.distance, power);
                 if (f <= 0f) continue;
-                float cover = CoverOf(t.cover);
-                // A wall only feels the blast where it lands (DestructionMaterialTable.Focus).
-                float focus = t.module != null ? DestructionMaterialTable.Focus(t.distance) : 1f;
-                float damage = baseDamage * f * cover * focus;
-                var e = new DamageEvent(t.point, Away(c, t.point, t.center), damage, power * DamageImpulse * f * cover,
-                                        radius, DamageType.Blast, instigator);
-                // One object throwing must not cancel the rest of the blast.
-                try
+                if (t.chunk >= 0) n++;
+                else if (t.module.WouldFracture(baseDamage * f * CoverOf(t.cover), DamageType.Blast)) n += IntactWallChunkGuess;
+            }
+            n = Mathf.Min(n, cap);
+            LastExpectedChunks = n;
+            if (n > 0) DebrisManager.ExpectStructure(n);
+            return n;
+        }
+
+        // True while a blast is being applied and 'point' (the nearest point of a chunk to it)
+        // lies within the table's breachRadius of its centre, scaled with the power like the
+        // structure curve. The wall reads it to cut such a chunk into rubble.
+        public static bool WithinBreach(Vector3 point)
+        {
+            return Applying && (point - applyCenter).sqrMagnitude <= applyBreach * applyBreach;
+        }
+
+        public static void Apply(Vector3 c, float radius, float power, int instigator)
+        {
+            var table = DestructionMaterialTable.Current;
+            float baseDamage = power * table.blastDamage;
+            applyCenter = c;
+            applyBreach = table.breachRadius * (table.focusScalesWithPower && power > 0f ? Mathf.Pow(power, 1f / 3f) : 1f);
+            Applying = true;
+            try
+            {
+                for (int i = 0; i < targets.Count; i++)
                 {
-                    if (t.module != null && t.chunk >= 0) t.module.ApplyToChunk(t.chunk, e);
-                    else if (t.module != null && t.module.WouldFracture(damage, DamageType.Blast) && t.module.Fracture())
-                        ApplyPerChunk(t.module, c, radius, baseDamage, power, cover, instigator);
-                    else t.target.ApplyDamage(e);
+                    var t = targets[i];
+                    if (IsGone(t)) continue;   // taken out earlier in this same blast
+
+                    float f = Falloff(t.distance, radius);
+                    if (f <= 0f) continue;
+                    float cover = CoverOf(t.cover);
+                    // A wall, and anything else built into the house (a pillar, a corner, the
+                    // chimney, a post), only feels the blast where it lands: the table's structure
+                    // curve. Props keep the plain falloff.
+                    bool built = t.module != null || (t.target is Breakable br && br.structural);
+                    float focus = built ? DestructionMaterialTable.Focus(t.distance, power) : 1f;
+                    float damage = baseDamage * f * cover * focus;
+                    // How fast a chunk it breaks off flies out: hard at point blank, a hop further away.
+                    float eject = table.blastChunkEjectSpeed * focus * cover;
+                    var e = new DamageEvent(t.point, Away(c, t.point, t.center), damage,
+                                            power * table.blastDamageImpulse * f * cover, radius, DamageType.Blast,
+                                            instigator, null, eject);
+                    // One object throwing must not cancel the rest of the blast.
+                    try
+                    {
+                        if (t.module != null && t.chunk >= 0) t.module.ApplyToChunk(t.chunk, e);
+                        else if (t.module != null && t.module.WouldFracture(damage, DamageType.Blast) && t.module.Fracture())
+                            ApplyPerChunk(t.module, c, radius, baseDamage, power, cover, instigator);
+                        else t.target.ApplyDamage(e);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogException(ex);
+                    }
                 }
-                catch (System.Exception ex)
-                {
-                    Debug.LogException(ex);
-                }
+            }
+            finally
+            {
+                Applying = false;
             }
         }
 
-        // A wall that just broke up: every chunk measured from the blast, nearest first.
+        // A wall that just broke up: every chunk measured from the blast, nearest first, each
+        // with its own damage and its own eject speed. The nearest point of a chunk is found once
+        // and kept: an attached chunk is a non-convex mesh, probed with rays (ClosestPoint).
         static void ApplyPerChunk(DestructibleModule module, Vector3 c, float radius, float baseDamage, float power,
                                   float cover, int instigator)
         {
+            var table = DestructionMaterialTable.Current;
             var chunks = module.Chunks;
             chunkOrder.Clear();
-            if (chunkDistance.Length < chunks.Count) chunkDistance = new float[Mathf.NextPowerOfTwo(chunks.Count)];
+            if (chunkDistance.Length < chunks.Count)
+            {
+                int size = Mathf.NextPowerOfTwo(chunks.Count);
+                chunkDistance = new float[size];
+                chunkPoint = new Vector3[size];
+            }
             for (int i = 0; i < chunks.Count; i++)
             {
                 var ch = chunks[i];
-                chunkDistance[i] = ch.Collider != null ? Vector3.Distance(ClosestPoint(ch.Collider, c), c)
-                                                       : Mathf.Sqrt(ch.Bounds.SqrDistance(c));
+                Vector3 p = ch.Collider != null ? ClosestPoint(ch.Collider, c) : ch.Bounds.ClosestPoint(c);
+                chunkPoint[i] = p;
+                chunkDistance[i] = Vector3.Distance(p, c);
                 int k = chunkOrder.Count;
                 while (k > 0 && chunkDistance[chunkOrder[k - 1]] > chunkDistance[i]) k--;
                 chunkOrder.Insert(k, i);
@@ -248,11 +325,14 @@ namespace Movers
                 int i = chunkOrder[o];
                 var ch = chunks[i];
                 if (!ch.Attached || module.IsGone) continue;
-                float f = Falloff(chunkDistance[i], radius) * DestructionMaterialTable.Focus(chunkDistance[i]);
+                float d = chunkDistance[i];
+                float focus = DestructionMaterialTable.Focus(d, power);
+                float f = Falloff(d, radius) * focus;
                 if (f <= 0f) continue;
-                Vector3 p = ch.Collider != null ? ClosestPoint(ch.Collider, c) : ch.Bounds.ClosestPoint(c);
+                Vector3 p = chunkPoint[i];
                 var e = new DamageEvent(p, Away(c, p, ch.Bounds.center), baseDamage * f * cover,
-                                        power * DamageImpulse * f * cover, radius, DamageType.Blast, instigator);
+                                        power * table.blastDamageImpulse * f * cover, radius, DamageType.Blast,
+                                        instigator, null, table.blastChunkEjectSpeed * focus * cover);
                 module.ApplyToChunk(i, e);
             }
             chunkOrder.Clear();
@@ -423,6 +503,7 @@ namespace Movers
 
         public static float Falloff(float d, float range)
         {
+            if (!(range > 0f)) return 0f;
             return Mathf.Pow(Mathf.Clamp01(1f - d / range), Exponent);
         }
 

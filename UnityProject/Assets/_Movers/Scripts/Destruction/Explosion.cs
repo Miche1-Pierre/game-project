@@ -35,28 +35,26 @@ namespace Movers
 
         // Cost of the last blast in ms (collect, damage, structure, push, knock, picture, sound,
         // events: everything but the grenades' own reaction), and of every blast in the frame it
-        // happened in (a chain can run several in one frame).
+        // happened in (a chain can run several in one frame). On the online client: the cost of
+        // its PlayCosmetic.
         public static float LastBlastMs { get; private set; }
         public static float LastFrameBlastMs { get; private set; }
         public static int LastBlastFrame { get; private set; } = -1;
         public static int BlastCount { get; private set; }
-        // Worst frame over the 5 frames after the last blast, minus the median of the frames before
-        // it (ms): the deferred detaches, rubble and client bursts a blast leaves behind.
-        public static float MaxFrameMsAfterBlast { get; private set; }
+        // Worst frame of the last blast's own frame and the 5 after it, minus the median of the 30
+        // frames before it (ms): the deferred detaches, rubble and client bursts a blast leaves
+        // behind, and on the client the burst of detach records that arrives with it.
+        // On both machines (a client blast is its PlayCosmetic). See FrameClock.
+        public static float MaxFrameMsAfterBlast => FrameClock.WorstAfterBlastMs;
 
-        const float PushImpulse = 900f;         // N.s at the centre, linear falloff, like AddExplosionForce
-        const float Uplift = 0.8f;              // metres the push centre is lowered, so things lift as they fly
-        const float MaxLaunchSpeed = 28f;       // m/s; faster than this a light object tunnels through a wall
-        // rad/s, a little over one turn a second: a tumble you can follow. The project lets a
-        // body spin up to 50 (Default Max Angular Speed), and a sofa doing that in a 2.5 m room
-        // is a blur that clips through the walls.
-        const float MaxSpin = 7f;
-        const float PlayerReach = 1.2f;         // players feel a blast a little further out than objects do
-        const float KnockHorizontal = 10f;      // m/s at point blank
-        const float KnockUp = 4.5f;             // m/s, about the climb of a jump
-        const float KnockedDownSpeed = 2f;      // m/s of shove before it counts as being thrown
-        const float Concussion = 0.45f;         // Drunkenness at point blank: a bang on the head is the same wobble
-        const float ShakeReach = 3f;            // cameras rattle out to three radii
+        // Every number of the push, the knock and the shake is in the table's Blast block
+        // (DestructionMaterialTable): pushImpulse (N.s at the centre, linear falloff, like
+        // AddExplosionForce), pushUplift (the push centre is lowered, so things lift as they
+        // fly), maxLaunchSpeed (faster than this a light object tunnels through a wall), maxSpin
+        // (a tumble you can follow: a sofa spinning at the project's 50 rad/s in a 2.5 m room is
+        // a blur that clips through the walls), playerReach, knockHorizontal, knockUp,
+        // knockedDownSpeed, concussion (a bang on the head is the drunk wobble), shakeReach.
+        //
         // A chain reaction longer than this in one call is a bug (something re-arming itself),
         // not a cellar full of grenades.
         const int MaxChain = 64;
@@ -120,6 +118,7 @@ namespace Movers
             LastFrameBlastMs = 0f;
             LastBlastFrame = -1;
             BlastCount = 0;
+            FrameClock.Install();
             // Removed first: with the domain reload off this runs every play session, and the
             // handler must not pile up.
             Application.quitting -= OnQuitting;
@@ -195,7 +194,9 @@ namespace Movers
                 BlastSolver.MeasureCover(eye);
                 MeasurePlayers(c, eye, radius);
 
-                // 2. break things, nearest first
+                // 2. break things, nearest first, with room kept in the debris budget for the
+                // wall chunks it is about to break
+                BlastSolver.ExpectChunks(radius, power);
                 BlastSolver.Apply(c, radius, power, blast.instigator);
 
                 // 3. what lost its support starts to fall, over the next frames
@@ -220,7 +221,7 @@ namespace Movers
                 try { PropsSync.ExplosionFx(c, radius, power, blast.instigator); }
                 catch (System.Exception e) { Debug.LogException(e); }
             }
-            try { CameraShake.Shake(c, Mathf.Clamp(power, 0f, 1.2f), radius * ShakeReach); }
+            try { Shake(c, radius, power); }
             catch (System.Exception e) { Debug.LogException(e); }
             try { ExplosionFX.Spawn(c, radius, power); }
             catch (System.Exception e) { Debug.LogException(e); }
@@ -244,6 +245,7 @@ namespace Movers
             if (!Application.isPlaying || quitting) return;
             if (!IsFinite(position) || !(radius > 0.05f) || !(power > 0f)
                 || float.IsInfinity(radius) || float.IsInfinity(power)) return;
+            watch.Restart();
             try
             {
                 Physics.SyncTransforms();
@@ -251,7 +253,7 @@ namespace Movers
             }
             catch (System.Exception e) { Debug.LogException(e); }
             finally { pushed.Clear(); }
-            try { CameraShake.Shake(position, Mathf.Clamp(power, 0f, 1.2f), radius * ShakeReach); }
+            try { Shake(position, radius, power); }
             catch (System.Exception e) { Debug.LogException(e); }
             try { ExplosionFX.Spawn(position, radius, power); }
             catch (System.Exception e) { Debug.LogException(e); }
@@ -259,6 +261,15 @@ namespace Movers
             catch (System.Exception e) { Debug.LogException(e); }
             try { DebrisManager.WakeFromBlast(position, radius, power); }
             catch (System.Exception e) { Debug.LogException(e); }
+            watch.Stop();
+            RecordCost((float)watch.Elapsed.TotalMilliseconds);
+        }
+
+        // Stronger than a grenade shakes harder, up to the table's cap, and further.
+        static void Shake(Vector3 c, float radius, float power)
+        {
+            var t = DestructionMaterialTable.Current;
+            CameraShake.Shake(c, Mathf.Clamp(power, 0f, t.shakeMaxStrength), radius * t.shakeReach);
         }
 
         static void RecordCost(float ms)
@@ -268,6 +279,7 @@ namespace Movers
             LastBlastFrame = frame;
             LastBlastMs = ms;
             BlastCount++;
+            FrameClock.MarkBlast();
         }
 
         // ---- players ----
@@ -275,7 +287,7 @@ namespace Movers
         static void MeasurePlayers(Vector3 c, Vector3 eye, float radius)
         {
             victims.Clear();
-            float reach = radius * PlayerReach;
+            float reach = radius * DestructionMaterialTable.Current.playerReach;
             var crew = CrewRoster.All;
             for (int i = 0; i < crew.Count; i++)
             {
@@ -301,6 +313,7 @@ namespace Movers
 
         static void KnockPlayers(Vector3 c, float radius, int instigator)
         {
+            var t = DestructionMaterialTable.Current;
             for (int i = 0; i < victims.Count; i++)
             {
                 var v = victims[i];
@@ -316,14 +329,14 @@ namespace Movers
                 away.y = 0f;
                 away = away.sqrMagnitude > 1e-6f ? away.normalized : Vector3.zero;
 
-                Vector3 shove = away * (KnockHorizontal * f) + Vector3.up * (KnockUp * f);
+                Vector3 shove = away * (t.knockHorizontal * f) + Vector3.up * (t.knockUp * f);
                 v.member.Controller.AddImpulse(shove);
 
                 var drunk = v.member.GetComponent<Drunkenness>();
-                if (drunk != null) drunk.Add(Concussion * f);
+                if (drunk != null) drunk.Add(t.concussion * f);
 
                 float speed = shove.magnitude;
-                if (speed >= KnockedDownSpeed)
+                if (speed >= t.knockedDownSpeed)
                     WorldEvents.Raise(WorldEventType.PlayerKnockedDown, v.center, instigator, 0f, speed, 0, v.member);
             }
         }
@@ -334,6 +347,8 @@ namespace Movers
         {
             pushed.Clear();
             ForgetOldLaunches();
+            float now = Time.time;
+            float grace = DestructionMaterialTable.Current.structureLaunchGrace;
             int n = Physics.OverlapSphereNonAlloc(c, radius, pushOverlap, ~0, QueryTriggerInteraction.Ignore);
             while (n >= pushOverlap.Length && pushOverlap.Length < MaxOverlap)
             {
@@ -357,7 +372,13 @@ namespace Movers
                 // One broken this very blast whose switch-off is still pending: its pieces fly,
                 // it does not.
                 if (rb.TryGetComponent(out Breakable br) && br.IsDestroyed) continue;
-                if (Push(rb, col, c, radius, power)) Blame(rb, instigator);
+                // A wall chunk this blast (or one a moment ago) just launched already flies at its
+                // eject speed: pushed again it would leave twice as fast. Only for a short grace,
+                // on both machines (the client's chunks land a frame or so after the host's), so
+                // a later blast still throws the old rubble about.
+                rb.TryGetComponent(out DebrisPiece piece);
+                if (piece != null && piece.structureChunk && now - piece.launchedAt < grace) continue;
+                if (Push(rb, col, c, radius, power, piece != null)) Blame(rb, instigator);
             }
         }
 
@@ -394,28 +415,34 @@ namespace Movers
         // clamp written straight after it reads the old velocity and clamps nothing. The same
         // push is therefore computed here (linear falloff from the nearest point, centre lowered
         // by the upwards modifier) and written as a velocity, where the clamp actually holds.
-        // False when the body was out of reach.
-        static bool Push(Rigidbody rb, Collider col, Vector3 c, float radius, float power)
+        // The launch cap also falls with distance (lightDebrisLaunchFalloff): without it every
+        // light shard in the room flew at the cap, the far ones as fast as the near ones.
+        // Debris gets no cover ray: a blast pushes hundreds of shards, and one ray each was most
+        // of its cost for a difference nobody sees. False when the body was out of reach.
+        static bool Push(Rigidbody rb, Collider col, Vector3 c, float radius, float power, bool debris)
         {
+            var t = DestructionMaterialTable.Current;
             Vector3 com = rb.worldCenterOfMass;
             Vector3 cp = BlastSolver.ClosestPoint(col, c);
             float falloff = 1f - Mathf.Clamp01(Vector3.Distance(cp, c) / radius);
             if (falloff <= 0f) return false;
-            if (BlastSolver.IsBuildingInTheWay(c, com, rb)) falloff *= DestructionMaterialTable.Current.solidCover;
+            if (!debris && BlastSolver.IsBuildingInTheWay(c, com, rb)) falloff *= t.solidCover;
 
-            Vector3 dir = com - (c - Vector3.up * Uplift);
+            Vector3 dir = com - (c - Vector3.up * t.pushUplift);
             dir = dir.sqrMagnitude > 1e-6f ? dir.normalized : Vector3.up;
-            Vector3 dv = dir * (power * PushImpulse * falloff / Mathf.Max(0.05f, rb.mass));
+            float speed = Mathf.Min(power * t.pushImpulse * falloff / Mathf.Max(0.05f, rb.mass),
+                                    t.maxLaunchSpeed * Mathf.Pow(falloff, t.lightDebrisLaunchFalloff));
+            Vector3 dv = dir * speed;
 
             rb.WakeUp();
-            rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity + dv, MaxLaunchSpeed);
+            rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity + dv, t.maxLaunchSpeed);
 
             // Tumble: the push lands on the near face, not the centre of mass, so things spin
             // away from the blast instead of sliding off it like pucks.
             Vector3 axis = Vector3.Cross(cp - com, dir);
             if (axis.sqrMagnitude < 1e-4f) axis = Vector3.Cross(dir, Random.onUnitSphere);
             if (axis.sqrMagnitude < 1e-6f) return true;
-            float spin = Mathf.Min(dv.magnitude * 0.6f, MaxSpin);
+            float spin = Mathf.Min(dv.magnitude * 0.6f, t.maxSpin);
             rb.angularVelocity += axis.normalized * spin;
             return true;
         }
@@ -443,6 +470,118 @@ namespace Movers
         {
             return !(float.IsNaN(v.x) || float.IsNaN(v.y) || float.IsNaN(v.z)
                      || float.IsInfinity(v.x) || float.IsInfinity(v.y) || float.IsInfinity(v.z));
+        }
+
+        // ---- what a blast costs the frames after it (MaxFrameMsAfterBlast) ----
+
+        // A blast's cost does not end with its call: deferred chunk detaches, rubble, the client's
+        // bursts of detach records and the physics of hundreds of new bodies land over the next
+        // frames. So every frame's length is kept (the last 30), and a blast takes their median
+        // as the baseline and watches its own frame and the 5 after it: the worst of them minus
+        // the baseline is what the blast cost (DEV 2 section 11, budget 16 ms).
+        //
+        // A frame's length is known at the start of the next one (unscaled delta time), so the
+        // clock runs at the very start of the player loop, as its own step: no GameObject, the
+        // same on the host, the client and offline, and it costs one float a frame.
+        static class FrameClock
+        {
+            const int History = 30;
+            const int FramesAfter = 5;
+
+            struct Marker { }   // names the step in the player loop (and in the Profiler)
+
+            static readonly float[] history = new float[History];
+            static readonly float[] sorted = new float[History];
+            static int count;
+            static int next;
+            static int blastFrame = -1;
+            static float baseline;
+            static float worst;
+
+            public static float WorstAfterBlastMs { get; private set; }
+
+            // Once per play session. The step may already be in the loop (domain reload off, or a
+            // loop kept across a reload): it is found by its marker's name, pointed at this Tick,
+            // and never added twice.
+            public static void Install()
+            {
+                count = 0;
+                next = 0;
+                blastFrame = -1;
+                baseline = 0f;
+                worst = 0f;
+                WorstAfterBlastMs = 0f;
+
+                var loop = UnityEngine.LowLevel.PlayerLoop.GetCurrentPlayerLoop();
+                var phases = loop.subSystemList;
+                if (phases == null) return;
+                for (int i = 0; i < phases.Length; i++)
+                {
+                    if (phases[i].type != typeof(UnityEngine.PlayerLoop.Initialization)) continue;
+                    var steps = phases[i].subSystemList ?? new UnityEngine.LowLevel.PlayerLoopSystem[0];
+                    for (int k = 0; k < steps.Length; k++)
+                    {
+                        if (steps[k].type == null || steps[k].type.FullName != typeof(Marker).FullName) continue;
+                        steps[k].type = typeof(Marker);
+                        steps[k].updateDelegate = Tick;
+                        phases[i].subSystemList = steps;
+                        loop.subSystemList = phases;
+                        UnityEngine.LowLevel.PlayerLoop.SetPlayerLoop(loop);
+                        return;
+                    }
+                    var grown = new UnityEngine.LowLevel.PlayerLoopSystem[steps.Length + 1];
+                    grown[0] = new UnityEngine.LowLevel.PlayerLoopSystem { type = typeof(Marker), updateDelegate = Tick };
+                    System.Array.Copy(steps, 0, grown, 1, steps.Length);
+                    phases[i].subSystemList = grown;
+                    loop.subSystemList = phases;
+                    UnityEngine.LowLevel.PlayerLoop.SetPlayerLoop(loop);
+                    return;
+                }
+            }
+
+            // A blast (or its picture on the client) ran this frame. A blast inside the window of
+            // the one before keeps that one's baseline: the frames it would take it from are
+            // already the aftermath.
+            public static void MarkBlast()
+            {
+                int frame = Time.frameCount;
+                if (frame == blastFrame) return;
+                bool open = blastFrame >= 0 && frame - blastFrame <= FramesAfter + 1;
+                if (!open) baseline = Median();
+                blastFrame = frame;
+                worst = 0f;
+                WorstAfterBlastMs = 0f;
+            }
+
+            static void Tick()
+            {
+                if (!Application.isPlaying) return;
+                float ms = Time.unscaledDeltaTime * 1000f;
+                if (!(ms >= 0f) || float.IsInfinity(ms)) return;
+                int ended = Time.frameCount - 1;   // the frame this length belongs to
+
+                if (blastFrame >= 0 && ended >= blastFrame)
+                {
+                    if (ended <= blastFrame + FramesAfter)
+                    {
+                        worst = Mathf.Max(worst, ms);
+                        WorstAfterBlastMs = Mathf.Max(0f, worst - baseline);
+                    }
+                    else blastFrame = -1;   // window over, the reading stays until the next blast
+                }
+
+                history[next] = ms;
+                next = (next + 1) % History;
+                if (count < History) count++;
+            }
+
+            static float Median()
+            {
+                if (count == 0) return 0f;
+                System.Array.Copy(history, sorted, count);
+                System.Array.Sort(sorted, 0, count);
+                return count % 2 == 1 ? sorted[count / 2] : 0.5f * (sorted[count / 2 - 1] + sorted[count / 2]);
+            }
         }
     }
 }

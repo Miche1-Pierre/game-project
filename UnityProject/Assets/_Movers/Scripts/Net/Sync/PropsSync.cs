@@ -2,16 +2,19 @@ using UnityEngine;
 
 namespace Movers
 {
-    // Props (sys 5, NETCODE_SLICE 4.3 and 11.5): breakables, glass, the blast's picture, sounds and
-    // grenades, host to client. The host's Breakable, GlassPane, Explosion, ImpactAudio and
-    // GrenadeItem call the static writers at their transitions (IsHost gated at the call site);
+    // Props (sys 5, NETCODE_SLICE 4.3 and 11.5): breakables, glass, the blast's picture, sounds,
+    // grenades and the dust and shake of big hits (ImpactFx, DEV 2), host to client. The host's
+    // Breakable, GlassPane, Explosion, ImpactAudio, GrenadeItem and ImpactFeedback call the static
+    // writers at their transitions (IsHost gated at the call site);
     // the client applies through replica methods that raise nothing. Reliable records of one
     // blast keep their order (4.2): the Breakable and Glass transitions, then ExplosionFx.
     public sealed class PropsSync : NetSync
     {
-        const byte OpBreakable = 1, OpGlass = 2, OpExplosionFx = 3, OpSound = 4, OpGrenade = 5;
+        const byte OpBreakable = 1, OpGlass = 2, OpExplosionFx = 3, OpSound = 4, OpGrenade = 5, OpImpactFx = 6;
         const byte GrenadeArmed = 1, GrenadePinOut = 2;
         const float MaxFuseSeconds = 65f;
+        // m. The largest dust puff an ImpactFx carries; its size byte is a share of this.
+        const float ImpactFxMaxSize = 4f;
 
         public override NetSyncId Id => NetSyncId.Props;
 
@@ -74,6 +77,20 @@ namespace Movers
             w.WriteByte((byte)kind);
             w.WriteVector3(position);
             w.WriteUnit(volume);
+            NetOut.End(w);
+        }
+
+        // Unreliable, like a sound: the dust and shake of a hit that removed nothing, or (size 0)
+        // only the shake of a big hit whose removals reach the client as ChunkDetached
+        // (ImpactFeedback, DEV 2 3.9). strength01 is ImpactFeedback.Strength01; size in metres.
+        public static void ImpactFx(Vector3 position, float strength01, float size)
+        {
+            var w = NetOut.Unreliable(NetSyncId.Props, OpImpactFx);
+            if (w == null) return;
+            w.WriteVector3(position);
+            w.WriteUnit(strength01);
+            // A real size never rounds down to 0, which means "shake only".
+            w.WriteUnit(size > 0f ? Mathf.Max(1f / 255f, size / ImpactFxMaxSize) : 0f);
             NetOut.End(w);
         }
 
@@ -156,6 +173,14 @@ namespace Movers
                     Vector3 at = r.ReadVector3();
                     float volume = r.ReadUnit();
                     if (!silent) ImpactAudio.PlayFromNet(kind, at, volume);
+                    break;
+                }
+                case OpImpactFx:
+                {
+                    Vector3 at = r.ReadVector3();
+                    float strength = r.ReadUnit();
+                    float size = r.ReadUnit() * ImpactFxMaxSize;
+                    if (!silent) ImpactFeedback.PlayFromNet(at, strength, size);
                     break;
                 }
                 case OpGrenade:

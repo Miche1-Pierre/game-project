@@ -58,6 +58,13 @@ namespace Movers
         const float BodyRadius = 0.033f;
         const float BodyHalfHeight = 0.041f;
 
+        // A grenade thrown at a wall drops at its foot. It used to bounce and roll 1 to 2 m back
+        // towards the thrower, so the blast went off in the room instead of against the wall
+        // (DEV 2 section 4): no bounce, full friction, and it stops spinning once it has touched
+        // something.
+        const float AngularDampingInFlight = 0.6f;
+        const float AngularDampingAfterContact = 3f;
+
         static readonly Color Olive = new Color(0.33f, 0.37f, 0.18f);
         static readonly Color BlinkAlbedo = new Color(0.80f, 0.14f, 0.08f);
         static readonly Color BlinkEmission = new Color(2.2f, 0.22f, 0.10f);
@@ -74,6 +81,7 @@ namespace Movers
         static Material darkMetalMat;
         static Material ringMat;
         static Mesh ringMesh;
+        static PhysicsMaterial deadBounce;
 
         // Statics survive a play-mode exit when the domain reload is disabled, which the
         // playtest CLI does on purpose. Without this a second run would tick the first run's
@@ -104,6 +112,7 @@ namespace Movers
         float blinkTimer;
         float litLeft;
         bool litShown;
+        bool touched;         // has hit something since it was made: it stops spinning
 
         public bool IsArmed => armed;
         public bool IsPinOut => pin == null || !pin.gameObject.activeSelf;
@@ -136,6 +145,25 @@ namespace Movers
             // The shared metal materials and the ring mesh are made once and kept.
             ItemArt.Kill(bodyMat);
             bodyMat = null;
+        }
+
+        // In the hands it is in flight again: it spins freely until the next thing it hits.
+        public override void OnPickedUp(PlayerGrab by)
+        {
+            base.OnPickedUp(by);
+            touched = false;
+            var rb = Movable != null ? Movable.rb : null;
+            if (rb != null) rb.angularDamping = AngularDampingInFlight;
+        }
+
+        // The first contact after a throw or a drop (the wall it was thrown at, the floor) takes
+        // the spin out of it, so it does not roll away from where it landed.
+        void OnCollisionEnter(Collision c)
+        {
+            if (touched || IsHeld) return;
+            touched = true;
+            var rb = Movable != null ? Movable.rb : null;
+            if (rb != null) rb.angularDamping = Mathf.Max(rb.angularDamping, AngularDampingAfterContact);
         }
 
         // ---- the right button ----
@@ -397,6 +425,11 @@ namespace Movers
             go.transform.rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);   // standing up
 
             var item = go.AddComponent<GrenadeItem>();
+            // The blast is the table's (DestructionMaterialTable Blast block), read here because
+            // the crate builds every grenade in code: the serialized fields never mattered.
+            var table = DestructionMaterialTable.Current;
+            item.radius = table.grenadeRadius;
+            item.power = table.grenadePower;
             // AddComponent on the item brings MovableObject with it (HeldUsable requires it),
             // and MovableObject brings a Rigidbody. Fetch, do not add (see CigaretteItem).
             var mo = go.GetComponent<MovableObject>();
@@ -406,9 +439,10 @@ namespace Movers
             var box = go.AddComponent<BoxCollider>();
             box.size = item.grabBox;
             box.center = new Vector3(0f, item.grabBox.y * 0.5f - BodyHalfHeight, 0f);
+            box.sharedMaterial = DeadBounce;
 
             rb.linearDamping = 0.1f;
-            rb.angularDamping = 0.6f;
+            rb.angularDamping = AngularDampingInFlight;
             // Small and thrown hard: at 13 m/s it covers a quarter metre per physics step, more
             // than a wall is thick. The swept test keeps it on the right side of the wall.
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
@@ -478,6 +512,26 @@ namespace Movers
             ring.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);   // stands up, around the shaft's axis
             ring.AddComponent<MeshFilter>().sharedMesh = RingMesh();
             ring.AddComponent<MeshRenderer>().sharedMaterial = ringMat;
+        }
+
+        // No bounce whatever it hits (Minimum), and the grip of whichever side grips more
+        // (Maximum): it lands where it hits. One material for every grenade, built once.
+        static PhysicsMaterial DeadBounce
+        {
+            get
+            {
+                if (deadBounce != null) return deadBounce;
+                deadBounce = new PhysicsMaterial("Grenade_DeadBounce")
+                {
+                    bounciness = 0f,
+                    bounceCombine = PhysicsMaterialCombine.Minimum,
+                    dynamicFriction = 1f,
+                    staticFriction = 1f,
+                    frictionCombine = PhysicsMaterialCombine.Maximum,
+                    hideFlags = HideFlags.HideAndDontSave,
+                };
+                return deadBounce;
+            }
         }
 
         // A small torus, built once. No primitive is a ring, and a flat disc reads as a coin.
