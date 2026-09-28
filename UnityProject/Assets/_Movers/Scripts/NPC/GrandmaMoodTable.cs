@@ -39,6 +39,14 @@ namespace Movers
         public float doorBroken = 8f;
         public float explosionInside = 12f;
         public float explosionOutside = 4f;
+        [Tooltip("One of her own things cracked (not on the list; those are contractDamaged). 0: she does not mind.")]
+        public float objectDamaged = 1.5f;
+        [Tooltip("A wall, a fence or a structural piece broken through, or part of the house brought down. Capped like breakage, except a collapse, which pays full price.")]
+        public float structureBroken = 6f;
+        [Tooltip("Seconds per culprit before another broken wall costs anything: a truck through a fence and the wall behind it is one annoyance.")]
+        public float structureCooldown = 3f;
+        [Tooltip("A hedge, a bush, the mailbox, a garden post... Garden damage, never a wall.")]
+        public float gardenBroken = 1.5f;
 
         [Header("The crew's behaviour")]
         public float bumped = 2f;
@@ -70,6 +78,18 @@ namespace Movers
         [Header("A bit deaf")]
         [Tooltip("Share of the normal hearing radius (WorldEvents.HearingRadius) she hears at. 1 = sharp ears.")]
         [Range(0.2f, 1f)] public float hearing = 0.6f;
+        [Tooltip("The same share for explosions. 1: she hears a grenade 30 m away, deaf or not.")]
+        [Range(0.2f, 1f)] public float explosionHearing = 1f;
+
+        [Header("How loud breakage is when the raiser gave no loudness (WorldEvents.HearingRadius)")]
+        public float objectDestroyedLoudness = 0.5f;
+        public float objectDamagedLoudness = 0.4f;
+        public float contractDamagedLoudness = 0.4f;
+        public float contractDestroyedLoudness = 0.5f;
+        public float windowBrokenLoudness = 0.6f;
+        public float doorBrokenLoudness = 0.7f;
+        public float structureBrokenLoudness = 0.8f;
+        public float gardenBrokenLoudness = 0.5f;
 
         [Header("Leniency")]
         [Tooltip("The most patience she can lose within lossWindow seconds: a grenade chain is one catastrophe, not the end of the run.")]

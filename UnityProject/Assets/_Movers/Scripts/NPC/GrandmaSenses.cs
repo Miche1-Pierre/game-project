@@ -10,7 +10,8 @@ namespace Movers
     // - Vision: a 110 degree cone, 14 m, and a clear line from her head to a player's eyes or
     //   chest. Intact glass does not block it: she sees you through the veranda.
     // - Hearing: world events within WorldEvents.HearingRadius(loudness), halved for each wall
-    //   or floor in between. Explosions are heard through walls.
+    //   or floor in between. Explosions are heard through walls, and at full range (her
+    //   deafness does not apply to them, MoodCosts.explosionHearing).
     // - Touch: a player pushing into her, or a thrown object hitting her.
     // - The clock: whether the house is emptying as fast as the time runs out.
     //
@@ -42,6 +43,9 @@ namespace Movers
         public Animator animator;
 
         public event Action<Stimulus> Perceived;
+
+        static readonly MoodCosts DefaultCosts = new MoodCosts();
+        MoodCosts Costs => mood != null ? mood.Costs : DefaultCosts;
 
         // Set by the brain while her AI is off or the run is over: she perceives nothing, so
         // nothing is marked witnessed behind the brain's back.
@@ -229,19 +233,36 @@ namespace Movers
                     break;
 
                 case WorldEventType.Explosion:
-                    if (Hears(e.position, Mathf.Max(1f, e.loudness), explosionsIgnoreWalls))
+                    if (Hears(e.position, Mathf.Max(1f, e.loudness), explosionsIgnoreWalls, Costs.explosionHearing))
                         Emit(new Stimulus(StimulusKind.Explosion, e.position, e.instigator) { seen = CanSeePoint(e.position), inside = IsIndoors(e.position) });
                     break;
 
                 case WorldEventType.ObjectDestroyed:
                     // A piece on the list also raises ContractObjectDestroyed: priced there, once.
                     if (item != null && item.requiredForContract) return;
-                    Perceive(StimulusKind.ObjectDestroyed, e, 0.5f, item, item != null && item.fragile);
+                    Perceive(StimulusKind.ObjectDestroyed, e, Costs.objectDestroyedLoudness, item, item != null && item.fragile);
                     break;
-                case WorldEventType.ContractObjectDamaged: Perceive(StimulusKind.ContractDamaged, e, 0.4f, item, false); break;
-                case WorldEventType.ContractObjectDestroyed: Perceive(StimulusKind.ContractDestroyed, e, 0.5f, item, false); break;
-                case WorldEventType.WindowBroken: Perceive(StimulusKind.WindowBroken, e, 0.6f, null, false); break;
-                case WorldEventType.DoorBroken: Perceive(StimulusKind.DoorBroken, e, 0.7f, null, false); break;
+                case WorldEventType.ObjectDamaged:
+                    // Same rule: a piece on the list is ContractObjectDamaged.
+                    if (item == null || item.requiredForContract) return;
+                    Perceive(StimulusKind.ObjectDamaged, e, Costs.objectDamagedLoudness, item, false);
+                    break;
+                case WorldEventType.ContractObjectDamaged: Perceive(StimulusKind.ContractDamaged, e, Costs.contractDamagedLoudness, item, false); break;
+                case WorldEventType.ContractObjectDestroyed: Perceive(StimulusKind.ContractDestroyed, e, Costs.contractDestroyedLoudness, item, false); break;
+                case WorldEventType.WindowBroken: Perceive(StimulusKind.WindowBroken, e, Costs.windowBrokenLoudness, null, false); break;
+                case WorldEventType.DoorBroken: Perceive(StimulusKind.DoorBroken, e, Costs.doorBrokenLoudness, null, false); break;
+
+                // A wall broken through (a crack is not news), or part of the house coming down.
+                case WorldEventType.StructureDamaged:
+                    if (e.magnitude >= (float)DestructionState.Destroyed)
+                        Perceive(StimulusKind.StructureBroken, e, Costs.structureBrokenLoudness, null, false);
+                    break;
+                case WorldEventType.StructureCollapsed:
+                    Perceive(StimulusKind.StructureBroken, e, Costs.structureBrokenLoudness, null, false, true);
+                    break;
+                case WorldEventType.GardenDamaged:
+                    Perceive(StimulusKind.GardenBroken, e, Costs.gardenBrokenLoudness, null, false);
+                    break;
 
                 case WorldEventType.PlayerSmoking:
                     if (Actors.IsPlayer(e.instigator) && CanSeePlayer(e.instigator))
@@ -264,13 +285,15 @@ namespace Movers
             }
         }
 
-        // Breakage: seen, or heard with a default loudness when the raiser gave none.
-        void Perceive(StimulusKind kind, in WorldEvent e, float defaultLoudness, MovableObject item, bool fragile)
+        // Breakage: seen, or heard with a default loudness when the raiser gave none. What broke
+        // does not hide itself: a wall is seen breaking through its own colliders.
+        void Perceive(StimulusKind kind, in WorldEvent e, float defaultLoudness, MovableObject item, bool fragile, bool collapse = false)
         {
-            bool sawIt = CanSeePoint(e.position, item != null ? item.transform : null);
+            Transform broken = item != null ? item.transform : e.subject is Component c && c != null ? c.transform : null;
+            bool sawIt = CanSeePoint(e.position, broken);
             float loudness = e.loudness > 0f ? e.loudness : defaultLoudness;
             if (!sawIt && !Hears(e.position, loudness, false)) return;
-            Emit(new Stimulus(kind, e.position, e.instigator) { seen = sawIt, item = item, fragile = fragile, value = e.value });
+            Emit(new Stimulus(kind, e.position, e.instigator) { seen = sawIt, item = item, fragile = fragile, value = e.value, collapse = collapse });
         }
 
         void Witness(MovableObject item, int thief, Vector3 at)
@@ -279,9 +302,13 @@ namespace Movers
             Emit(new Stimulus(StimulusKind.TheftWitnessed, at, thief) { seen = true, item = item, value = item.contractValue });
         }
 
-        public bool Hears(Vector3 source, float loudness, bool ignoreWalls)
+        public bool Hears(Vector3 source, float loudness, bool ignoreWalls) => Hears(source, loudness, ignoreWalls, Costs.hearing);
+
+        // hearing: the share of the normal radius she hears at (MoodCosts.hearing, or
+        // explosionHearing for a blast).
+        public bool Hears(Vector3 source, float loudness, bool ignoreWalls, float hearing)
         {
-            float radius = WorldEvents.HearingRadius(loudness) * (mood != null ? mood.Costs.hearing : 1f);
+            float radius = WorldEvents.HearingRadius(loudness) * hearing;
             Vector3 ear = HeadPosition;
             float dist = Vector3.Distance(source, ear);
             float effective = radius;

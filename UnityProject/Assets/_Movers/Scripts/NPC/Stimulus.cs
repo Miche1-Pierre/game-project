@@ -22,6 +22,10 @@ namespace Movers
         CarryingSeen,       // she keeps seeing one of her non-contract things carried about
         BehindSchedule,     // the house is not emptying fast enough
         SeatTaken,          // someone carried off the seat she was sitting in
+        // DEV 2 (ADR-013)
+        StructureBroken,    // a wall or a structural piece broke through, or part of the house came down
+        GardenBroken,       // a hedge, a bush, the mailbox... (garden damage, never a wall)
+        ObjectDamaged,      // one of her things cracked (not on the contract)
         Count
     }
 
@@ -33,6 +37,7 @@ namespace Movers
         public bool seen;            // she saw it happen (as opposed to only hearing it)
         public bool inside;          // Explosion: under a roof
         public bool fragile;         // ObjectDestroyed: a fragile thing
+        public bool collapse;        // StructureBroken: it came down for lack of support (not capped)
         public int value;            // money, when there is one
         public MovableObject item;   // the object concerned, may be null
 
@@ -44,6 +49,7 @@ namespace Movers
             seen = false;
             inside = false;
             fragile = false;
+            collapse = false;
             value = 0;
             item = null;
         }
@@ -55,11 +61,13 @@ namespace Movers
 
         public bool IsBreakage => kind == StimulusKind.ObjectDestroyed || kind == StimulusKind.ContractDamaged
                                || kind == StimulusKind.ContractDestroyed || kind == StimulusKind.WindowBroken
-                               || kind == StimulusKind.DoorBroken || kind == StimulusKind.Explosion;
+                               || kind == StimulusKind.DoorBroken || kind == StimulusKind.Explosion
+                               || kind == StimulusKind.StructureBroken || kind == StimulusKind.GardenBroken
+                               || kind == StimulusKind.ObjectDamaged;
 
         // Under GrandmaMood's loss cap (maxLossPerWindow): noise and breakage. Offences always
-        // pay full price.
-        public bool IsCapped => kind == StimulusKind.SmallNoise || IsBreakage;
+        // pay full price, and so does part of the house coming down.
+        public bool IsCapped => kind == StimulusKind.SmallNoise || (IsBreakage && !collapse);
 
         // Never dropped from her queue, however busy the frame: a blast, a theft.
         public bool MustBeHeard => kind == StimulusKind.Explosion || kind == StimulusKind.TheftWitnessed;

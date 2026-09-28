@@ -97,6 +97,9 @@ namespace Movers
                 case StimulusKind.TheftWitnessed: return c.theftWitnessed;
                 case StimulusKind.CarryingSeen: return c.carryingSeen;
                 case StimulusKind.BehindSchedule: return c.behindSchedule;
+                case StimulusKind.StructureBroken: return Cooled(s.kind, s.instigator, c.structureCooldown) ? c.structureBroken : 0f;
+                case StimulusKind.GardenBroken: return c.gardenBroken;
+                case StimulusKind.ObjectDamaged: return c.objectDamaged;
             }
             return 0f;
         }
