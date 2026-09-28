@@ -1,3 +1,4 @@
+using System.Text;
 using UnityEngine;
 
 namespace Movers
@@ -408,5 +409,96 @@ namespace Movers
             if (otherBody != null && otherBody.TryGetComponent(out d)) return d;
             return null;
         }
+
+        // ---- calibration check (DEV2_DESTRUCTION_GAMEPLAY.md 2.2), editor-free ----
+
+        // Replays the rows of the 2.2 table through MakeInput and Evaluate (the path TryMeasure
+        // takes after reading the contact) on a fresh code-default table, the receiver's material
+        // factor included, and compares with the numbers the spec was calibrated on (1 % + 0.5 HP,
+        // spreads 0.02 m). Also: a prop's own damage equals the pre-DEV 2 formula, plain and held,
+        // and a thrown cup still breaks a pane. Needs no editor and no scene:
+        //   bool ok = Movers.ImpactDamage.CalibrationCheck(out string report);
+        public static bool CalibrationCheck(out string report)
+        {
+            var previous = DestructionMaterialTable.Current;
+            var table = ScriptableObject.CreateInstance<DestructionMaterialTable>();
+            table.hideFlags = HideFlags.HideAndDontSave;
+            var sb = new StringBuilder("ImpactDamage calibration (2.2, code defaults)\n");
+            bool ok = true;
+            try
+            {
+                DestructionMaterialTable.Use(table);
+                const float Inf = float.PositiveInfinity;
+                const BreakMaterial Plaster = BreakMaterial.Plaster, Wood = BreakMaterial.Wood;
+                const DamageType Thrown = DamageType.Thrown, Vehicle = DamageType.Vehicle, Crush = DamageType.Crush;
+                float wall = table.structureReferenceMass;
+                Rules plain = Plain, held = Held, glass = Glass;
+                float kmh = 1f / 3.6f;
+
+                sb.Append("vs a plaster wall (thrown, vehicles, a launched chunk, a falling roof)\n");
+                ok &= Row(sb, "cup 2 kg at 6 m/s", 2f, 6f, wall, true, Plaster, Thrown, plain, false, 0f);
+                ok &= Row(sb, "chair 10 kg at 7 m/s", 10f, 7f, wall, true, Plaster, Thrown, plain, false, 0f);
+                ok &= Row(sb, "sofa 60 kg at 6 m/s", 60f, 6f, wall, true, Plaster, Thrown, plain, false, 0f);
+                ok &= Row(sb, "sofa 60 kg at 7 m/s", 60f, 7f, wall, true, Plaster, Thrown, plain, false, 36.7f);
+                ok &= Row(sb, "sofa 60 kg at 9 m/s", 60f, 9f, wall, true, Plaster, Thrown, plain, false, 386.6f, 0.40f);
+                ok &= Row(sb, "piano 180 kg at 7 m/s", 180f, 7f, wall, true, Plaster, Thrown, plain, false, 1674.2f, 0.49f);
+                ok &= Row(sb, "piano 180 kg at 8.5 m/s", 180f, 8.5f, wall, true, Plaster, Thrown, plain, false, 3433.1f, 0.56f);
+                ok &= Row(sb, "truck 3.5 t at 10 km/h", 3500f, 10f * kmh, wall, true, Plaster, Vehicle, plain, false, 105.6f);
+                ok &= Row(sb, "truck 3.5 t at 15 km/h", 3500f, 15f * kmh, wall, true, Plaster, Vehicle, plain, false, 306.0f, 0.94f);
+                ok &= Row(sb, "truck 3.5 t at 25 km/h", 3500f, 25f * kmh, wall, true, Plaster, Vehicle, plain, false, 1019.4f, 1.32f);
+                ok &= Row(sb, "truck 3.5 t at 40 km/h", 3500f, 40f * kmh, wall, true, Plaster, Vehicle, plain, false, 2870.6f, 1.80f);
+                ok &= Row(sb, "truck 3.5 t at 90 km/h", 3500f, 90f * kmh, wall, true, Plaster, Vehicle, plain, false, 15812.3f, 2.50f);
+                ok &= Row(sb, "truck 6 t at 10 km/h", 6000f, 10f * kmh, wall, true, Plaster, Vehicle, plain, false, 217.3f);
+                ok &= Row(sb, "truck 6 t at 40 km/h", 6000f, 40f * kmh, wall, true, Plaster, Vehicle, plain, false, 5103.1f, 2.15f);
+                ok &= Row(sb, "truck 6 t at 90 km/h", 6000f, 90f * kmh, wall, true, Plaster, Vehicle, plain, false, 27531.8f);
+                ok &= Row(sb, "police car 1.4 t at 80 km/h", 1400f, 80f * kmh, wall, true, Plaster, Vehicle, plain, false, 4743.5f);
+                ok &= Row(sb, "launched chunk 150 kg at 10 m/s", 150f, 10f, wall, true, Plaster, Crush, plain, true, 217.8f);
+                ok &= Row(sb, "launched chunk 150 kg at 5 m/s", 150f, 5f, wall, true, Plaster, Crush, plain, true, 7.5f);
+                ok &= Row(sb, "falling roof 1 t at 6.3 m/s", 1000f, 6.3f, wall, true, Plaster, Crush, plain, false, 2579.8f);
+
+                sb.Append("vs a wooden fence (140 HP)\n");
+                ok &= Row(sb, "sofa 60 kg at 6 m/s: explodes", 60f, 6f, wall, true, Wood, Thrown, plain, false, 304.1f);
+                ok &= Row(sb, "chair 10 kg at 7 m/s", 10f, 7f, wall, true, Wood, Thrown, plain, false, 0f);
+                ok &= Row(sb, "truck 3.5 t at 10 km/h: explodes", 3500f, 10f * kmh, wall, true, Wood, Vehicle, plain, false, 146.3f);
+                ok &= Row(sb, "launched chunk 150 kg at 10 m/s: explodes", 150f, 10f, wall, true, Wood, Crush, plain, true, 354.4f);
+                ok &= Row(sb, "launched chunk 150 kg at 5 m/s: holds", 150f, 5f, wall, true, Wood, Crush, plain, true, 46.2f);
+
+                sb.Append("props and panes\n");
+                ok &= Row(sb, "truck at 90 km/h vs a 10 kg chair (153 HP): survives, then flung", 3500f, 25f, 10f, false, Wood,
+                          Vehicle, plain, false, 113.1f);
+                ok &= Row(sb, "cup 2 kg at 6 m/s vs a 10 kg pane (12 HP): breaks at once", 2f, 6f, 10f, true, BreakMaterial.Glass,
+                          Thrown, glass, false, 112.7f);
+                float vMin = DestructionMaterialTable.Get(BreakMaterial.Ceramic).minImpactSpeed;
+                ok &= Row(sb, "5 kg vase on the floor at 6 m/s = before DEV 2", Inf, 6f, 5f, false, BreakMaterial.Ceramic,
+                          DamageType.Impact, plain, false, 9f * MaxRatio * Sq(6f - vMin));
+                ok &= Row(sb, "the same vase held = before DEV 2", Inf, 6f, 5f, false, BreakMaterial.Ceramic,
+                          DamageType.Impact, held, false, 9f * HeldMaxRatio * Sq(6f - vMin - HeldSpeedAllowance));
+            }
+            finally
+            {
+                DestructionMaterialTable.Use(previous);
+                if (Application.isPlaying) Object.Destroy(table);
+                else Object.DestroyImmediate(table);
+            }
+            sb.Append(ok ? "ALL OK" : "SOME ROWS FAILED");
+            report = sb.ToString();
+            return ok;
+        }
+
+        static bool Row(StringBuilder sb, string label, float strikerKg, float speed, float receiverKg, bool anchored,
+                        BreakMaterial mat, DamageType type, in Rules rules, bool launchedChunk, float expected,
+                        float expectedSpread = -1f)
+        {
+            ImpactOutcome o = Evaluate(MakeInput(speed, strikerKg, receiverKg, anchored, mat, type, rules, launchedChunk));
+            float damage = o.damage * DestructionMaterialTable.Factor(type, mat);
+            bool pass = Mathf.Abs(damage - expected) <= expected * 0.01f + 0.5f
+                        && (expectedSpread < 0f || Mathf.Abs(o.spread - expectedSpread) <= 0.02f);
+            sb.Append(pass ? "  ok    " : "  FAIL  ").Append(label).Append(": ").Append(damage.ToString("0.0"))
+              .Append(" HP (expected ").Append(expected.ToString("0.0")).Append("), spread ")
+              .Append(o.spread.ToString("0.00")).Append(" m, ").Append((o.energy / 1000f).ToString("0.0")).Append(" kJ\n");
+            return pass;
+        }
+
+        static float Sq(float x) => x * x;
     }
 }
