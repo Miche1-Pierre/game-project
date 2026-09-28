@@ -9,9 +9,14 @@ namespace Movers
     //
     // Plain data plus one method, owned by VehicleSeat: it moves the driver's own camera, which
     // VehicleSeat gives back to the head when the driver gets out.
+    //
+    // Speed reads on screen (DEV 2, 6.2): toward the top speed the camera backs off by
+    // TruckTuning.cameraExtraDistance and widens by cameraExtraFov; the field of view goes back
+    // to what it was when the seat is left.
     [System.Serializable]
     public sealed class ChaseCamera
     {
+        public float speedResponse = 0.6f;      // seconds for the distance and the FOV to follow the speed
         public float distance = 10f;
         public float pivotHeight = 2.4f;        // above the truck's ground point: about the middle of the box
         public float basePitch = 14f;           // degrees looking down
@@ -26,22 +31,47 @@ namespace Movers
 
         [System.NonSerialized] float yaw, yawVelocity, orbitYaw, orbitPitch, lastLookTime;
         [System.NonSerialized] RaycastHit[] hits;     // made on first use: the serializer may skip initialisers
+        [System.NonSerialized] Camera lens;
+        [System.NonSerialized] float baseFov, lastFov, speedBlend;
 
         // Where the camera looks, as a heading in degrees: the driver faces this way getting out.
         public float Yaw => yaw + orbitYaw;
 
-        public void Begin(Transform truck)
+        // lens: the camera whose field of view widens with speed, or null.
+        public void Begin(Transform truck, Camera lens = null)
         {
             yaw = Heading(truck.forward);
             yawVelocity = 0f;
             orbitYaw = 0f;
             orbitPitch = 0f;
             lastLookTime = -99f;
+            speedBlend = 0f;
+            this.lens = lens;
+            if (lens != null) baseFov = lastFov = lens.fieldOfView;
         }
 
-        public void Tick(Transform cam, Transform truck, Vector3 truckVelocity, Vector2 look, float dt)
+        // The seat is left: the field of view goes back, unless something else (the split
+        // screen) set it meanwhile.
+        public void End()
+        {
+            if (lens != null && Mathf.Approximately(lens.fieldOfView, lastFov)) lens.fieldOfView = baseFov;
+            lens = null;
+        }
+
+        public void Tick(Transform cam, Transform truck, Vector3 truckVelocity, Vector2 look, float dt, TruckTuning tuning = null)
         {
             if (cam == null || truck == null) return;
+
+            float topSpeed = tuning != null ? Mathf.Max(1f, tuning.maxSpeedKmh / 3.6f) : 1f;
+            float speed01 = tuning != null ? Mathf.Clamp01(truckVelocity.magnitude / topSpeed) : 0f;
+            speedBlend = Mathf.Lerp(speedBlend, speed01, 1f - Mathf.Exp(-dt / Mathf.Max(0.01f, speedResponse)));
+            float reachWanted = distance + (tuning != null ? tuning.cameraExtraDistance * speedBlend : 0f);
+            if (lens != null && tuning != null)
+            {
+                if (!Mathf.Approximately(lens.fieldOfView, lastFov)) baseFov = lens.fieldOfView;   // the split screen changed it
+                lastFov = baseFov + tuning.cameraExtraFov * speedBlend;
+                lens.fieldOfView = lastFov;
+            }
 
             if (look.sqrMagnitude > 1e-6f) lastLookTime = Time.time;
             orbitYaw = Mathf.DeltaAngle(0f, orbitYaw + look.x * orbitSensitivity);
@@ -57,9 +87,9 @@ namespace Movers
             Vector3 pivot = truck.position + Vector3.up * pivotHeight;
             Vector3 back = rotation * Vector3.back;
 
-            float reach = distance;
+            float reach = reachWanted;
             if (hits == null) hits = new RaycastHit[16];
-            int n = Physics.SphereCastNonAlloc(pivot, collisionRadius, back, hits, distance, ~0, QueryTriggerInteraction.Ignore);
+            int n = Physics.SphereCastNonAlloc(pivot, collisionRadius, back, hits, reachWanted, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < n; i++)
             {
                 var c = hits[i].collider;

@@ -8,8 +8,9 @@ namespace Movers
     //
     //   someone takes the wheel      the door, the starter, the diesel catching
     //   engine on                    an idle loop and a working loop, crossfaded by the
-    //                                pedal; both pitched by revs (speed and pedal)
-    //   rolling                      tyres and road, louder with speed
+    //                                pedal; both pitched by revs (speed through virtual
+    //                                gears, and pedal)
+    //   rolling                      tyres and road, louder with speed up to audioTopSpeed
     //   braking hard                 a brake squeal; coming to rest after it, the air brake
     //   reversing                    the beeper at the back, lower and longer than the
     //                                grenade's beep so one is never taken for the other
@@ -78,16 +79,18 @@ namespace Movers
             float go = pedal > 0.05f && v > -0.5f ? pedal : pedal < -0.05f && v < 0.5f ? -pedal : 0f;
             bool braking = speed > 1.5f && (handbrake || (pedal > 0.05f && v < -0.5f) || (pedal < -0.05f && v > 0.5f));
             throttle = Mathf.MoveTowards(throttle, go, dt * 3f);
-            float maxSpeed = Mathf.Max(1f, truck.maxSpeedKmh / 3.6f);
-            float rpmTarget = Mathf.Clamp01(speed / maxSpeed) * 0.75f + throttle * 0.3f;
-            rpm = Mathf.Lerp(rpm, rpmTarget, 1f - Mathf.Exp(-dt / 0.25f));
+            var tuning = truck.Tuning;
+            float speed01 = Mathf.Clamp01(speed / Mathf.Max(1f, tuning.audioTopSpeed));
+            float rpmTarget = GearRevs(speed01, tuning.gearBands) * 0.75f + throttle * 0.3f;
+            // Revs climb with the lag of a heavy engine and drop fast at a shift.
+            rpm = Mathf.Lerp(rpm, rpmTarget, 1f - Mathf.Exp(-dt / (rpmTarget < rpm ? 0.08f : 0.25f)));
 
             // The loops come in as the starter's last cough fades (EngineStart is 1.8 s).
             float gate = Mathf.Clamp01((Time.time - startedAt - 0.9f) / 0.6f);
             float pitch = 0.85f + rpm * 0.9f;
             AudioDirector.SetLoop(idle, gate * Mathf.Lerp(0.6f, 0.25f, throttle), pitch);
             AudioDirector.SetLoop(work, gate * (throttle * 0.65f + rpm * 0.2f), pitch);
-            AudioDirector.SetLoop(road, Mathf.Clamp01(speed / 8f) * 0.55f, 0.8f + speed / 15f);
+            AudioDirector.SetLoop(road, speed01 * 0.55f, 0.8f + speed01 * 0.6f);
 
             if (braking && squeal < 0) squeal = Loop(SfxKind.BrakeSqueakLoop, engine, 0f);
             if (!braking && squeal >= 0) { AudioDirector.Stop(squeal, 0.2f); squeal = -1; }
@@ -127,6 +130,17 @@ namespace Movers
                 StopAll(0.3f);
                 engineOn = false;
             }
+        }
+
+        // Virtual gears (DEV 2, 6.2): the physics has none, the sound does. Across the speed range
+        // the revs climb through 'gears' bands and fall back at each shift: a saw-tooth, 0..1.
+        static float GearRevs(float speed01, int gears)
+        {
+            gears = Mathf.Max(1, gears);
+            float g = Mathf.Clamp01(speed01) * gears;
+            int gear = Mathf.Min(gears - 1, (int)g);
+            float inGear = Mathf.Clamp01(g - gear);
+            return Mathf.Lerp(gear == 0 ? 0f : 0.4f, 1f, inGear);
         }
 
         int Loop(SfxKind kind, Vector3 local, float volume)

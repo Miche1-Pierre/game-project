@@ -1,11 +1,15 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Movers
 {
-    // Truck (sys 8): driving state, seat, ramp, cargo totals (NETCODE_SLICE 4.3, 9.6, 11.7). The
+    // Truck (sys 8): driving state, seats, ramp, cargo totals (NETCODE_SLICE 4.3, 9.6, 11.7). The
     // truck's pose rides the transform stream (it is a Body); this sync carries the rest. The
-    // host sends the seat at each change (VehicleSeat hooks) and polls the others; the client
+    // host sends a seat at each change (VehicleSeat hooks) and polls the others; the client
     // writes them into the same components, which do not simulate there. Map01 has one truck.
+    //
+    // Seats (DEV 2, 6.3): the crew truck's seats are bound in seatIndex order (0 the driver, 1 the
+    // passenger), and SeatEnter, SeatExit and SeatNotice end with the seat index (Protocol 2).
     public sealed class TruckSync : NetSync
     {
         const byte OpState = 1, OpSeatEnter = 2, OpSeatExit = 3, OpSeatNotice = 4, OpRamp = 5, OpCargo = 6;
@@ -18,21 +22,26 @@ namespace Movers
         static byte seatEpoch;
         static float remoteChaseYaw = float.NaN;
         static TruckVehicle truck;
-        static VehicleSeat seat;
+        static readonly List<VehicleSeat> seats = new List<VehicleSeat>();
 
         // Bumped by every SeatEnter / SeatExit; a pose older than it is skipped (9.3). The host
         // bumps it only for a record that is really written, so both machines count the same
         // records (none while loading, when the scene's reset brings both back to 0).
         public static byte SeatEpoch => seatEpoch;
 
-        // Client: the heading of this machine's chase camera while its player drives, sent with
-        // the input (PlayerSync, InputPose chaseYaw). NaN when he is not at the wheel.
+        // Client: the heading of this machine's chase camera while its player sits in the truck
+        // (either seat), sent with the input (PlayerSync, InputPose chaseYaw). NaN when he is not
+        // seated.
         public static float LocalChaseYaw
         {
             get
             {
-                if (seat == null || seat.Driver == null || !Net.IsLocal(seat.Driver)) return float.NaN;
-                return seat.ChaseYaw;
+                for (int i = 0; i < seats.Count; i++)
+                {
+                    var s = seats[i];
+                    if (s != null && s.Occupant != null && Net.IsLocal(s.Occupant)) return s.ChaseYaw;
+                }
+                return float.NaN;
             }
         }
 
@@ -50,14 +59,14 @@ namespace Movers
 
         // ---- host hooks (VehicleSeat) ----
 
-        public static void SeatEnter(int member)
+        public static void SeatEnter(int member, int seatIndex)
         {
             if (!Net.IsHost || !NetOut.CanSend) return;
             seatEpoch++;
-            WriteSeatEnter(member);
+            WriteSeatEnter(member, seatIndex);
         }
 
-        public static void SeatExit(int member, Vector3 rootPosition, float yaw)
+        public static void SeatExit(int member, Vector3 rootPosition, float yaw, int seatIndex)
         {
             if (!Net.IsHost) return;
             var w = NetOut.Reliable(NetSyncId.Truck, OpSeatExit);
@@ -67,34 +76,45 @@ namespace Movers
             w.WriteVector3(rootPosition);
             w.WriteAngle(yaw);
             w.WriteByte(seatEpoch);
+            w.WriteByte((byte)seatIndex);
             NetOut.End(w);
         }
 
-        // The driver is gone without being put anywhere (destroyed, scene unloading).
-        public static void SeatForgotten(int member, Transform seatPoint)
+        // The occupant is gone without being put anywhere (destroyed, scene unloading).
+        public static void SeatForgotten(int member, Transform seatPoint, int seatIndex)
         {
             if (!Net.IsHost) return;
             if (!NetOut.CanSend || seatPoint == null) return;
-            SeatExit(member, seatPoint.position, seatPoint.eulerAngles.y);
+            SeatExit(member, seatPoint.position, seatPoint.eulerAngles.y, seatIndex);
         }
 
-        public static void SeatNotice(int member, byte code)
+        public static void SeatNotice(int member, byte code, int seatIndex)
         {
             if (!Net.IsHost) return;
             var w = NetOut.Reliable(NetSyncId.Truck, OpSeatNotice);
             if (w == null) return;
             w.WriteByte((byte)member);
             w.WriteByte(code);
+            w.WriteByte((byte)seatIndex);
             NetOut.End(w);
         }
 
-        static void WriteSeatEnter(int member)
+        static void WriteSeatEnter(int member, int seatIndex)
         {
             var w = NetOut.Reliable(NetSyncId.Truck, OpSeatEnter);
             if (w == null) return;
             w.WriteByte((byte)member);
             w.WriteByte(seatEpoch);
+            w.WriteByte((byte)seatIndex);
             NetOut.End(w);
+        }
+
+        // The crew truck's seat with this index, or null.
+        static VehicleSeat SeatAt(int seatIndex)
+        {
+            for (int i = 0; i < seats.Count; i++)
+                if (seats[i] != null && seats[i].seatIndex == seatIndex) return seats[i];
+            return null;
         }
 
         // ---- NetSync ----
@@ -102,16 +122,17 @@ namespace Movers
         public override void OnSceneReady()
         {
             truck = Object.FindAnyObjectByType<TruckVehicle>();
-            seat = null;
+            seats.Clear();
             if (truck == null) return;
             foreach (var s in Object.FindObjectsByType<VehicleSeat>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (s.vehicle == truck) { seat = s; break; }
+                if (s.vehicle == truck) seats.Add(s);
+            seats.Sort((a, b) => a.seatIndex.CompareTo(b.seatIndex));
         }
 
         public override void OnSessionEnd()
         {
             truck = null;
-            seat = null;
+            seats.Clear();
             seatEpoch = 0;
             remoteChaseYaw = float.NaN;
             ResetSent();
@@ -148,15 +169,23 @@ namespace Movers
             ResetSent();
             if (truck == null) return;
             SendState(true);
-            if (seat != null && seat.Driver != null) WriteSeatEnter(seat.Driver.index);
+            for (int i = 0; i < seats.Count; i++)
+            {
+                var s = seats[i];
+                if (s != null && s.Occupant != null) WriteSeatEnter(s.Occupant.index, s.seatIndex);
+            }
             if (truck.ramp != null) SendRamp();
             if (truck.cargo != null) SendCargo();
         }
 
         public override void OnPeerLeft()
         {
-            // The client was at the wheel: out at the door, so P1 can drive.
-            if (seat != null && seat.Driver != null && seat.Driver.index == Net.ClientMember) seat.ForceRelease();
+            // The client sat in the truck: out at the door, whichever seat, so P1 can take it.
+            for (int i = 0; i < seats.Count; i++)
+            {
+                var s = seats[i];
+                if (s != null && s.Occupant != null && s.Occupant.index == Net.ClientMember) s.ForceRelease();
+            }
             remoteChaseYaw = float.NaN;
         }
 
@@ -214,7 +243,12 @@ namespace Movers
                 {
                     var m = CrewRoster.Get(r.ReadByte());
                     seatEpoch = r.ReadByte();
-                    if (seat != null && m != null) seat.ApplyEnter(m);
+                    var seat = SeatAt(r.ReadByte());
+                    if (seat == null || m == null) return;
+                    // Still seated elsewhere here (a switch of seats): out of that one first.
+                    var other = VehicleSeat.Of(m);
+                    if (other != null && other != seat) other.ApplyExit(m, m.transform.position, m.transform.eulerAngles.y);
+                    seat.ApplyEnter(m);
                     return;
                 }
                 case OpSeatExit:
@@ -223,6 +257,7 @@ namespace Movers
                     Vector3 pos = r.ReadVector3();
                     float yaw = r.ReadAngle();
                     seatEpoch = r.ReadByte();
+                    var seat = SeatAt(r.ReadByte());
                     if (seat != null && m != null) seat.ApplyExit(m, pos, yaw);
                     return;
                 }
@@ -230,6 +265,7 @@ namespace Movers
                 {
                     int member = r.ReadByte();
                     byte code = r.ReadByte();
+                    var seat = SeatAt(r.ReadByte());
                     if (seat != null && member == Net.LocalMember) seat.ApplyNotice(code);
                     return;
                 }
@@ -257,7 +293,7 @@ namespace Movers
             seatEpoch = 0;
             remoteChaseYaw = float.NaN;
             truck = null;
-            seat = null;
+            seats.Clear();
             NetSync.Register(new TruckSync());
         }
     }
