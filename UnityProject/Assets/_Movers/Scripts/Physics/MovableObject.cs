@@ -40,6 +40,11 @@ namespace Movers
         [System.NonSerialized] public float lastThrownTime = -99f;
         [System.NonSerialized] public bool inPocket;                // riding in a player's pocket (inactive)
         [System.NonSerialized] public bool worn;                    // worn on a body
+        // Where hands take hold of it (CarryGrip): its box in its own space and its authored
+        // points if it has any, measured the first time it is carried.
+        [System.NonSerialized] public bool gripKnown;
+        [System.NonSerialized] public Bounds gripBox;
+        [System.NonSerialized] public HoldPoints gripPoints;
 
         public float Mass => rb != null ? rb.mass : Mathf.Max(0.1f, weight);
 

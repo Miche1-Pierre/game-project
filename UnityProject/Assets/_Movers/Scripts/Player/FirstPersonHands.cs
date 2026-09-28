@@ -18,8 +18,10 @@ namespace Movers
     //   at rest       both hands low in the corners of the view, swaying with the walk and
     //                 lagging a little behind the look;
     //   grabbing      a snatch forward when the button finds nothing, a reach toward what it did;
-    //   carrying      a palm on each side of the carried thing, the arms stretched toward it and
-    //                 stopped at arm's length (the carry holds things at 1 to 3 m, out of reach);
+    //   carrying      each palm flat on a hold of the carried thing (CarryGrip: its sides, its near
+    //                 face, or the right hand alone on a small thing), which the carry keeps within
+    //                 reach, so the arms bend and stretch as the wheel brings it in and out. A
+    //                 dragged thing is reached for, the arms stopping at their length;
     //   a small usable (cigarette, beer, grenade) is held in the right hand, close in front
     //                 (HeldPose draws the item there, the hand closes on it): the cigarette goes
     //                 to the mouth for each drag, the bottle tips back, the grenade winds up and
@@ -159,16 +161,18 @@ namespace Movers
 
         // What is in the hands.
         MovableObject lastHeld;
+        // The grip style this player's hands last used, and on what (CarryGrip, for a replica).
+        CarryGrip.Style ownStyle;
+        MovableObject styleOf;
         bool lastSmall;
-        Bounds heldBounds;          // in the held object's own space
-        MovableObject boundsOf;
 
         Gesture gesture;
         float gestureClock = -1f;
 
         readonly RaycastHit[] wallHits = new RaycastHit[16];
-        readonly List<Renderer> boundsScratch = new List<Renderer>(16);
-        readonly List<Collider> colliderScratch = new List<Collider>(8);
+
+        // Metres the palm rides off the surface it holds, so the two never flicker into each other.
+        const float PalmSkin = 0.006f;
 
         public Transform Rig => rig;
         public bool Showing => showing;
@@ -556,7 +560,7 @@ namespace Movers
         void PoseInView(float dt, MovableObject held, bool small)
         {
             Target r = Rest(1f), l = Rest(-1f);
-            if (held != null && !small)
+            if (held != null && !small && (grab.HoldsInArms || grab.IsDragging))
             {
                 Carry(held, out l, out r);
             }
@@ -653,46 +657,55 @@ namespace Movers
             };
         }
 
-        // A palm on each side of the carried thing, as the eyes see it: a little below its middle,
-        // on its near half. Out of reach (the usual case) the arms stretch toward those points.
+        // The hands on the holds of the thing in the arms (CarryGrip, from these eyes, in the frame
+        // the carry uses, with the style it chose), locked on them while they are within reach: the
+        // carry keeps them there, so the arms bend and stretch with it. Out of reach (it is still
+        // flying in, or it snagged) and for a dragged thing, which is not in the arms, they reach
+        // for the holds and stop at their length instead of leaving the forearms behind.
         void Carry(MovableObject held, out Target l, out Target r)
         {
-            if (!ReferenceEquals(boundsOf, held)) { heldBounds = LocalBounds(held); boundsOf = held; }
-
-            Matrix4x4 toRig = rig.worldToLocalMatrix * held.transform.localToWorldMatrix;
-            Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-            Vector3 max = -min;
-            Vector3 c = heldBounds.center, e = heldBounds.extents;
-            for (int i = 0; i < 8; i++)
-            {
-                Vector3 corner = c + new Vector3((i & 1) == 0 ? -e.x : e.x, (i & 2) == 0 ? -e.y : e.y, (i & 4) == 0 ? -e.z : e.z);
-                Vector3 p = toRig.MultiplyPoint3x4(corner);
-                min = Vector3.Min(min, p);
-                max = Vector3.Max(max, p);
-            }
-            float y = Mathf.Lerp(min.y, max.y, 0.35f);
-            float z = Mathf.Lerp(min.z, max.z, 0.3f);
-            r = OnSide(new Vector3(max.x, y, z), 1f);
-            l = OnSide(new Vector3(min.x, y, z), -1f);
+            bool inArms = grab.HoldsInArms;
+            // An online client's replica has no carry deciding the style: it keeps its own, with
+            // the same margin, for as long as the same thing is in the arms.
+            bool mine = ReferenceEquals(styleOf, held);
+            CarryGrip.Style style = grab.GripStyleKnown || !mine ? grab.GripStyle : ownStyle;
+            bool keep = inArms && (grab.GripStyleKnown || mine);
+            Transform eye = eyes.transform;
+            Quaternion frame = CarryGrip.Frame(eye);
+            CarryGrip.Solve(held, held.transform.position, held.transform.rotation, eye.position, frame,
+                            ref style, keep, out var hl, out var hr);
+            ownStyle = style;
+            styleOf = held;
+            bool down = (crew != null && crew.IsDown) || (tumble != null && tumble.IsTumbling);
+            var arms = CarryGrip.Arms.Of(body, down, this, eye, frame);
+            r = hr.used ? OnHold(hr, 1f, style, inArms && InReach(hr, arms, 1f)) : Rest(1f);
+            l = hl.used ? OnHold(hl, -1f, style, inArms && InReach(hl, arms, -1f)) : Rest(-1f);
         }
 
-        Target OnSide(Vector3 contact, float s)
+        static bool InReach(in CarryGrip.Hold h, in CarryGrip.Arms arms, float side)
         {
-            Vector3 sh = Shoulder(s);
-            Vector3 toward = contact - sh;
-            bool reached = toward.magnitude <= Reach;
-            Vector3 along = toward.sqrMagnitude > 1e-6f ? toward.normalized : Vector3.forward;
-            Vector3 outward = new Vector3(s, 0f, 0f);
-            Vector3 up = outward - along * Vector3.Dot(outward, along);
-            if (up.sqrMagnitude < 1e-6f) up = Vector3.up;
-            Quaternion rot = Quaternion.LookRotation(along, up.normalized);
-            float curl = reached ? 0.35f : 0.18f;
+            return Vector3.Distance(arms.Shoulder(side), h.point) <= arms.reach + 0.03f;
+        }
+
+        // One hand on one hold: the middle of the palm on it and the palm flat on the surface, the
+        // fingers along a side toward its far end or up a near face, closed round a small thing.
+        Target OnHold(CarryGrip.Hold h, float s, CarryGrip.Style style, bool exact)
+        {
+            Vector3 p = rig.InverseTransformPoint(h.point);
+            Vector3 n = rig.InverseTransformDirection(h.normal);   // out of the surface: the back of the hand
+            Vector3 want = style == CarryGrip.Style.Front ? new Vector3(-0.35f * s, 1f, 0.1f) : new Vector3(0f, -0.25f, 1f);
+            Vector3 f = want - n * Vector3.Dot(want, n);
+            if (f.sqrMagnitude < 1e-4f) f = Vector3.forward - n * Vector3.Dot(Vector3.forward, n);
+            if (f.sqrMagnitude < 1e-4f) f = Vector3.up - n * Vector3.Dot(Vector3.up, n);
+            Quaternion rot = Quaternion.LookRotation(f.normalized, n);
+            float curl = style == CarryGrip.Style.OneHand ? 0.62f : style == CarryGrip.Style.Front ? 0.38f : 0.28f;
             return new Target
             {
-                wrist = contact - rot * FirstPersonArm.PalmPoint(s),
+                wrist = p + n * PalmSkin - rot * FirstPersonArm.PalmPoint(s),
                 rotation = rot,
                 fingers = new Vector4(curl, curl, curl + 0.05f, curl + 0.1f),
-                thumb = 0.15f,
+                thumb = style == CarryGrip.Style.OneHand ? 0.55f : 0.2f,
+                exact = exact,
             };
         }
 
@@ -917,50 +930,6 @@ namespace Movers
             p.x = Mathf.Clamp(p.x, -mx, mx);
             p.y = Mathf.Max(p.y, -z * tanV * 1.02f);
             return p;
-        }
-
-        // The held object's box in its own space, from its renderers (or its colliders).
-        Bounds LocalBounds(MovableObject mo)
-        {
-            Transform root = mo.transform;
-            Matrix4x4 toRoot = root.worldToLocalMatrix;
-            bool any = false;
-            var b = new Bounds();
-            mo.GetComponentsInChildren(false, boundsScratch);
-            for (int i = 0; i < boundsScratch.Count; i++)
-            {
-                var r = boundsScratch[i];
-                if (r == null || r is ParticleSystemRenderer || r is TrailRenderer || r is LineRenderer) continue;
-                Bounds lb = r.localBounds;
-                Matrix4x4 m = toRoot * r.localToWorldMatrix;
-                Grow(ref b, ref any, m, lb);
-            }
-            boundsScratch.Clear();
-            if (!any)
-            {
-                mo.GetComponentsInChildren(false, colliderScratch);
-                for (int i = 0; i < colliderScratch.Count; i++)
-                {
-                    var c = colliderScratch[i];
-                    if (c == null || c.isTrigger) continue;
-                    Bounds wb = c.bounds;
-                    Grow(ref b, ref any, toRoot, wb);
-                }
-                colliderScratch.Clear();
-            }
-            if (!any) b = new Bounds(Vector3.zero, Vector3.one * 0.3f);
-            return b;
-        }
-
-        static void Grow(ref Bounds b, ref bool any, Matrix4x4 m, Bounds box)
-        {
-            Vector3 c = box.center, e = box.extents;
-            for (int i = 0; i < 8; i++)
-            {
-                Vector3 p = m.MultiplyPoint3x4(c + new Vector3((i & 1) == 0 ? -e.x : e.x, (i & 2) == 0 ? -e.y : e.y, (i & 4) == 0 ? -e.z : e.z));
-                if (!any) { b = new Bounds(p, Vector3.zero); any = true; }
-                else b.Encapsulate(p);
-            }
         }
     }
 }

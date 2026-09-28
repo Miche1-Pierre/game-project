@@ -24,7 +24,6 @@ namespace Movers
         const float AnchoredDelay = 0.05f;
         const float MaxExtrapolation = 0.1f;
         const float LeaveBlend = 0.15f;
-        const float OwnItemRestoreAfter = 0.5f;
 
         struct Sample { public float time; public Vector3 pos; public Quaternion rot; public bool teleport, settle; }
         struct AnchoredSample { public float time; public int member; public Vector3 p; public Quaternion r; }
@@ -447,7 +446,10 @@ namespace Movers
                 }
                 if (!b.ignoring) continue;
                 if (b.releasedAt < 0f) b.releasedAt = now;
-                if (cc == null || now - b.releasedAt >= OwnItemRestoreAfter || !Overlaps(b, cc))
+                // Only once apart: things are carried against the chest now (the two-hand carry
+                // hot-fix), so a dropped one lands inside the capsule, and turning the collision
+                // back on there would shove the player off it or onto it.
+                if (cc == null || !Overlaps(b, cc))
                     SetOwnIgnore(b, cc, false);
             }
         }

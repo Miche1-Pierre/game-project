@@ -4,6 +4,30 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 
 ## 2026-09-27
 
+### Hot-fix: the two-hand carry, hands on the object
+
+- **TECH, the cause:** things seemed to float between the hands. The wheel slid them 1 to 3.2 m out while the arms end at about 0.5 m, so the hands stopped in the air short of them.
+- **TECH, in the arms:** what you lift now rides at chest height, where the hands hold it. `CarryGrip` works the holds out from the thing's own box, with no set-up per object:
+  - a palm on each side, up to 0.9 m across;
+  - the palms on the near face, wider than that (a sofa across);
+  - the right hand alone, 20 cm and under (the keys).
+  An optional `HoldPoints` takes over for a shape the box reads wrong. The first-person hands and the body's hands (the shadow, the other player) sit on the same holds.
+- **TECH, the wheel:** it bends and stretches the arms instead of sliding the thing down a rail. No centre ever goes further than 1.50 m from the eyes: a small thing rides about 0.5 m out, a sofa end-on about 1.3 m. Heavy things still cannot be held at arm's length.
+- **TECH, the carry:** things in the arms move with you (the lag on a start or a turn is the weight) and are pulled back when past the arms' reach. Other changes:
+  - They follow the look up or down only within 35 degrees up and 20 down, so looking at your feet does not swing them into your chest.
+  - Tall things ride low enough to see over when the floor allows.
+  - Your own capsule lets them through, and collides with them again once they are clear of it.
+  - Left more than 0.35 m past the reach for 0.3 s (snagged on a door frame), a thing is let go, as a drag already was.
+  - Pushed back at you by a wall, it stops you walking on into it.
+- **TECH:** the cigarette, the beer and the grenade keep their old rail, capped to 1.0 to 1.5 m, so the smoke of ADR-005 still forms clear of the smoker. The online client's own dropped item now collides with it again only once apart.
+- **Measured in Play, scripted:** eleven carries, from the keys (one hand) to the piano (180 kg).
+  - The first-person palm is on its hold every time, 6 mm off the surface. The body's hand is within 1.4 cm of the surface and 8 cm along it.
+  - No centre is past 1.45 m (the sofa end-on); every hold is within 1 cm of the arm's reach.
+  - A 0.62 m crate: 0.43 m out arms bent, 0.57 m stretched, both hands in the picture when stretched.
+  - Looking straight down, a box stays 0.10 m ahead of the eyes, hands on it and in view. A snagged box was let go; a box walked into a wall stopped the walk.
+  - Console: 0 errors.
+  - **Not verified by a person.** The knock-down and the online client were not played.
+
 ### Hot-fix: the body, its animations and its shadow move as one
 
 - **TECH, one skeleton:** the first-person arms were their own rig under the camera while the shadow came from the animated body, so the two never agreed. Now the body's Animator drives everything: what the hands hold, carry or reach for is put on the body's arms (`LimbIK`), and the first-person forearms, hands and upper arms are drawn on the body's bones for the owner's camera only. The shadow, the other player's view and your own arms are the same arms. At rest your hands hang out of view, as the shadow's do; they come into view when they hold or reach. Throw and pocket are the Actions layer's clips on the body, not a second gesture. The tutorial's bodiless capsule keeps its arms in the view's corners.

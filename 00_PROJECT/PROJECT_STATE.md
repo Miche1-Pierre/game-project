@@ -39,6 +39,12 @@ Crew scaled to 1.80 m the same day, see the note in `05_ART/ASSET_STATUS.md`. Th
 
 **Hot-fix 2026-09-27, body and shadow in sync:** one skeleton now drives the crew. The first-person arms are drawn on the body's bones, so the shadow and the other player's view show the same arms. What the hands hold is put on the body by IK. Walk and sprint play at their real ground speed, jumps tuck, and the crouch goes as low as the eyes. Measured in Play (hands 0.000 m apart, head at the eyes crouched), not played by a person. At rest your hands now hang out of view, as the shadow's do: a change from the "hands visible" pass, to confirm with Pierre. Detail in `changelog/CHANGELOG.md`.
 
+**Hot-fix 2026-09-27, the two-hand carry:**
+- What you lift is in your arms. The hands sit on holds worked out from the thing's size (`CarryGrip`), and no centre goes past 1.50 m.
+- The wheel bends and stretches the arms.
+- A snagged thing is let go, and walking into a wall with it stops you.
+- Measured on eleven objects by script, not played by a person: detail in `changelog/CHANGELOG.md`. It changes the carry that playtest 001 validated, so it needs a hands-on check.
+
 Every automated Play test block passes in the shared editor, 0 console errors. The one exception is a blast-frame target, tuned since. Nobody has played it with two people yet: that remains the only test that matters. Detail in `changelog/CHANGELOG.md` (2026-09-26).
 
 **Online co-op, 2026-09-27 (ADR-012, `07_MULTIPLAYER/NETCODE_SLICE.md`).** Built on `feat/online-coop`, merged into main the same day.

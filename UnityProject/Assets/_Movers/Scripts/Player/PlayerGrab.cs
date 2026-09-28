@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Movers
@@ -8,13 +9,15 @@ namespace Movers
     // Driven by this player's CrewInput. One object has one carrier (MovableObject.holder):
     // a second player cannot take what the first is holding. What cannot be lifted (canCarry
     // off, or heavier than carryLimitKg) is dragged along the floor instead.
+    //
+    // What you lift is in your arms (hot-fix of 2026-09-27): held where the hands can hold it,
+    // by holds worked out from its size (CarryGrip), and never further than maxHoldDistance.
     public class PlayerGrab : MonoBehaviour
     {
         public Transform cam;
         public PlayerController controller;
 
         public float grabRange = 3f;
-        public float holdDistance = 2.2f;    // the reach you start each session with, see currentReach
         public float followStrength = 10f;   // lowered from 14: more lag reads as more weight
         public float maxSpeed = 9f;
         public float throwForce = 6f;
@@ -30,17 +33,49 @@ namespace Movers
         public float carriedLinearDamping = 6f;
         public float carriedAngularDamping = 2.5f;  // was 6, which froze all sway
 
-        [Header("Reach")]
-        // Scroll with nothing held down: push the object out or pull it in, so you can post it
-        // through a doorway from a step back, or hug it to your chest to squeeze past. Holding
-        // rotate gives the same wheel to the roll instead, so one wheel does two jobs and
-        // neither has to share a key.
-        public float minReach = 1.0f;
-        public float maxReach = 3.2f;
+        [Header("Reach: in the arms")]
+        // Hot-fix of 2026-09-27: things floated between the hands. The wheel slid them 1 to 3.2 m
+        // out while the arms end at 0.6 m, so the hands stopped in the air short of them. What you
+        // carry is now in your arms: at chest height, its holds (CarryGrip) where the hands are,
+        // and the wheel bends or stretches the arms instead of sliding it down a rail. A small thing
+        // rides about 0.5 m out, a sofa on end about 1.3 m, and no centre goes further than
+        // maxHoldDistance from the eyes. Holding rotate still gives the wheel to the roll.
+        public float maxHoldDistance = 1.5f;
+        public float holdDrop = 0.22f;             // how far under the eyes things ride, before their sag
+        public float seeOverClearance = 0.08f;     // a tall thing rides low enough to see over, when the floor allows
+        public float bentGripDepth = 0.15f;        // the holds' depth in front of the eyes, arms bent
+        public float stretchedGripDepth = 0.42f;   // and arms stretched out
+        public float nearClearance = 0.12f;        // its near face stays this far in front of the eyes
+        [Range(0f, 1f)] public float startExtension = 0.5f;   // 0 arms bent, 1 stretched: how a session starts
+        public float extensionSensitivity = 3f;    // per scroll unit: a notch (about 0.1) is 0.3 of the way
+        // Heavy things cannot be held at arm's length: the stretch closes in as weight rises, on the
+        // same weight factor that makes them lag and turn slowly.
+        [Range(0f, 1f)] public float heavyExtensionMax = 0.35f;
+        public float oneHandSide = 0.12f;          // a thing in the right hand alone rides to the right
+        // In your arms it goes where you go: the share of your own velocity it keeps up with by
+        // itself, from the heaviest (whose lag still reads as weight) to the lightest (all of it).
+        [Range(0f, 1f)] public float heavyFollowThrough = 0.6f;
+        // Left past the arms' reach (it lagged on a turn, or caught on a door frame), it is hauled
+        // back this much harder, in m/s per metre over, so the hands stay on it.
+        public float leashStrength = 12f;
+        // Pushed back toward you by this much (it met a wall, a door, the truck), it stops you
+        // walking on into it: your own capsule passes through what you carry, so nothing else would,
+        // and the eyes would end up inside it.
+        public float jamDistance = 0.15f;
+        // Caught on something (a door frame, the stair rail) and left this far past the arms'
+        // reach for gripLossSeconds, you lose your grip, as a drag does (dragSlack), instead of
+        // holding it metres away. A thing just grabbed from across the room is given time to come in.
+        public float carrySlack = 0.35f;
+        public float gripLossSeconds = 0.3f;
+
+        [Header("Reach: small usables")]
+        // The cigarette, the beer and the grenade are drawn in the right hand (HeldPose) while
+        // their body stays out on the old rail, now capped like everything else: the smoke clouds
+        // form past its tip (ADR-005, where 1 m out was measured never to blind the smoker) and a
+        // grenade leaves from there.
+        public float usableMinReach = 1.0f;
+        public float usableStartReach = 1.3f;
         public float reachSensitivity = 3.5f;  // a scroll notch is about 0.1, so this is ~0.35 m per notch
-        // Heavy things cannot be held at arm's length. The far limit closes in as weight rises,
-        // on the same weight factor that already makes them lag and turn slowly.
-        public float heavyReachFloor = 1.5f;
 
         [Header("Rotate the held object")]
         // GREYBOX_SPEC names one emergent problem: the sofa is wider than the interior door.
@@ -112,6 +147,47 @@ namespace Movers
         // are carrying is something you could put on instead.
         public MovableObject Held => held;
 
+        // Lifted into the arms, as opposed to dragged or held on the rail as a small usable: the
+        // hands go on its holds (FirstPersonHands, CrewCarryIK).
+        public bool HoldsInArms => held != null && !dragging && heldUsable == null;
+        public CarryGrip.Style GripStyle => gripStyle;
+        public bool GripStyleKnown => gripStyleKnown;
+
+        FirstPersonHands Hands
+        {
+            get
+            {
+                if (hands == null) hands = GetComponent<FirstPersonHands>();
+                return hands;
+            }
+        }
+
+        // Knocked down or tumbling: the body's bones lie on the floor while the eyes stay up.
+        bool BodyDown
+        {
+            get
+            {
+                if (crewAnimator == null) crewAnimator = GetComponent<CrewAnimator>();
+                if (tumble == null) tumble = GetComponent<KnockdownTumble>();
+                return (crewAnimator != null && crewAnimator.IsDown) || (tumble != null && tumble.IsTumbling);
+            }
+        }
+
+        // The crew body whose arms hold what is carried; none on the tutorial's capsule, so it is
+        // looked for again only now and then.
+        Animator Body
+        {
+            get
+            {
+                if (body == null && Time.frameCount >= nextBodyLookup)
+                {
+                    body = GetComponentInChildren<Animator>(true);
+                    nextBodyLookup = Time.frameCount + 120;
+                }
+                return body;
+            }
+        }
+
         // The object the grab would drag rather than lift if you pressed it now, or null. The
         // prompt shows "[LMB] Drag" on it.
         public MovableObject DragTarget =>
@@ -134,7 +210,28 @@ namespace Movers
 
         // Kept across grabs on purpose: how far out you hold things is a stance, not a per
         // object setting, and resetting it every pickup would undo the player mid-manoeuvre.
-        float currentReach;
+        float extension;      // 0 arms bent .. 1 stretched, for a thing in the arms
+        float usableReach;    // metres out on the rail, for a small usable
+
+        // How the hands hold the thing in the arms (CarryGrip), chosen by the carry and read by
+        // the hands so both agree.
+        CarryGrip.Style gripStyle;
+        bool gripStyleKnown;
+        FirstPersonHands hands;       // whose arms the holds are kept within reach of, with no body
+        Animator body;
+        int nextBodyLookup;
+        CrewAnimator crewAnimator;
+        KnockdownTumble tumble;
+        CharacterController capsule;
+        RigidbodyInterpolation savedInterpolation;
+        // The held thing's colliders, which our own capsule lets through, and those of things let
+        // go that still overlap it (given back once apart, RestoreCapsule).
+        readonly List<Collider> heldColliders = new List<Collider>(8);
+        readonly List<Collider> letGo = new List<Collider>(16);
+        bool jammed;   // what is in the arms is pushed back at you: no walking on into it
+        float overSeconds;     // how long it has been past carrySlack
+        bool reachedHands;     // it has been in the hands since it was taken
+        float heldSince;
 
         // Reused by every grab ray, so looking for something to pick up costs no garbage. The
         // buffer keeps only the first hits it gets, in no set order, so it is sized well past
@@ -146,10 +243,12 @@ namespace Movers
 
         void Awake()
         {
-            currentReach = Mathf.Clamp(holdDistance, minReach, maxReach);
+            extension = Mathf.Clamp01(startExtension);
+            usableReach = Mathf.Clamp(usableStartReach, usableMinReach, maxHoldDistance);
             input = CrewSetup.InputOf(gameObject);
             member = GetComponent<CrewMember>();
             if (controller == null) controller = GetComponent<PlayerController>();
+            capsule = GetComponent<CharacterController>();
         }
 
         void Start()
@@ -185,7 +284,10 @@ namespace Movers
 
             // carrying or dragging something heavy slows you down and flattens your jump
             if (controller != null)
+            {
                 CarryMultipliers(held, dragging, dragWalkMultiplier, out controller.speedMultiplier, out controller.jumpMultiplier);
+                if (jammed && held != null && input.Move.y > 0f) controller.speedMultiplier = 0f;
+            }
         }
 
         // What the load does to the walk and the jump. One place, shared by the carry and the
@@ -213,6 +315,12 @@ namespace Movers
             {
                 controller.lookLocked = rotating;
                 CarryMultipliers(held, dragging, dragWalkMultiplier, out controller.speedMultiplier, out controller.jumpMultiplier);
+                // The host's jam is not sent: a load in the arms pushed right up to the eyes stops
+                // the walk on here too, or the client walks its camera into it.
+                if (held != null && !dragging && heldUsable == null && cam != null && input.Move.y > 0f
+                    && held.gameObject.activeInHierarchy
+                    && CarryGrip.See(held, held.transform.position, held.transform.rotation, cam.position, CarryGrip.Frame(cam)).min.z < nearClearance * 0.5f)
+                    controller.speedMultiplier = 0f;
             }
         }
 
@@ -329,15 +437,28 @@ namespace Movers
         void HandleReachInput()
         {
             if (held == null || rotating || dragging) return;   // while rotating, the wheel belongs to the roll
-            float scroll = input.Scroll * reachSensitivity;
+            float scroll = input.Scroll;
             if (Mathf.Abs(scroll) <= 0f) return;
-            currentReach = Mathf.Clamp(currentReach + scroll, minReach, maxReach);
+            if (heldUsable != null)
+            {
+                usableReach = Mathf.Clamp(usableReach + scroll * reachSensitivity, usableMinReach, maxHoldDistance);
+                return;
+            }
+            // From where the arms are now: past a heavy thing's limit the stance would move with
+            // nothing to show for it.
+            float cap = ExtensionCap(WeightFactor(held));
+            extension = Mathf.Clamp(Mathf.Min(extension, cap) + scroll * extensionSensitivity, 0f, cap);
         }
 
-        // What the arms can actually manage right now: your chosen reach, capped by the weight.
-        float EffectiveReach(float weightFactor)
+        float WeightFactor(MovableObject mo)
         {
-            return Mathf.Min(currentReach, Mathf.Lerp(heavyReachFloor, maxReach, weightFactor));
+            return Mathf.Clamp(maxSoloWeight / Mathf.Max(mo.weight, 1f), 0.2f, 1f);
+        }
+
+        // How far the arms can stretch with this much weight in them.
+        float ExtensionCap(float weightFactor)
+        {
+            return Mathf.Lerp(heavyExtensionMax, 1f, weightFactor);
         }
 
         void Turn(float degrees, Vector3 axis)
@@ -441,6 +562,17 @@ namespace Movers
                 held.rb.angularDamping = carriedAngularDamping;
                 // the default cap would silently eat the turn on the fastest objects
                 held.rb.maxAngularVelocity = Mathf.Max(savedMaxAngularVelocity, maxAngularSpeed);
+                // Right in front of the eyes, which move every frame: drawn between two physics
+                // steps, not stepping at 50 Hz under a smooth camera with the hands on it.
+                savedInterpolation = held.rb.interpolation;
+                held.rb.interpolation = RigidbodyInterpolation.Interpolate;
+                // Held against your chest, it would fight your own capsule, and the capsule would
+                // walk into it.
+                IgnoreOwnCapsule(held);
+                gripStyleKnown = false;
+                overSeconds = 0f;
+                reachedHands = false;
+                heldSince = Time.time;
             }
             // pick the object up as it lies, do not snap it to a pose
             heldLocalRotation = Quaternion.Inverse(PlayerYaw) * held.rb.rotation;
@@ -504,6 +636,7 @@ namespace Movers
                 body.angularDamping = savedAngularDamping;
                 body.maxAngularVelocity = savedMaxAngularVelocity;
                 if (wasDragging) body.constraints = savedConstraints;
+                else body.interpolation = savedInterpolation;
                 if (thrown && !wasDragging && cam != null && inWorld && !body.isKinematic)
                 {
                     body.AddForce(cam.forward * throwForce, ForceMode.VelocityChange);
@@ -511,6 +644,10 @@ namespace Movers
                     throwSpeed = (body.linearVelocity + cam.forward * throwForce).magnitude;
                 }
             }
+
+            // Our capsule and the thing collide again once they are apart.
+            letGo.AddRange(heldColliders);
+            heldColliders.Clear();
 
             if (mo != null)
             {
@@ -567,6 +704,9 @@ namespace Movers
         {
             if (!Net.HasAuthority) return;   // the client's replicas are kinematic: nothing to drive
             DropIfGone();
+            RestoreCapsule();
+            bool wasJammed = jammed;
+            jammed = false;
             if (held == null) return;
             held.lastHandledTime = Time.time;   // still in someone's hands: whatever it hits is theirs
 
@@ -576,17 +716,212 @@ namespace Movers
                 return;
             }
 
-            float weightFactor = Mathf.Clamp(maxSoloWeight / Mathf.Max(held.weight, 1f), 0.2f, 1f);
+            float weightFactor = WeightFactor(held);
+            bool inArms = heldUsable == null;
+            Vector3 target = inArms ? CarryTarget(weightFactor) : UsableTarget();
+            Vector3 toTarget = target - held.rb.worldCenterOfMass;
+            if (inArms)
+            {
+                // Pushed back, and not just lagging: a heavy thing trails you but keeps your pace,
+                // a blocked one stops. Once jammed, it stays so until it is nearly back in place.
+                Vector3 ahead = PlayerYaw * Vector3.forward;
+                float back = Vector3.Dot(toTarget, ahead);
+                float yours = controller != null ? Vector3.Dot(controller.Velocity, ahead) : 0f;
+                float its = Vector3.Dot(held.rb.linearVelocity, ahead);
+                jammed = wasJammed ? back > jamDistance * 0.5f : back > jamDistance && its < yours * 0.5f;
+            }
+            // It is carried, so it goes where you go: most of your own velocity by itself, the
+            // pull catching up the rest. What is left to catch up (a start, a turn) is the weight.
+            Vector3 carried = controller != null
+                ? controller.Velocity * Mathf.Lerp(heavyFollowThrough, 1f, weightFactor)
+                : Vector3.zero;
+            Vector3 desired = carried + toTarget * followStrength * weightFactor * Grip;
+            if (inArms)
+            {
+                float over = Overreach();
+                if (over > 0f) desired += toTarget.normalized * (over * leashStrength);
+                if (LostGrip(over)) return;
+            }
+            held.rb.linearVelocity = Vector3.ClampMagnitude(desired, maxSpeed);
 
-            Vector3 target = cam.position + cam.forward * EffectiveReach(weightFactor);
+            if (holdOrientation) DriveRotation(weightFactor);
+        }
+
+        // Past the arms' reach by more than carrySlack for gripLossSeconds, or its centre past
+        // maxHoldDistance by as much: it is let go. Only once it has been in the hands, or after
+        // a second and a half if it never got there.
+        bool LostGrip(float over)
+        {
+            if (over <= 0.02f) reachedHands = true;
+            bool far = over > carrySlack
+                       || (held.rb.worldCenterOfMass - cam.position).magnitude > maxHoldDistance + carrySlack;
+            if (!far || (!reachedHands && Time.time - heldSince < 1.5f))
+            {
+                overSeconds = 0f;
+                return false;
+            }
+            overSeconds += Time.fixedDeltaTime;
+            if (overSeconds < gripLossSeconds) return false;
+            Release(false);
+            return true;
+        }
+
+        // A small usable's body, out on the rail in front of the eyes.
+        Vector3 UsableTarget()
+        {
+            Vector3 target = cam.position + cam.forward * Mathf.Clamp(usableReach, usableMinReach, maxHoldDistance);
             // Heavy things hang lower. You cannot hold a fridge at eye level, and a settled
             // offset reads as weight without the object sinking through the floor.
             target.y -= Mathf.Min(held.weight * sagPerKg, maxSag);
-            Vector3 toTarget = target - held.rb.worldCenterOfMass;
-            Vector3 desired = Vector3.ClampMagnitude(toTarget * followStrength * weightFactor * Grip, maxSpeed);
-            held.rb.linearVelocity = desired;
+            return target;
+        }
 
-            if (holdOrientation) DriveRotation(weightFactor);
+        // Where the centre of mass of a thing in the arms is driven to: under the eyes at chest
+        // height (lower if it is tall, so you see over it), its holds as far out as the wheel has
+        // the arms stretched, then pulled in until every hold is within the arms' reach and the
+        // centre within maxHoldDistance of the eyes. Worked out as it is turned now, so turning a
+        // sofa end-on walks it out and turning it back brings it in.
+        Vector3 CarryTarget(float weightFactor)
+        {
+            Rigidbody rb = held.rb;
+            Vector3 eyes = cam.position;
+            Quaternion look = CarryGrip.Frame(cam);
+            Quaternion turn = rb.rotation;
+            Vector3 rootFromCom = rb.position - rb.worldCenterOfMass;
+
+            // Measured with its centre of mass on the eyes.
+            var seen = CarryGrip.See(held, eyes + rootFromCom, turn, eyes, look);
+            CarryGrip.Decide(seen, ref gripStyle, gripStyleKnown);
+            gripStyleKnown = true;
+            CarryGrip.Holds(seen, gripStyle, out var l, out var r);
+            float holdDepth = Depth(l, r, eyes, look);
+
+            float ext = Mathf.Min(extension, ExtensionCap(weightFactor));
+            // Arms bent, the near face still clears the eyes.
+            float bent = Mathf.Max(bentGripDepth, nearClearance + holdDepth - seen.min.z);
+            float gripDepth = Mathf.Lerp(bent, Mathf.Max(bent, stretchedGripDepth), ext);
+            float side = gripStyle == CarryGrip.Style.OneHand ? oneHandSide : 0f;
+            float down = Mathf.Max(holdDrop, seen.max.y + seeOverClearance);
+
+            Vector3 target = eyes + look * new Vector3(side, -down, gripDepth - holdDepth);
+            // Heavy things hang lower: the weight feel of playtest 001, kept.
+            target.y -= Mathf.Min(held.weight * sagPerKg, maxSag);
+            target = AboveFloor(target, turn, rootFromCom);
+            target = WithinReach(target, turn, rootFromCom, eyes, look);
+
+            Vector3 fromEyes = target - eyes;
+            if (fromEyes.magnitude > maxHoldDistance) target = eyes + fromEyes.normalized * maxHoldDistance;
+            // The floor has the last word: the reach and the cap can both pull it lower.
+            return AboveFloor(target, turn, rootFromCom);
+        }
+
+        // The holds' depth along the eyes' line.
+        static float Depth(in CarryGrip.Hold l, in CarryGrip.Hold r, Vector3 eyes, Quaternion look)
+        {
+            Quaternion toView = Quaternion.Inverse(look);
+            float z = 0f;
+            int n = 0;
+            if (r.used) { z += (toView * (r.point - eyes)).z; n++; }
+            if (l.used) { z += (toView * (l.point - eyes)).z; n++; }
+            return n > 0 ? z / n : 0f;
+        }
+
+        // Never through the floor you stand on: a tall thing lowered to be seen over stops short of
+        // it (a wardrobe cannot be seen over), and a sagging one is lifted clear.
+        Vector3 AboveFloor(Vector3 target, Quaternion turn, Vector3 rootFromCom)
+        {
+            if (controller == null) return target;
+            float floor = transform.position.y + controller.FeetHeight + 0.03f;
+            // Seen from the world's own axes, its span is its span in the world.
+            var world = CarryGrip.See(held, target + rootFromCom, turn, Vector3.zero, Quaternion.identity);
+            if (world.min.y < floor) target.y += floor - world.min.y;
+            return target;
+        }
+
+        // Pulled in toward the shoulders until every hold is within the arms' reach: a heavy
+        // thing's sag, a wide one's span or the floor can put them out of it.
+        Vector3 WithinReach(Vector3 target, Quaternion turn, Vector3 rootFromCom, Vector3 eyes, Quaternion look)
+        {
+            var arms = CarryGrip.Arms.Of(Body, BodyDown, Hands, cam, look);
+            for (int i = 0; i < 3; i++)
+            {
+                var seen = CarryGrip.See(held, target + rootFromCom, turn, eyes, look);
+                CarryGrip.Holds(seen, gripStyle, out var l, out var r);
+                float over = 0f;
+                Vector3 pull = Vector3.zero;
+                Stretch(r, 1f, arms, ref over, ref pull);
+                Stretch(l, -1f, arms, ref over, ref pull);
+                if (over <= 0.005f) break;
+                // Up and in along the eyes' axes only: a thing in both hands stays centred.
+                Vector3 local = Quaternion.Inverse(look) * pull;
+                if (gripStyle != CarryGrip.Style.OneHand) local.x = 0f;
+                if (local.sqrMagnitude < 1e-8f) break;
+                target += look * (local.normalized * over);
+            }
+            return target;
+        }
+
+        // How far past the arms' reach its holds are right now, 0 within it.
+        float Overreach()
+        {
+            Vector3 eyes = cam.position;
+            Quaternion look = CarryGrip.Frame(cam);
+            var arms = CarryGrip.Arms.Of(Body, BodyDown, Hands, cam, look);
+            var seen = CarryGrip.See(held, held.rb.position, held.rb.rotation, eyes, look);
+            CarryGrip.Holds(seen, gripStyle, out var l, out var r);
+            float over = 0f;
+            Vector3 pull = Vector3.zero;
+            Stretch(r, 1f, arms, ref over, ref pull);
+            Stretch(l, -1f, arms, ref over, ref pull);
+            return over;
+        }
+
+        // One hold against its shoulder: the largest excess so far, and the way to pull it in.
+        static void Stretch(in CarryGrip.Hold h, float side, in CarryGrip.Arms arms, ref float over, ref Vector3 pull)
+        {
+            if (!h.used) return;
+            Vector3 toShoulder = arms.Shoulder(side) - h.point;
+            float excess = toShoulder.magnitude - arms.reach;
+            if (excess <= 0f) return;
+            over = Mathf.Max(over, excess);
+            pull += toShoulder.normalized * excess;
+        }
+
+        // The thing in the arms and our own capsule pass through each other. IgnoreCollision
+        // only takes colliders that are switched on, and forgets a pair when either is switched
+        // off, so both are checked.
+        void IgnoreOwnCapsule(MovableObject mo)
+        {
+            if (capsule == null || !capsule.enabled || !capsule.gameObject.activeInHierarchy) return;
+            mo.GetComponentsInChildren(false, heldColliders);
+            for (int i = heldColliders.Count - 1; i >= 0; i--)
+            {
+                var c = heldColliders[i];
+                if (c == null || !c.enabled || c.isTrigger) { heldColliders.RemoveAt(i); continue; }
+                letGo.Remove(c);
+                Physics.IgnoreCollision(capsule, c, true);
+            }
+        }
+
+        // Things let go collide with our capsule again once they are clear of it: turned back
+        // on while they overlap, the capsule would shove the thing away or stand on it.
+        void RestoreCapsule()
+        {
+            if (letGo.Count == 0) return;
+            if (capsule == null || !capsule.enabled || !capsule.gameObject.activeInHierarchy)
+            {
+                letGo.Clear();   // switched off: the pairs went with it
+                return;
+            }
+            Bounds us = capsule.bounds;
+            for (int i = letGo.Count - 1; i >= 0; i--)
+            {
+                var c = letGo[i];
+                if (c == null || !c.enabled || !c.gameObject.activeInHierarchy) { letGo.RemoveAt(i); continue; }
+                if (c.bounds.Intersects(us)) continue;
+                Physics.IgnoreCollision(capsule, c, false);
+                letGo.RemoveAt(i);
+            }
         }
 
         // The drag: the same velocity steering as the carry, flattened. Only the horizontal
