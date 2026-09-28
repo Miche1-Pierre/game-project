@@ -35,9 +35,9 @@ namespace Movers
         const float Touch = 0.03f;          // m: a chunk this close to a face of the wall reaches it
         const float HeldMargin = 0.16f;     // m: a pane or a leaf still touching a chunk is held
         const float DamagedTint = 0.8f, FracturedTint = 0.6f;
-        const float SpreadExponent = 1.3f;
+        const float SpreadExponent = 1.3f;  // an impact's share falls as (1 - d / spread) to this power
         const float MinFeedbackSize = 0.3f; // m: the dust of a point hit
-        const int MaxRubble = 15;           // rubble pieces per chunk at most (4 bits in ChunkDetached)  // an impact's share falls as (1 - d / spread) to this power
+        const int MaxRubble = 15;           // rubble pieces per chunk at most (4 bits in ChunkDetached)
 
         public static readonly List<DestructibleModule> All = new List<DestructibleModule>();
         static readonly Dictionary<Collider, DestructibleChunk> byCollider = new Dictionary<Collider, DestructibleChunk>();
