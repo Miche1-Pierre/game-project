@@ -10,13 +10,19 @@ namespace Movers
     // shards you can kick about, and the rest of the "it shattered" is this glitter, which has
     // no collider and costs nothing to the physics.
     //
-    // Two particle systems for the whole scene, built on first use and fed with Emit, so a
-    // burst allocates nothing. They live in the scene (a reload rebuilds them), world space,
-    // no collisions.
+    // Grit (DEV 2): a spray of small dark bits with every broken chunk of wall, thrown along
+    // the hit and falling fast. Rubble (MeshShatter.ShatterChunk) gives the big pieces; grit is
+    // the fine stuff between them that makes a hole read as broken masonry, at no physics cost.
+    //
+    // Three particle systems for the whole scene, built on first use and fed with Emit, so a
+    // burst allocates nothing. They live in the scene (a reload rebuilds them), world space.
+    // Only grit collides (with the world, low quality), so it lands on the floor instead of
+    // sinking through it.
     public static class DestructionFX
     {
         static ParticleSystem dust;
         static ParticleSystem glass;
+        static ParticleSystem grit;
         static GameObject root;
         static bool quitting;
 
@@ -24,12 +30,18 @@ namespace Movers
         static readonly Color DustDark = new Color(0.55f, 0.52f, 0.48f, 0.85f);
         static readonly Color GlassA = new Color(0.85f, 0.95f, 1f, 0.95f);
         static readonly Color GlassB = new Color(0.65f, 0.80f, 0.90f, 0.8f);
+        static readonly Color GritLight = new Color(0.62f, 0.58f, 0.52f, 1f);
+        static readonly Color GritDark = new Color(0.36f, 0.33f, 0.30f, 1f);
+
+        const float MaxDustPush = 4f;    // m/s: dust billows, a blast does not turn it into a jet
+        const float MaxGritPush = 9f;    // m/s
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
             dust = null;
             glass = null;
+            grit = null;
             root = null;
             quitting = false;
             Application.quitting -= OnQuitting;
@@ -42,7 +54,7 @@ namespace Movers
         public static void Dust(Vector3 at, float size, int count = 0)
         {
             if (!Usable(at)) return;
-            if (dust == null) dust = Build("Dust", false);
+            if (dust == null) dust = Build("Dust", Kind.Dust);
             if (dust == null) return;
             if (count <= 0) count = Mathf.Clamp(Mathf.RoundToInt(6f + size * 8f), 4, 24);
             var shape = dust.shape;
@@ -55,7 +67,7 @@ namespace Movers
         public static void Glass(Bounds pane, Vector3 push)
         {
             if (!Usable(pane.center)) return;
-            if (glass == null) glass = Build("Glass", true);
+            if (glass == null) glass = Build("Glass", Kind.Glass);
             if (glass == null) return;
             var shape = glass.shape;
             shape.radius = Mathf.Clamp(pane.extents.magnitude * 0.6f, 0.05f, 1f);
@@ -73,6 +85,53 @@ namespace Movers
             }
         }
 
+        // The same, blown along push (m/s): the dust of a chunk torn out by a blast or a truck
+        // leaves the way the chunk went. Half the puff drifts with the push, half stays.
+        public static void Dust(Vector3 at, float size, int count, Vector3 push)
+        {
+            if (!Usable(at)) return;
+            if (dust == null) dust = Build("Dust", Kind.Dust);
+            if (dust == null) return;
+            if (count <= 0) count = Mathf.Clamp(Mathf.RoundToInt(6f + size * 8f), 4, 24);
+            var shape = dust.shape;
+            shape.radius = Mathf.Clamp(size * 0.4f, 0.1f, 1.2f);
+            push = Vector3.ClampMagnitude(push, MaxDustPush);
+            int moving = count / 2;
+            var ep = new ParticleSystem.EmitParams { position = at, applyShapeToPosition = true };
+            if (count - moving > 0) dust.Emit(ep, count - moving);
+            if (moving > 0)
+            {
+                ep.velocity = push;
+                dust.Emit(ep, moving);
+            }
+        }
+
+        // Small bits of masonry thrown from a broken chunk: size is the chunk's size (m), push
+        // the way it was hit (m/s). count 0 picks it from the size.
+        public static void Grit(Vector3 at, float size, Vector3 push, int count = 0)
+        {
+            if (!Usable(at)) return;
+            if (grit == null) grit = Build("Grit", Kind.Grit);
+            if (grit == null) return;
+            if (count <= 0) count = Mathf.Clamp(Mathf.RoundToInt(8f + size * 14f), 6, 40);
+            var shape = grit.shape;
+            shape.radius = Mathf.Clamp(size * 0.35f, 0.05f, 1f);
+            push = Vector3.ClampMagnitude(push, MaxGritPush);
+            // A few batches, each with its own throw, so the spray fans out.
+            const int Batches = 3;
+            int per = Mathf.Max(1, count / Batches);
+            for (int i = 0; i < Batches; i++)
+            {
+                var ep = new ParticleSystem.EmitParams
+                {
+                    position = at,
+                    applyShapeToPosition = true,
+                    velocity = push * Random.Range(0.5f, 1f) + Random.insideUnitSphere * 2.5f + Vector3.up * 1.2f,
+                };
+                grit.Emit(ep, per);
+            }
+        }
+
         static bool Usable(Vector3 at)
         {
             if (!Application.isPlaying || quitting) return false;
@@ -80,7 +139,9 @@ namespace Movers
             return !(float.IsNaN(s) || float.IsInfinity(s));
         }
 
-        static ParticleSystem Build(string name, bool isGlass)
+        enum Kind { Dust, Glass, Grit }
+
+        static ParticleSystem Build(string name, Kind kind)
         {
             if (root == null)
             {
@@ -112,7 +173,7 @@ namespace Movers
             col.enabled = true;
             var g = new Gradient();
 
-            if (isGlass)
+            if (kind == Kind.Glass)
             {
                 main.startLifetime = new ParticleSystem.MinMaxCurve(0.5f, 1.1f);
                 main.startSpeed = new ParticleSystem.MinMaxCurve(0.5f, 2f);
@@ -123,6 +184,28 @@ namespace Movers
                 g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
                           new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 0.7f), new GradientAlphaKey(0f, 1f) });
             }
+            else if (kind == Kind.Grit)
+            {
+                main.startLifetime = new ParticleSystem.MinMaxCurve(0.8f, 1.6f);
+                main.startSpeed = new ParticleSystem.MinMaxCurve(0.5f, 2.5f);
+                main.startSize = new ParticleSystem.MinMaxCurve(0.02f, 0.07f);
+                main.startColor = new ParticleSystem.MinMaxGradient(GritLight, GritDark);
+                main.gravityModifier = new ParticleSystem.MinMaxCurve(1.4f);
+                main.maxParticles = 700;
+                // Lands and skids instead of falling through the floor. World collision in low
+                // quality is a cheap cached test, and grit is the only system that pays it.
+                var collision = ps.collision;
+                collision.enabled = true;
+                collision.type = ParticleSystemCollisionType.World;
+                collision.mode = ParticleSystemCollisionMode.Collision3D;
+                collision.quality = ParticleSystemCollisionQuality.Low;
+                collision.dampen = new ParticleSystem.MinMaxCurve(0.6f);
+                collision.bounce = new ParticleSystem.MinMaxCurve(0.15f);
+                int debris = DestructionLayers.Debris;
+                collision.collidesWith = debris >= 0 ? ~(1 << debris) : ~0;
+                g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                          new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 0.75f), new GradientAlphaKey(0f, 1f) });
+            }
             else
             {
                 main.startLifetime = new ParticleSystem.MinMaxCurve(1.2f, 2.4f);
@@ -130,7 +213,9 @@ namespace Movers
                 main.startSize = new ParticleSystem.MinMaxCurve(0.35f, 0.9f);
                 main.startColor = new ParticleSystem.MinMaxGradient(DustLight, DustDark);
                 main.gravityModifier = new ParticleSystem.MinMaxCurve(-0.02f);
-                main.maxParticles = 600;
+                // 800, was 600: DEV 2 breaks more wall per blast, and a capped system silently
+                // drops the newest puffs, the ones in front of the player.
+                main.maxParticles = 800;
                 // Thrown out, stopped by the air at once: dust billows, it does not spray.
                 var limit = ps.limitVelocityOverLifetime;
                 limit.enabled = true;
