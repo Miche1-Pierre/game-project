@@ -30,13 +30,12 @@ namespace Movers
     [DisallowMultipleComponent]
     public sealed class DestructibleModule : MonoBehaviour, IDamageable, IStructurePart
     {
-        // Stands in for the wall's mass in the impact formula, as for Breakable house pieces.
-        const float ReferenceMass = 100f;
         const float HitCooldown = 0.1f;
         const float ArmDelay = 1f;
         const float Touch = 0.03f;          // m: a chunk this close to a face of the wall reaches it
         const float HeldMargin = 0.16f;     // m: a pane or a leaf still touching a chunk is held
         const float DamagedTint = 0.8f, FracturedTint = 0.6f;
+        const float SpreadExponent = 1.3f;  // an impact's share falls as (1 - d / spread) to this power
 
         public static readonly List<DestructibleModule> All = new List<DestructibleModule>();
         static readonly Dictionary<Collider, DestructibleChunk> byCollider = new Dictionary<Collider, DestructibleChunk>();
@@ -128,6 +127,7 @@ namespace Movers
         static readonly List<float> volumeScratch = new List<float>(32);
         static readonly List<StructureGraph.ChunkSpec> specScratch = new List<StructureGraph.ChunkSpec>(32);
         static readonly List<Vector2Int> pairScratch = new List<Vector2Int>(64);
+        static readonly List<float> areaScratch = new List<float>(64);
         static readonly List<int> nodeScratch = new List<int>(32);
         static readonly List<Material> materialScratch = new List<Material>(4);
         static MaterialPropertyBlock tintBlock;
@@ -170,22 +170,37 @@ namespace Movers
         {
             if (!Net.HasAuthority) return;   // online, walls break on the host (Structure records)
             if (!enabled || IsFractured || IsGone || !Armed()) return;
-            if (!ImpactDamage.TryMeasure(c, Material, ReferenceMass, ImpactDamage.Plain, transform.position, null, out DamageEvent e))
+            if (!ImpactDamage.TryMeasure(c, Material, StructureMass, ImpactDamage.Plain, transform.position, null, out DamageEvent e))
                 return;
             nextHitTime = Time.time + HitCooldown;
-            ApplyDamage(e);
+            ApplyHit(e, -1);
         }
 
-        // A hit on one chunk, passed on by its ChunkCollisionRelay.
+        // A hit on one chunk, passed on by its ChunkCollisionRelay. It spreads like any other hit,
+        // centred on that chunk. A chunk this wall launched does nothing to the chunks still in
+        // it (DEV 2, 3.14): a breach does not knock the rest of its own wall down.
         internal void OnChunkCollision(int index, Collision c)
         {
             if (!Net.HasAuthority) return;
             if (!enabled || IsGone || index < 0 || index >= chunks.Count || !chunks[index].Attached || !Armed()) return;
-            if (!ImpactDamage.TryMeasure(c, Material, ReferenceMass, ImpactDamage.Plain, chunks[index].Bounds.center, null,
+            if (IsOwnDebris(c)) return;
+            if (!ImpactDamage.TryMeasure(c, Material, StructureMass, ImpactDamage.Plain, chunks[index].Bounds.center, null,
                                          out DamageEvent e))
                 return;
             nextHitTime = Time.time + HitCooldown;
-            ApplyToChunk(index, e);
+            ApplyHit(e, index);
+        }
+
+        // The wall's resisting mass in the impact formula (ImpactDamage.Evaluate), as for every
+        // built piece.
+        static float StructureMass => DestructionMaterialTable.Current.structureReferenceMass;
+
+        bool IsOwnDebris(Collision c)
+        {
+            DebrisPiece piece = null;
+            if (c.collider != null) c.collider.TryGetComponent(out piece);
+            if (piece == null && c.rigidbody != null) c.rigidbody.TryGetComponent(out piece);
+            return piece != null && piece.structureChunk && ReferenceEquals(piece.structureSource, this);
         }
 
         // One damage event per 0.1 s, as for Breakable: a crash is one hit, not five contacts.
@@ -216,55 +231,67 @@ namespace Movers
             return !IsFractured && HasChunkSet && rawDamage * DestructionMaterialTable.Factor(type, Material) >= FractureThreshold;
         }
 
-        // Any hit, from anything. A point hit lands on the chunk nearest to it; a hit with a
-        // radius spreads over the chunks around the point it lands on. (The blast does better:
-        // BlastSolver measures every chunk from the blast itself and calls ApplyToChunk.)
-        public DamageResult ApplyDamage(in DamageEvent e)
+        // Any hit, from anything. An intact wall stores a hit too small to break it up; a broken-up
+        // wall spreads it over the chunks around where it lands (DEV 2, 3.5): an impact over its
+        // spread (e.radius, from the impact energy) with weights (1 - d / spread)^1.3, a blast
+        // routed here over a quarter of its radius (0.5 to 1.5 m), a point hit (no radius) on one
+        // chunk. (The blast does better: BlastSolver measures every chunk from the blast itself
+        // and calls ApplyToChunk.)
+        public DamageResult ApplyDamage(in DamageEvent e) => ApplyHit(e, -1);
+
+        // hitChunk: the chunk a collision landed on, -1 when not known (the nearest one then).
+        DamageResult ApplyHit(in DamageEvent e, int hitChunk)
         {
             var before = State;
             if (IsGone || !enabled || !(e.damage > 0f)) return DamageResult.None(before);
-            float applied = e.damage * DestructionMaterialTable.Factor(e.type, Material);
-            if (!(applied > 0f)) return DamageResult.None(before);
+            if (!(e.damage * DestructionMaterialTable.Factor(e.type, Material) > 0f)) return DamageResult.None(before);
 
-            if (!IsFractured)
-            {
-                if (!WouldFracture(e.damage, e.type) || !Fracture())
-                {
-                    LastHit = e;
-                    LastHitTime = Time.time;
-                    LastHitChunk = -1;
-                    float had = health;
-                    health = Mathf.Max(1f, health - applied);
-                    // Small hits add up: worn down far enough, the wall breaks up into chunks that
-                    // already carry the wear (Fracture shares the health left between them).
-                    if (WornThrough()) Fracture();
-                    Refresh(e);
-                    return new DamageResult { applied = had - health, before = before, after = State };
-                }
-            }
+            return !IsFractured && (!WouldFracture(e.damage, e.type) || !Fracture())
+                ? WearIntact(e, before)
+                : SpreadOverChunks(e, hitChunk, before);
+        }
 
+        // A hit too small to break the wall up is remembered on the intact wall. Small hits add up:
+        // worn down far enough, the wall breaks up into chunks that already carry the wear
+        // (Fracture shares the health left between them).
+        DamageResult WearIntact(in DamageEvent e, DestructionState before)
+        {
+            LastHit = e;
+            LastHitTime = Time.time;
+            LastHitChunk = -1;
+            float had = health;
+            health = Mathf.Max(1f, health - e.damage * DestructionMaterialTable.Factor(e.type, Material));
+            if (WornThrough()) Fracture();
+            Refresh(e);
+            return new DamageResult { applied = had - health, before = before, after = State };
+        }
+
+        DamageResult SpreadOverChunks(in DamageEvent e, int hitChunk, DestructionState before)
+        {
             var result = new DamageResult { before = before };
-            if (e.radius > 0.01f)
+            float spread = e.type != DamageType.Blast ? e.radius
+                         : e.radius > 0.01f ? Mathf.Clamp(e.radius * 0.25f, 0.5f, 1.5f) : 0f;
+            if (spread > 0.01f)
             {
-                float spread = Mathf.Clamp(e.radius * 0.25f, 0.5f, 1.5f);
-                for (int i = 0; i < chunks.Count; i++)
+                for (int i = 0; i < chunks.Count && !IsGone; i++)
                 {
                     var c = chunks[i];
                     if (!c.Attached) continue;
                     float d = Mathf.Sqrt(c.Bounds.SqrDistance(e.position));
-                    float w = Mathf.Pow(Mathf.Clamp01(1f - d / spread), 1.3f);
+                    float w = Mathf.Pow(Mathf.Clamp01(1f - d / spread), SpreadExponent);
                     if (w <= 0f) continue;
-                    var r = ApplyToChunk(i, e.With(e.damage * w, e.impulse * w, e.position, e.direction));
+                    var r = HitChunk(i, e.With(e.damage * w, e.impulse * w, e.position, e.direction), true);
                     result.applied += r.applied;
                     result.removed |= r.removed;
                 }
+                if (hitChunk >= 0 && hitChunk < chunks.Count) LastHitChunk = hitChunk;
             }
             else
             {
-                int nearest = NearestChunk(e.position);
-                if (nearest >= 0)
+                int target = hitChunk >= 0 && hitChunk < chunks.Count && chunks[hitChunk].Attached ? hitChunk : NearestChunk(e.position);
+                if (target >= 0)
                 {
-                    var r = ApplyToChunk(nearest, e);
+                    var r = HitChunk(target, e, true);
                     result.applied = r.applied;
                     result.removed = r.removed;
                 }
@@ -286,30 +313,66 @@ namespace Movers
             return best;
         }
 
-        // Damage to one chunk. e.damage is before the material, like everywhere else.
-        public DamageResult ApplyToChunk(int index, in DamageEvent e)
+        // Damage to one chunk. e.damage is before the material, like everywhere else. applied is
+        // the health it really lost (capped at what it had), plus what it passed on.
+        public DamageResult ApplyToChunk(int index, in DamageEvent e) => HitChunk(index, e, true);
+
+        // propagate: a chunk broken off with damage to spare passes a share of it on (3.4). What it
+        // passes on goes no further.
+        DamageResult HitChunk(int index, in DamageEvent e, bool propagate)
         {
             var before = State;
             if (IsGone || index < 0 || index >= chunks.Count) return DamageResult.None(before);
             var c = chunks[index];
             if (!c.Attached || !(e.damage > 0f)) return DamageResult.None(before);
-            float applied = e.damage * DestructionMaterialTable.Factor(e.type, Material);
-            if (!(applied > 0f)) return DamageResult.None(before);
+            float dealt = e.damage * DestructionMaterialTable.Factor(e.type, Material);
+            if (!(dealt > 0f)) return DamageResult.None(before);
             LastHit = e;
             LastHitTime = Time.time;
             LastHitChunk = index;
 
-            c.Health -= applied;
+            float had = Mathf.Max(0f, c.Health);
+            c.Health -= dealt;
             if (Spec != null && Spec.stateCap < DestructionState.Destroyed) c.Health = Mathf.Max(1f, c.Health);
+            float applied = had - Mathf.Max(0f, c.Health);
             bool removed = false;
             if (c.Health <= 0f)
             {
+                float overkill = -c.Health;
                 RemoveChunk(c, e, false);
                 removed = true;
+                if (propagate) applied += PassOn(c, e, overkill);
             }
             else UpdateChunkLook(c, e.instigator);
             Refresh(e);
             return new DamageResult { applied = applied, before = before, after = State, removed = removed };
+        }
+
+        // A chunk broken off with damage to spare hands overflowShare of the overkill to the chunks
+        // it shared a cut face with, by the area of that face: a hard hit tears the edge of the
+        // hole instead of stopping at a clean line. Same type, instigator and speed.
+        float PassOn(DestructibleChunk from, in DamageEvent e, float overkill)
+        {
+            float share = DestructionMaterialTable.Current.overflowShare;
+            float factor = DestructionMaterialTable.Factor(e.type, Material);
+            if (!(share > 0f) || !(overkill > 0f) || !(factor > 0f)) return 0f;
+            int[] nb = from.neighbours;
+            float[] area = from.neighbourArea;
+            float total = 0f;
+            for (int k = 0; k < nb.Length; k++)
+                if (chunks[nb[k]].Attached) total += area[k];
+            if (!(total > 0f)) return 0f;
+            float raw = share * overkill / factor;   // back to raw damage: the neighbour applies the material again
+            float applied = 0f;
+            for (int k = 0; k < nb.Length && !IsGone; k++)
+            {
+                var n = chunks[nb[k]];
+                if (!n.Attached || !(area[k] > 0f)) continue;
+                float w = area[k] / total;
+                Vector3 at = n.Bounds.ClosestPoint(e.position);
+                applied += HitChunk(nb[k], e.With(raw * w, e.impulse * share * w, at, e.direction), false).applied;
+            }
+            return applied;
         }
 
         void UpdateChunkLook(DestructibleChunk c, int instigator)
@@ -659,6 +722,7 @@ namespace Movers
                 if (left < 1f) UpdateChunkLook(chunk, LastHit.instigator);
             }
             attached = chunks.Count;
+            BuildNeighbours(data);
 
             if (body != null) body.enabled = false;
             if (bodyCollider != null) bodyCollider.enabled = false;
@@ -743,6 +807,61 @@ namespace Movers
                 for (int b = a + 1; b < chunks.Count; b++)
                     if (ba.Intersects(specScratch[b].bounds)) pairScratch.Add(new Vector2Int(a, b));
             }
+        }
+
+        // Each chunk's cut-face neighbours and the area of each face, for the propagation: from the
+        // sidecar when there is one (pairs that only touch, a frame against the plaster, share no
+        // face and pass nothing on), else from the boxes, every touching pair counting the same.
+        void BuildNeighbours(ChunkSetData data)
+        {
+            pairScratch.Clear();
+            areaScratch.Clear();
+            if (data != null && data.neighbours.Count > 0)
+            {
+                for (int p = 0; p < data.neighbours.Count; p++)
+                {
+                    float area = p < data.neighbourArea.Count ? data.neighbourArea[p] : 1f;
+                    int a = ChunkOfData(data.neighbours[p].x), b = ChunkOfData(data.neighbours[p].y);
+                    if (a < 0 || b < 0 || !(area > 0f)) continue;
+                    pairScratch.Add(new Vector2Int(a, b));
+                    areaScratch.Add(area);
+                }
+            }
+            else
+            {
+                for (int a = 0; a < chunks.Count; a++)
+                {
+                    Bounds ba = chunks[a].Bounds;
+                    ba.Expand(0.04f);
+                    for (int b = a + 1; b < chunks.Count; b++)
+                    {
+                        if (!ba.Intersects(chunks[b].Bounds)) continue;
+                        pairScratch.Add(new Vector2Int(a, b));
+                        areaScratch.Add(1f);
+                    }
+                }
+            }
+            for (int k = 0; k < chunks.Count; k++)
+            {
+                int count = 0;
+                for (int p = 0; p < pairScratch.Count; p++)
+                    if (pairScratch[p].x == k || pairScratch[p].y == k) count++;
+                var nb = new int[count];
+                var area = new float[count];
+                int j = 0;
+                for (int p = 0; p < pairScratch.Count; p++)
+                {
+                    var pair = pairScratch[p];
+                    if (pair.x != k && pair.y != k) continue;
+                    nb[j] = pair.x == k ? pair.y : pair.x;
+                    area[j] = areaScratch[p];
+                    j++;
+                }
+                chunks[k].neighbours = nb;
+                chunks[k].neighbourArea = area;
+            }
+            pairScratch.Clear();
+            areaScratch.Clear();
         }
 
         int ChunkOfData(int dataIndex)
