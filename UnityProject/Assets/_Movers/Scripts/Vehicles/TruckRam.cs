@@ -129,6 +129,7 @@ namespace Movers
 
         public void Tick(TruckVehicle truck, Rigidbody rb, Bounds hull, TruckTuning t, float dt)
         {
+            if (!Net.HasAuthority) return;   // online, the host breaks things; the client gets the records
             PurgeHandled();
             if (truck == null || rb == null || t == null || hull.size == Vector3.zero) return;
             Vector3 vel = rb.linearVelocity;
