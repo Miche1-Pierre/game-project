@@ -8,6 +8,9 @@ namespace Movers
     //
     // The blips play on her own AudioSource and never through ImpactAudio, which would turn
     // each syllable into a LoudNoise that she would then hear herself.
+    //
+    // Held lines (GrandmaLines.IsHeld: her last warning, her call to the police) stay up for
+    // their whole time: an ordinary line said meanwhile is dropped, another held line wins.
     [DisallowMultipleComponent]
     public sealed class GrandmaSpeech : MonoBehaviour
     {
@@ -31,6 +34,7 @@ namespace Movers
 
         string text;
         float until = -1f;
+        bool holding;
         float nextBlip;
         int blipsLeft;
         AudioClip blip;
@@ -63,8 +67,11 @@ namespace Movers
 
         // Says one variant of the line (never the same one twice in a row) and returns how
         // long it stays up, in seconds.
+        // Returns 0 when a held line is up and this one is not held (nothing said).
         public float Say(Line line, string arg = null)
         {
+            bool held = GrandmaLines.IsHeld(line);
+            if (!held && holding && IsSpeaking) return 0f;
             string[] variants = GrandmaLines.Variants(line, french);
             if (variants == null || variants.Length == 0) return 0f;
             int i = 0;
@@ -74,6 +81,7 @@ namespace Movers
                 if (i >= lastVariant[(int)line]) i++;
             }
             lastVariant[(int)line] = i;
+            holding = held;
             if (Net.IsHost) GrandmaSync.SendSpeech(line, i, arg);
             string s = variants[i];
             if (s.Contains("{0}")) s = string.Format(s, string.IsNullOrEmpty(arg) ? (french ? "truc" : "thing") : arg);
@@ -99,6 +107,7 @@ namespace Movers
             if (variants == null || variants.Length == 0) return 0f;
             int i = Mathf.Clamp(variant, 0, variants.Length - 1);
             lastVariant[(int)line] = i;
+            holding = GrandmaLines.IsHeld(line);
             string s = variants[i];
             if (s.Contains("{0}")) s = string.Format(s, string.IsNullOrEmpty(arg) ? (french ? "truc" : "thing") : arg);
             float seconds = SayText(s);
@@ -112,6 +121,7 @@ namespace Movers
             if (Net.IsHost) GrandmaSync.SendHush();
             until = -1f;
             blipsLeft = 0;
+            holding = false;
         }
 
         void Update()

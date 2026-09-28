@@ -56,5 +56,12 @@ namespace Movers
         public bool IsBreakage => kind == StimulusKind.ObjectDestroyed || kind == StimulusKind.ContractDamaged
                                || kind == StimulusKind.ContractDestroyed || kind == StimulusKind.WindowBroken
                                || kind == StimulusKind.DoorBroken || kind == StimulusKind.Explosion;
+
+        // Under GrandmaMood's loss cap (maxLossPerWindow): noise and breakage. Offences always
+        // pay full price.
+        public bool IsCapped => kind == StimulusKind.SmallNoise || IsBreakage;
+
+        // Never dropped from her queue, however busy the frame: a blast, a theft.
+        public bool MustBeHeard => kind == StimulusKind.Explosion || kind == StimulusKind.TheftWitnessed;
     }
 }

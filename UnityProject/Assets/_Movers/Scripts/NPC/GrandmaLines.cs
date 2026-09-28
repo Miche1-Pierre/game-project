@@ -43,6 +43,10 @@ namespace Movers
             }
         }
 
+        // Lines that stay up for their whole time (GrandmaSpeech): the warning and the call must
+        // be read, whatever else she notices meanwhile.
+        public static bool IsHeld(Line line) => line == Line.LastWarning || line == Line.Police || line == Line.OnThePhone;
+
         // "my rocking chair": the object's display name, as she would say it.
         public static string NameOf(MovableObject item)
         {

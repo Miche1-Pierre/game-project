@@ -11,6 +11,9 @@ namespace Movers
     // hears less far, every cost is about half, she calms down sooner and higher, one
     // catastrophe can only take so much in a few seconds, and at zero she gives a last warning
     // before she picks up the phone.
+    //
+    // Made deterministic on 2026-09-28 (DEV 2, ADR-013): the cap no longer swallows offences,
+    // the warning comes once per run and only a player's own offence ends it.
     [System.Serializable]
     public sealed class MoodCosts
     {
@@ -72,9 +75,17 @@ namespace Movers
         [Tooltip("The most patience she can lose within lossWindow seconds: a grenade chain is one catastrophe, not the end of the run.")]
         public float maxLossPerWindow = 20f;
         public float lossWindow = 10f;
-        [Tooltip("At zero she warns first. Another offence during these seconds and she calls the police; none, and she gets lastWarningRecover back. 0 = call at once.")]
+        [Tooltip("On: the cap above only holds back noise and breakage, offences (theft, bumps, smoking...) always pay full price. Off: everything is capped (the old rule).")]
+        public bool capOnlyBreakage = true;
+        [Tooltip("At zero she warns first. A player's offence during these seconds and she calls the police; none, and she gets lastWarningRecover back. 0 = call at once.")]
         public float lastWarningSeconds = 25f;
         public float lastWarningRecover = 10f;
+        [Tooltip("Warnings she gives in one run. Used up: patience 0 calls the police at once.")]
+        public int lastWarningsPerRun = 1;
+        [Tooltip("During the warning only a player's own offence costing at least this much ends it with the call. Anything cheaper, a noise, the schedule, or nobody's doing costs nothing.")]
+        public float warningOffenceMinCost = 2f;
+        [Tooltip("Seconds after the warning began before an offence can end it: what made her warn cannot also make her call.")]
+        public float warningGraceSeconds = 3f;
     }
 
     // The asset form of the table. Create one under Assets/_Movers/Data/ and assign it to
