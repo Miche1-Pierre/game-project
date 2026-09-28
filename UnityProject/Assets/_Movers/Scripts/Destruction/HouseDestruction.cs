@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -24,6 +25,8 @@ namespace Movers
     // c) Furniture. Every MovableObject gets a Breakable with a material guessed from its
     //    name, except the cigarette and the beer, which already handle their own ends.
     // d) The structure graph: what rests on what, built once from the pieces' boxes.
+    // e) The chunk colliders of every chunk set a wall here uses, cooked ahead over the first
+    //    frames (both machines), so breaking a wall up or letting a chunk fall never cooks one.
     //
     // It then owns the graph for the session: it ticks the collapse queue every physics step,
     // and it is what the destruction reset (F11) rebuilds.
@@ -61,6 +64,9 @@ namespace Movers
         [Tooltip("Random delay (s) before each unsupported piece falls, so a wall crumbles instead of dropping as one.")]
         public float collapseStagger = 0.3f;
 
+        [Tooltip("ms per frame spent cooking the chunk colliders ahead, over the first frames.")]
+        public float precookMsPerFrame = 4f;
+
         [Header("Debug")]
         [Tooltip("Adds the destruction debug keys (F3, F9, F10, F11) in the editor and development builds.")]
         public bool debugTools = true;
@@ -77,6 +83,8 @@ namespace Movers
         public int RoofSectionCount { get; private set; }
         public int FixedPieceCount { get; private set; }
         public float SetupMs { get; private set; }
+        public int PrecookedMeshCount { get; private set; }
+        public bool PrecookDone => precookNext >= precookQueue.Count;
         public StructureGraph Graph => graph;
 
         // Meshes built here die with this component, so nothing leaks across play sessions.
@@ -85,6 +93,8 @@ namespace Movers
         StructureGraph graph;
         int collapseFrame = -1;      // the frame the collapse budget below belongs to
         int releasedThisFrame;
+        readonly List<Mesh> precookQueue = new List<Mesh>(256);
+        int precookNext;
 
         // Everything that is a node of the graph, with what the graph needs to rebuild it after
         // a reset. Bounds are taken once: the house stands still until it breaks.
@@ -179,6 +189,8 @@ namespace Movers
             RecordStartPoses();
             PaneCount = panes;
 
+            QueuePrecook();
+
             var selfSupported = new List<int>();
             BuildGraph(selfSupported);
             // Online client: the same parts and colliders, but no graph running. Nothing falls for
@@ -193,7 +205,8 @@ namespace Movers
                       " distinct meshes)  |  structure: " + ChunkedWallCount + " chunked walls, " + WholePieceCount +
                       " whole pieces, " + RoofSectionCount + " roof sections, " + FixedPieceCount + " supports  |  movables: " +
                       movables + " breakable  |  graph: " + graph.NodeCount + " nodes, " + graph.EdgeCount / 2 + " edges, " +
-                      selfSupported.Count + " standing as built  |  " + SetupMs.ToString("0") + " ms");
+                      selfSupported.Count + " standing as built  |  pre-cook: " + precookQueue.Count + " chunk meshes  |  " +
+                      SetupMs.ToString("0") + " ms");
             if (selfSupported.Count > 0) Debug.Log("[HouseDestruction] held up as built (no support found in the kit boxes): " + Names(selfSupported, 12));
             if (unreadable.Count > 0)
                 Debug.LogWarning("[HouseDestruction] " + unreadable.Count + " kit mesh(es) with glass are not readable, " +
@@ -794,6 +807,55 @@ namespace Movers
             graph.BuildAdjacency();
             graph.AnchorUnsupportedAsBuilt(selfSupported);
             StructureGraph.Install(graph);
+        }
+
+        // ---- e) chunk colliders, cooked ahead (DEV 2, 3.11) ----
+
+        // Every mesh of every chunk set a wall of this house breaks into. An attached chunk has
+        // its exact shape (a non-convex MeshCollider, see DestructibleModule.MakeCollider) and a
+        // falling one its hull: both are cooked here, so neither a wall breaking up nor a chunk
+        // falling cooks a collider in the middle of a blast. Unconditional, on both machines.
+        void QueuePrecook()
+        {
+            precookQueue.Clear();
+            precookNext = 0;
+            var prefabs = new HashSet<GameObject>();
+            var seen = new HashSet<Mesh>();
+            var filters = new List<MeshFilter>(32);
+            var modules = DestructibleModule.All;
+            for (int i = 0; i < modules.Count; i++)
+            {
+                var prefab = modules[i] != null ? modules[i].ChunkSetPrefab : null;
+                if (prefab == null || !prefabs.Add(prefab)) continue;
+                prefab.GetComponentsInChildren(true, filters);
+                for (int k = 0; k < filters.Count; k++)
+                {
+                    Mesh mesh = filters[k].sharedMesh;
+                    // Only a readable mesh becomes a MeshCollider (the rest get boxes).
+                    if (mesh != null && mesh.isReadable && seen.Add(mesh)) precookQueue.Add(mesh);
+                }
+            }
+            if (precookQueue.Count > 0) StartCoroutine(Precook());
+        }
+
+        // A few milliseconds a frame, at least one mesh a frame, until all are done.
+        IEnumerator Precook()
+        {
+            var watch = new System.Diagnostics.Stopwatch();
+            while (precookNext < precookQueue.Count)
+            {
+                watch.Restart();
+                do
+                {
+                    Mesh mesh = precookQueue[precookNext++];
+                    if (mesh == null) continue;
+                    Physics.BakeMesh(mesh.GetEntityId(), false);   // attached: the exact shape
+                    Physics.BakeMesh(mesh.GetEntityId(), true);    // debris: its hull
+                    PrecookedMeshCount++;
+                }
+                while (precookNext < precookQueue.Count && watch.Elapsed.TotalMilliseconds < precookMsPerFrame);
+                yield return null;
+            }
         }
 
         // ---- the destruction reset (F11) ----

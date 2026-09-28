@@ -65,6 +65,8 @@ namespace Movers
         public string ModuleName => Spec != null ? Spec.module : name;
         public bool IsFractured { get; private set; }
         public bool HasChunkSet => variant != null && variant.prefab != null;
+        // The chunk set it breaks into, for the collider pre-cook (HouseDestruction).
+        internal GameObject ChunkSetPrefab => variant != null ? variant.prefab : null;
         public IReadOnlyList<DestructibleChunk> Chunks => chunks;
         public int AttachedCount => attached;
         public int RemovedCount => removedCount;   // broken off by damage
