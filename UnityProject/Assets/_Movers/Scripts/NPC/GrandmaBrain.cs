@@ -225,6 +225,14 @@ namespace Movers
             else Resume();
         }
 
+        // Debug (Keypad 8) and tests: she calls the police now, as at the end of her patience.
+        public void ForcePoliceCall()
+        {
+            if (!Net.HasAuthority || PoliceCalled || sessionOver) return;
+            mood.DebugSetPatience(0f);
+            policePending = true;
+        }
+
         // Debug and tests: back to waiting on the porch for someone to talk to her.
         public void BeginIntro()
         {

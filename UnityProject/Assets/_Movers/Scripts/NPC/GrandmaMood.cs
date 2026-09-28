@@ -206,6 +206,18 @@ namespace Movers
             return best;
         }
 
+        // Debug (Keypad 7 and 8, host or offline): straight to a patience, any warning running
+        // ended. The warnings already given this run stay given.
+        public void DebugSetPatience(float value)
+        {
+            if (!Net.HasAuthority) return;
+            Patience = Mathf.Clamp(value, 0f, 100f);
+            InLastWarning = false;
+            LastLossTime = Time.time;
+            if (Net.IsHost) GrandmaSync.SendMood(this);
+            WorldEvents.Raise(WorldEventType.GrandmaMoodChanged, transform.position, Actors.World, 0f, Patience);
+        }
+
         // Online client (GrandmaSync Mood): the host's patience and warning, no events.
         public void ApplyReplica(float patience, bool inLastWarning)
         {

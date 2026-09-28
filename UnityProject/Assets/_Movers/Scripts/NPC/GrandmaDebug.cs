@@ -4,7 +4,9 @@ namespace Movers
 {
     // The grandmother's mind, on screen. F4: her state, patience, activity, path, vision cone,
     // hearing radius and the last noise. Shift+F4: her AI on and off (off: she stands still,
-    // hears nothing and her patience is frozen). Keys go through DebugCommands (SliceDebug).
+    // hears nothing and her patience is frozen). Keypad 7: her patience to 5 (one offence from
+    // her warning). Keypad 8: she calls the police now. Keys go through DebugCommands
+    // (SliceDebug, which keeps them from an online client: the host runs her).
     [DisallowMultipleComponent]
     public sealed class GrandmaDebug : MonoBehaviour
     {
@@ -35,6 +37,8 @@ namespace Movers
         {
             DebugCommands.Register(KeyCode.F4, false, "Grandma overlay", ToggleOverlay, Owner);
             DebugCommands.Register(KeyCode.F4, true, "Grandma AI on/off", ToggleAI, Owner);
+            DebugCommands.Register(KeyCode.Keypad7, false, "Grandma patience to 5", PatienceToFive, Owner);
+            DebugCommands.Register(KeyCode.Keypad8, false, "Grandma calls the police", CallPolice, Owner);
         }
 
         void OnDisable() { DebugCommands.Unregister(Owner); }
@@ -49,6 +53,16 @@ namespace Movers
         void ToggleAI()
         {
             if (brain != null) brain.SetAIEnabled(!brain.AIEnabled);
+        }
+
+        void PatienceToFive()
+        {
+            if (mood != null) mood.DebugSetPatience(5f);
+        }
+
+        void CallPolice()
+        {
+            if (brain != null) brain.ForcePoliceCall();
         }
 
         void Update()
@@ -68,6 +82,8 @@ namespace Movers
             if (mood != null)
             {
                 sb.Append("Patience ").Append(mood.Patience.ToString("0")).Append("  ").Append(GrandmaMood.Word(mood.Tier));
+                if (mood.InLastWarning) sb.Append("  WARNING ").Append(mood.WarningLeft.ToString("0")).Append('s');
+                sb.Append("  warnings ").Append(mood.WarningsGiven);
                 int worst = mood.WorstOffender();
                 if (worst != Actors.World) sb.Append("  worst ").Append(Actors.Name(worst)).Append(' ').Append(mood.BlameOf(worst).ToString("0"));
                 sb.Append('\n');
