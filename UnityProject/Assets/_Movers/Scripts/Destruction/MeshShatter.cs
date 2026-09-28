@@ -17,6 +17,9 @@ namespace Movers
     // imported without Read/Write) cannot be taken apart, so it breaks into plain boxes that
     // tile its bounds, with a single warning saying how to fix it. A mesh too dense to cut
     // up in one frame (see MaxSourceTriangles) takes the same way out.
+    //
+    // Each piece is a DebrisPool shell (rented, its mesh refilled, given back when it leaves),
+    // so a burst of breaks allocates almost nothing.
     public static class MeshShatter
     {
         const float MinBoxSize = 0.04f;           // collider floor on each axis, so a flat shard still has a body
@@ -67,10 +70,31 @@ namespace Movers
         static readonly List<Material> subMaterial = new List<Material>(8);
 
         static readonly List<Renderer> boxSources = new List<Renderer>(4);
+        static readonly List<Renderer> single = new List<Renderer>(1);
+        static readonly List<Material> readMaterials = new List<Material>(8);
+        // What Shatter returns: reused by every call (no caller keeps it; copy it to keep it).
+        static readonly List<GameObject> spawnedScratch = new List<GameObject>(32);
 
-        static int calls;
+        // One generator for every shatter, so two identical vases never break the same way and
+        // no call allocates its own. Local cosmetics only: it never touches the gameplay's Random.
+        static System.Random rng = new System.Random(System.Environment.TickCount);
         static bool warnedUnreadable;
         static bool notedTooDense;
+
+        // How the pieces of one kind of break leave their source.
+        struct LaunchStyle
+        {
+            public float outwardMin, outwardMax;   // m/s away from the source's centre
+            public float kickMin, kickMax;         // share of the impulse kick
+            public float spinMin, spinMax;         // rad/s
+            public float maxMass;                  // kg of Rigidbody mass per piece at most
+        }
+
+        static readonly LaunchStyle Burst = new LaunchStyle
+        {
+            outwardMin = 0.5f, outwardMax = 2.5f, kickMin = 0.6f, kickMax = 1.4f,
+            spinMin = 1f, spinMax = 8f, maxMass = float.PositiveInfinity,
+        };
 
         // The playtest setup can keep statics alive between play sessions (domain reload off),
         // and the one-time messages should come back once per session, not once per editor.
@@ -79,7 +103,7 @@ namespace Movers
         {
             warnedUnreadable = false;
             notedTooDense = false;
-            calls = 0;
+            rng = new System.Random(System.Environment.TickCount);
         }
 
         // Breaks the given renderers into about 'pieces' rigidbodies (fewer when the frame's
@@ -92,30 +116,44 @@ namespace Movers
         // the hit landed; the velocity model does not need it today, it is in the signature so
         // callers do not have to change when it does. 'instigator' is who broke it (see Actors):
         // a heavy piece that lands on something crushes it in that player's name.
-        // One wall chunk cut into rubble, every piece moving at velocity (a chunk launched by a big
-        // hit). The chunk itself is left for the caller to remove.
-        public static List<GameObject> ShatterChunk(Renderer chunk, int pieces, float totalMass, Vector3 velocity,
-                                                    Vector3 point, float lifetime, int instigator)
-        {
-            return Shatter(new[] { chunk }, pieces, totalMass, velocity, point, Vector3.zero, lifetime, instigator);
-        }
-
+        // The list returned is reused by the next call: read it now, copy it to keep it.
         public static List<GameObject> Shatter(IList<Renderer> sources, int pieces, float totalMass,
                                                Vector3 inheritVelocity, Vector3 point, Vector3 impulse,
                                                float lifetime, int instigator = Actors.World)
         {
-            var spawned = new List<GameObject>();
-            if (sources == null || sources.Count == 0) return spawned;
+            spawnedScratch.Clear();
+            if (sources == null || sources.Count == 0) return spawnedScratch;
             DebrisManager manager = DebrisManager.Instance;
-            if (manager == null) return spawned;   // the application is closing
+            if (manager == null) return spawnedScratch;   // the application is closing
 
             // The frame's piece budget decides, not the caller: past it this breaks into fewer
             // pieces, or into nothing but its sound and dust (DebrisManager.TryReserve).
-            if (!manager.TryReserve(Mathf.Max(1, pieces), out int granted)) return spawned;
+            if (!manager.TryReserve(Mathf.Max(1, pieces), out int granted)) return spawnedScratch;
 
-            // Seeded per call so two identical vases never break the same way.
-            var rng = new System.Random(unchecked(System.Environment.TickCount * 31 + ++calls));
-            pieces = granted;
+            int built = Build(sources, granted, totalMass, inheritVelocity, impulse, lifetime, instigator,
+                              Burst, manager, spawnedScratch);
+            if (built < granted) manager.Refund(granted - built, false);
+            return spawnedScratch;
+        }
+
+        // One wall chunk cut into rubble, every piece moving at velocity (a chunk launched by a big
+        // hit). The chunk itself is left for the caller to remove. The list returned is the caller's.
+        public static List<GameObject> ShatterChunk(Renderer chunk, int pieces, float totalMass, Vector3 velocity,
+                                                    Vector3 point, float lifetime, int instigator)
+        {
+            single.Clear();
+            single.Add(chunk);
+            var result = new List<GameObject>(Shatter(single, pieces, totalMass, velocity, point, Vector3.zero, lifetime, instigator));
+            single.Clear();
+            return result;
+        }
+
+        // Reads the sources, cuts them, launches the pieces into 'into' and returns how many it built.
+        static int Build(IList<Renderer> sources, int pieces, float totalMass, Vector3 inheritVelocity, Vector3 impulse,
+                         float lifetime, int instigator, in LaunchStyle style, DebrisManager manager,
+                         List<GameObject> into)
+        {
+            int before = into.Count;
             totalMass = Mathf.Max(MinPieceMass, totalMass);
 
             ClearSoup();
@@ -147,7 +185,7 @@ namespace Movers
                 if (AddTriangles(r)) meshVolume += volume;
                 else { boxSources.Add(r); boxVolume += volume; }
             }
-            if (!any) return spawned;
+            if (!any) return 0;
 
             Vector3 centre = whole.center;
             Vector3 kick = Vector3.ClampMagnitude(impulse / Mathf.Max(totalMass, 1f), MaxKickSpeed);
@@ -157,18 +195,18 @@ namespace Movers
 
             if (hasTriangles)
                 BuildMeshPieces(meshPieces, totalMass * meshShare, frame, layer, centre,
-                                inheritVelocity, kick, lifetime, instigator, rng, manager, spawned);
+                                inheritVelocity, kick, lifetime, instigator, style, manager, into);
 
             if (boxSources.Count > 0)
             {
                 int boxPieces = hasTriangles ? Mathf.Max(1, pieces - meshPieces) : pieces;
                 BuildBoxChunks(boxPieces, totalMass * (1f - meshShare), layer, centre,
-                               inheritVelocity, kick, lifetime, instigator, rng, manager, spawned);
+                               inheritVelocity, kick, lifetime, instigator, style, manager, into);
             }
 
             ClearSoup();
             boxSources.Clear();
-            return spawned;
+            return into.Count - before;
         }
 
         // ---- reading the sources ----
@@ -197,9 +235,9 @@ namespace Movers
                 return false;
             }
 
-            Material[] shared = r.sharedMaterials;
+            r.GetSharedMaterials(readMaterials);
             // Submeshes past the material array are not drawn, so they are not debris either.
-            int subCount = Mathf.Min(mesh.subMeshCount, shared.Length);
+            int subCount = Mathf.Min(mesh.subMeshCount, readMaterials.Count);
             int triangles = TriangleCount(mesh, subCount);
             if (pa.Count + triangles > MaxSourceTriangles)
             {
@@ -218,7 +256,7 @@ namespace Movers
             for (int s = 0; s < subCount; s++)
             {
                 if (mesh.GetTopology(s) != MeshTopology.Triangles) continue;
-                int slot = MaterialSlot(shared[s]);
+                int slot = MaterialSlot(readMaterials[s]);
                 mesh.GetTriangles(readIndices, s);
                 for (int i = 0; i + 2 < readIndices.Count; i += 3)
                 {
@@ -237,6 +275,7 @@ namespace Movers
             readVerts.Clear();
             readUVs.Clear();
             readIndices.Clear();
+            readMaterials.Clear();
             return pa.Count > before;
         }
 
@@ -278,7 +317,7 @@ namespace Movers
         // ---- clustering ----
 
         static void BuildMeshPieces(int k, float mass, Quaternion frame, int layer, Vector3 sourceCentre,
-                                    Vector3 inherit, Vector3 kick, float lifetime, int instigator, System.Random rng,
+                                    Vector3 inherit, Vector3 kick, float lifetime, int instigator, in LaunchStyle style,
                                     DebrisManager manager, List<GameObject> spawned)
         {
             float totalArea = Measure();
@@ -342,23 +381,24 @@ namespace Movers
                 }
                 if (subStart.Count == 0) continue;
 
-                Mesh mesh = BuildMesh();
                 Vector3 worldCentre = frame * localCentre;
+                DebrisPool.Shell shell = manager.RentShell();
+                Mesh mesh = DebrisPool.EnsureMesh(shell);
+                FillMesh(mesh);
 
-                var go = new GameObject("Debris");
-                go.layer = layer;
-                go.transform.SetPositionAndRotation(worldCentre, frame);
-                go.AddComponent<MeshFilter>().sharedMesh = mesh;
-                go.AddComponent<MeshRenderer>().sharedMaterials = subMaterial.ToArray();
-                var box = go.AddComponent<BoxCollider>();
+                shell.go.layer = layer;
+                shell.transform.SetPositionAndRotation(worldCentre, frame);
+                shell.transform.localScale = Vector3.one;
+                shell.renderer.SetSharedMaterials(subMaterial);
+                BoxCollider box = shell.box;
                 Bounds mb = mesh.bounds;
                 box.center = mb.center;
                 box.size = Vector3.Max(mb.size, Vector3.one * MinBoxSize);
 
                 float share = totalArea > 0f ? area / totalArea : 1f / k;
-                Launch(go, box.size, mass * share, worldCentre, sourceCentre, inherit, kick,
-                       lifetime, instigator, rng, manager, mesh);
-                spawned.Add(go);
+                Launch(shell, box.size, mass * share, worldCentre, sourceCentre, inherit, kick,
+                       lifetime, instigator, style, manager);
+                spawned.Add(shell.go);
             }
         }
 
@@ -546,10 +586,12 @@ namespace Movers
             outIndices.Add(v); outIndices.Add(v + 1); outIndices.Add(v + 2);
         }
 
-        static Mesh BuildMesh()
+        // Writes the piece being built into a shell's mesh (emptied first: it may hold the last
+        // piece that shell was).
+        static void FillMesh(Mesh mesh)
         {
-            var mesh = new Mesh { name = "Debris" };
-            if (outVerts.Count > 65000) mesh.indexFormat = IndexFormat.UInt32;
+            mesh.Clear();
+            mesh.indexFormat = outVerts.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16;
             mesh.SetVertices(outVerts);
             mesh.SetUVs(0, outUVs);
             mesh.subMeshCount = subStart.Count;
@@ -558,13 +600,12 @@ namespace Movers
             // Unshared corners give flat normals, which is the faceted look debris should have.
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
-            return mesh;
         }
 
         // Fallback for meshes we cannot read: a grid of boxes over the renderer's own bounds,
         // in its own orientation, wearing its first material.
         static void BuildBoxChunks(int k, float mass, int layer, Vector3 sourceCentre, Vector3 inherit,
-                                   Vector3 kick, float lifetime, int instigator, System.Random rng,
+                                   Vector3 kick, float lifetime, int instigator, in LaunchStyle style,
                                    DebrisManager manager, List<GameObject> spawned)
         {
             float totalVolume = 0f;
@@ -588,6 +629,7 @@ namespace Movers
                 Vector3 cell = new Vector3(local.size.x / nx, local.size.y / ny, local.size.z / nz);
                 Vector3 cellWorld = Vector3.Max(Vector3.Scale(cell, scale) * 0.95f, Vector3.one * MinBoxSize);
                 Material mat = FirstMaterial(r);
+                if (mat == null) mat = DebrisPool.DefaultMaterial;
                 float cellMass = mass * volumeShare / (nx * ny * nz);
 
                 for (int ix = 0; ix < nx; ix++)
@@ -597,15 +639,18 @@ namespace Movers
                     Vector3 lc = local.min + new Vector3((ix + 0.5f) * cell.x, (iy + 0.5f) * cell.y, (iz + 0.5f) * cell.z);
                     Vector3 wc = oriented ? t.TransformPoint(lc) : lc;
 
-                    GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);   // comes with its BoxCollider
-                    go.name = "Debris";
-                    go.layer = layer;
-                    go.transform.SetPositionAndRotation(wc, rotation);
-                    go.transform.localScale = cellWorld;
-                    if (mat != null) go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+                    // Unity's cube, scaled to the cell: the shell's own mesh stays unused.
+                    DebrisPool.Shell shell = manager.RentShell();
+                    shell.filter.sharedMesh = DebrisPool.CubeMesh;
+                    shell.renderer.sharedMaterial = mat;
+                    shell.box.center = Vector3.zero;
+                    shell.box.size = Vector3.one;
+                    shell.go.layer = layer;
+                    shell.transform.SetPositionAndRotation(wc, rotation);
+                    shell.transform.localScale = cellWorld;
 
-                    Launch(go, cellWorld, cellMass, wc, sourceCentre, inherit, kick, lifetime, instigator, rng, manager, null);
-                    spawned.Add(go);
+                    Launch(shell, cellWorld, cellMass, wc, sourceCentre, inherit, kick, lifetime, instigator, style, manager);
+                    spawned.Add(shell.go);
                 }
             }
         }
@@ -618,9 +663,11 @@ namespace Movers
 
         static Material FirstMaterial(Renderer r)
         {
-            Material[] shared = r.sharedMaterials;
-            for (int i = 0; i < shared.Length; i++) if (shared[i] != null) return shared[i];
-            return null;
+            r.GetSharedMaterials(readMaterials);
+            Material first = null;
+            for (int i = 0; i < readMaterials.Count && first == null; i++) first = readMaterials[i];
+            readMaterials.Clear();
+            return first;
         }
 
         // Roughly cubic cells, about k of them, never more than 8 along an axis.
@@ -642,12 +689,20 @@ namespace Movers
             }
         }
 
-        static void Launch(GameObject go, Vector3 size, float mass, Vector3 worldCentre, Vector3 sourceCentre,
-                           Vector3 inherit, Vector3 kick, float lifetime, int instigator, System.Random rng,
-                           DebrisManager manager, Mesh ownedMesh)
+        // Wakes a filled shell up as a piece: active, dynamic, moving, registered. Rigidbody
+        // settings a previous piece may have left are set again.
+        static void Launch(DebrisPool.Shell shell, Vector3 size, float mass, Vector3 worldCentre, Vector3 sourceCentre,
+                           Vector3 inherit, Vector3 kick, float lifetime, int instigator, in LaunchStyle style,
+                           DebrisManager manager)
         {
-            var rb = go.AddComponent<Rigidbody>();
-            rb.mass = Mathf.Max(MinPieceMass, mass);
+            shell.go.SetActive(true);
+            Rigidbody rb = shell.rb;
+            rb.isKinematic = false;   // before anything continuous: kinematic bodies do not support it
+            rb.mass = Mathf.Clamp(mass, MinPieceMass, Mathf.Max(MinPieceMass, style.maxMass));
+            rb.useGravity = true;
+            rb.linearDamping = 0f;
+            rb.angularDamping = 0.05f;
+            rb.constraints = RigidbodyConstraints.None;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
             rb.maxDepenetrationVelocity = DepenetrationSpeed;
             float largest = Mathf.Max(size.x, Mathf.Max(size.y, size.z));
@@ -656,28 +711,32 @@ namespace Movers
                 : CollisionDetectionMode.Discrete;
 
             Vector3 outward = worldCentre - sourceCentre;
-            outward = outward.sqrMagnitude > 1e-6f ? outward.normalized : RandomUnit(rng);
-            rb.linearVelocity = inherit + outward * Range(rng, 0.5f, 2.5f) + kick * Range(rng, 0.6f, 1.4f);
-            rb.angularVelocity = RandomUnit(rng) * Range(rng, 1f, 8f);
+            outward = outward.sqrMagnitude > 1e-6f ? outward.normalized : RandomUnit();
+            rb.linearVelocity = inherit + outward * Range(style.outwardMin, style.outwardMax)
+                                + kick * Range(style.kickMin, style.kickMax);
+            rb.angularVelocity = RandomUnit() * Range(style.spinMin, style.spinMax);
 
-            var piece = go.AddComponent<DebrisPiece>();
-            piece.Init(rb, ownedMesh);
+            DebrisPiece piece = shell.piece;
+            piece.ResetForRent();
+            // A pooled shell's mesh belongs to the pool; a loose one's dies with its piece.
+            piece.Init(rb, shell.owned ? null : shell.mesh);
+            piece.shell = shell.owned ? shell : null;
             piece.instigator = instigator;
             manager.Register(piece, lifetime);
         }
 
         // ---- small helpers ----
 
-        static float Range(System.Random rng, float a, float b)
+        static float Range(float a, float b)
         {
             return a + (float)rng.NextDouble() * (b - a);
         }
 
-        static Vector3 RandomUnit(System.Random rng)
+        static Vector3 RandomUnit()
         {
             for (int i = 0; i < 16; i++)
             {
-                var v = new Vector3(Range(rng, -1f, 1f), Range(rng, -1f, 1f), Range(rng, -1f, 1f));
+                var v = new Vector3(Range(-1f, 1f), Range(-1f, 1f), Range(-1f, 1f));
                 float sq = v.sqrMagnitude;
                 if (sq > 1e-4f && sq <= 1f) return v / Mathf.Sqrt(sq);
             }

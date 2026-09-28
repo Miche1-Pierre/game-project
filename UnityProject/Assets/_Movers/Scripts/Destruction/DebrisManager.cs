@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
 namespace Movers
 {
@@ -22,8 +23,8 @@ namespace Movers
     //   out in view: that is what this is for;
     // - at most maxDynamicPieces moving and maxFrozenPieces frozen pieces: past a cap the ones
     //   no crew camera sees go first, then the smallest and farthest, shrinking fast;
-    // - at most destroyPerFrame pieces destroyed per frame: the rest wait shrunk and inactive,
-    //   so a wall's worth of rubble never costs one frame;
+    // - at most destroyPerFrame pieces destroyed (or given back to the pool) per frame: the rest
+    //   wait shrunk and inactive, so a wall's worth of rubble never costs one frame;
     // - a piece that has been asleep for a few seconds turns kinematic, which takes it out of
     //   the solver entirely, and small or far frozen pieces stop casting shadows.
     //
@@ -37,7 +38,10 @@ namespace Movers
     //
     // Pinned pieces (fallen roof sections) are never aged out or culled, and stay off the Debris layer.
     //
-    // Created on demand as a root object named "Debris" the first time something shatters.
+    // MeshShatter's pieces come from DebrisPool (on this object) and go back to it.
+    //
+    // Created when a scene with breakable things loads (so the pool can warm up before the first
+    // break), or on demand as a root object named "Debris" the first time something shatters.
     // Debris is local to each machine, online too; the client never freezes (NETCODE_SLICE 11.4).
     [DisallowMultipleComponent]
     public class DebrisManager : MonoBehaviour
@@ -47,10 +51,12 @@ namespace Movers
         const float CullDistance = 10f;    // m: at this distance a piece counts half as visible
         const float InViewScore = 1e6f;    // a piece a crew camera sees is culled after every unseen one
         const float ShadowCheckEvery = 1f; // s between checks of the frozen pieces' shadow rules
+        const int WarmupDelayFrames = 3;   // after the scene loaded, before the first pool shell (NetIds sweep first)
         const int MaxViews = 4;
 
         static DebrisManager instance;
         static bool quitting;
+        static int sceneLoadFrame;
         // Lifetime jitter: its own generator, so debris never moves the gameplay's Random.
         static System.Random jitterRng = new System.Random(12345);
 
@@ -63,6 +69,9 @@ namespace Movers
         readonly Plane[][] viewPlanes = new Plane[MaxViews][];
         int viewCount;
         int viewsFrame = -1;
+
+        DebrisPool pool;
+        int warmFrom;
 
         // The spawn budget of the current frame (see Roll).
         int budgetFrame = -1;
@@ -79,6 +88,8 @@ namespace Movers
         public int SpawnedLastFrame { get; private set; }
         public int ReleasedLastFrame { get; private set; }
         public int StructureReserveThisFrame => budgetFrame == Time.frameCount ? structureReserve : 0;
+        public int PoolSize => pool != null ? pool.Size : 0;
+        public int PoolFree => pool != null ? pool.Free : 0;
         // The dynamic cap, as the debug overlay has always shown it.
         public int maxPieces => Mathf.Max(0, Table.maxDynamicPieces);
 
@@ -108,17 +119,37 @@ namespace Movers
         {
             instance = null;
             quitting = false;
+            sceneLoadFrame = 0;
             jitterRng = new System.Random(12345);
             Application.quitting -= OnQuitting;
             Application.quitting += OnQuitting;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         static void OnQuitting() { quitting = true; }
+
+        // A scene with things to break gets its manager now, so the pool is warm before the
+        // first grenade. Menus get none. The manager holds no network state and is not a body,
+        // so the NetIds sweep ignores it (and the pool only fills after the sweep).
+        static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            sceneLoadFrame = Time.frameCount;
+            if (quitting || instance != null || !scene.IsValid()) return;
+            if (DestructibleModule.All.Count == 0 && Object.FindAnyObjectByType<Breakable>() == null
+                && Object.FindAnyObjectByType<GlassPane>() == null) return;
+            var go = new GameObject("Debris");
+            if (go.scene != scene) SceneManager.MoveGameObjectToScene(go, scene);
+            go.AddComponent<DebrisManager>();
+        }
 
         void Awake()
         {
             if (instance == null) instance = this;
             else if (instance != this) { Destroy(this); return; }
+            pool = GetComponent<DebrisPool>();
+            if (pool == null) pool = gameObject.AddComponent<DebrisPool>();
+            warmFrom = Mathf.Max(sceneLoadFrame, Time.frameCount) + WarmupDelayFrames;
             for (int i = 0; i < MaxViews; i++) viewPlanes[i] = new Plane[6];
         }
 
@@ -202,9 +233,21 @@ namespace Movers
             return granted;
         }
 
-        // The end of a piece.
+        // ---- the pool ----
+
+        // A shell for MeshShatter: from the pool, or a plain new object when the pool is off.
+        internal DebrisPool.Shell RentShell()
+        {
+            DebrisPool.Shell s = DebrisPool.Enabled && pool != null ? pool.Rent() : DebrisPool.MakeLoose();
+            s.transform.SetParent(transform, false);
+            return s;
+        }
+
+        // The end of a piece: back to the pool, or destroyed.
         void Release(DebrisPiece p)
         {
+            DebrisPool.Shell s = p.shell;
+            if (s != null && pool != null && pool.Return(s)) return;
             Destroy(p.gameObject);
         }
 
@@ -261,6 +304,7 @@ namespace Movers
             {
                 DebrisPiece p = pieces[i];
                 if (p == null || p.pinned) continue;
+                if (p.shell != null && pool != null && pool.Return(p.shell)) continue;
                 p.gameObject.SetActive(false);   // out of the physics scene now, destroyed at the end of the frame
                 Destroy(p.gameObject);
             }
@@ -294,6 +338,8 @@ namespace Movers
             int frame = Time.frameCount;
             if (budgetFrame == frame - 1) SpawnedLastFrame = spawnedThisFrame;
             else if (budgetFrame < frame - 1) SpawnedLastFrame = 0;
+
+            if (pool != null && DebrisPool.Enabled && frame >= warmFrom && !pool.Warm) pool.WarmStep();
 
             GatherEyes();
             int destroyBudget = Mathf.Max(1, t.destroyPerFrame);
