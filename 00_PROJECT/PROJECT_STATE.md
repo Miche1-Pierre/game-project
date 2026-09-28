@@ -1,6 +1,6 @@
 # PROJECT STATE
 
-_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-28, DEV 2 in progress (ADR-013)._
+_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-28, DEV 2 wired on Map01 and checked by script (ADR-013)._
 
 **PHASE:** Vertical slice built (ADR-009) and dressed (ADR-010: wooden UI with key hints, title menu, loader, target indicators, smoking and drinking, synthesised audio). Waiting to be played by two people, now possible from two PCs (ADR-011).
 
@@ -49,32 +49,35 @@ Every automated Play test block passes in the shared editor, 0 console errors. T
 - **Known limits:** the client's own grab, throw, open and drive land one round trip late (about 80 to 170 ms over Relay). Debris, smoke and splats differ between the screens. Pause does not stop the world. No join mid-run, no reconnect, no host migration: the host leaving ends the run. The test bot's pane throw is flaky (a bot fault, not the netcode).
 - **Pierre's calls:** the defaults are kept. Either player skips the intro and replays for both, the client's Menu leaves alone, the host's ends it for both, and a dropped player stays as an idle body.
 
-**DEV 2, destruction, world and gameplay, 2026-09-28 (ADR-013, `03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md`). In progress, nothing played.**
+**DEV 2, destruction, world and gameplay, 2026-09-28 (ADR-013, `03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md`). Built, wired on Map01, checked by script in Play and online by the loopback bots; not yet played by hand.**
 - **What:** Pierre's list after QA ("fractures judged unrealistic, damage insufficient"): damage from mass and relative speed, bigger and finer grenade breaches, debris that stays and cleans up out of sight, the truck as a ram at up to 90 km/h, breakable garden pieces, a reliable grandmother ladder with one readable last warning, the police flee (call, countdown, cars on the road, exit checkpoint, interception, arrests) as a reusable marker-driven mission, a 20 minute timer.
 - **How:** frozen contracts (c4db70c), 8 parallel tracks, an integration merge on `dev2/destruction-gameplay`, then the Unity stage (spec section 15). `NetSession.Protocol` 2.
-- **Unity stage, prepared outside the editor (branch `dev2/t-unity`):** the data assets (`DestructionMaterials`, `GameLoopTuning`, new `TruckTuning`), the 20 minute timer on Map01, the truck's tuning reference, fixed GUIDs for the new scripts, the docs.
-- **Waiting for Pierre's go:** the one checkout switch of `C:/GameProject` to the merged branch (editor out of Play, no dirty scene), then in the editor: the flee's scene markers (police spawn on Road_West s 580, route, `Route_Street`, arrival, exit on Road_East s 320, two police cars), the passenger seat, the two driveway posts under the Garden, the land colliders to 1400 m if he agrees (decision 12).
+- **Unity stage, done 2026-09-28 in the editor:** Map01 has a `Mission` root (the `Route_Street` path, the `MissionRoute` Road_West 580 to 0, street, Road_East 0 to 360 with its arrival at (0, 0, -23.6), the `PoliceSpawn` and two parked police cars at Road_West s 580, the exit checkpoint at Road_East s 320), `EscapeMission` on `_Systems`, the passenger seat on the truck cab (seatIndex 1) and the two driveway posts under the Garden. The truck's `TruckTuning` reference was lost on the first import after the branch switch (the asset imported before its script compiled) and is restored. The land colliders stay at 520 m (decision 12 open): the roads carry their own colliders over their whole length, so the parked cars at s 580 stand on tarmac.
+- **Fixed in the Play pass:** the lead police car reached the house 84 m (about 4 s) late, slowed by the bends of Road_West; it now drives at the pace the remaining distance needs, and arrives at 75.0 s.
 - **Decisions for Pierre:** the 18 defaults of spec section 16 (flee rules, escape at half pay, exit and spawn places, passenger seat, re-fractured walls, garden breakables, truck feel, arrested pose).
 
-**DEV 2 checks (spec section 12). None run yet: each line gets its measured value or its failure here.**
+**DEV 2 checks (spec section 12), measured 2026-09-28 by script in the editor's Play mode on Map01 (editor unfocused, 25 to 30 fps baseline). Anything not listed as measured was not run.**
 
 | Check | Target | Result |
 |---|---|---|
-| 1 Walls: grenade at 0.25 / 1.0 / 1.5 m from a plain exterior wall | at least 50 % / 25 to 45 % / at most 15 %, rubble at 0.25, no chunk vanishes | not run |
-| 1 Five thrown grenades at a wall from 5 m | 20 % of chunks per grenade, a 1.5 m breach | not run |
-| 1 Grenade mid-room, and 0.25 m from one wall | at most 15 % per wall; opposite wall at most 2 chunks | not run |
-| 1 `LastFrameBlastMs`, `MaxFrameMsAfterBlast` | at most 16 ms, host and client | not run |
-| 2 Sofa standing and sprint, piano, vs plaster and fence | 2.2 outcomes | not run |
-| 3 Drive: 0 to 50, top speed, stop from 90 | at most 4 s empty, 90 km/h, at most 45 m | not run |
-| 4 Ram: fence at 30 km/h; wall at 10 / 25 / 40 / 90; chair at 90 | section 1 row 5; the driver blamed (F7) | not run |
-| 5 Keypad 8, loot, drive to the exit; parked in the street; off the route; on foot in the street | YOU GOT AWAY at about half pay; BLOCKED then intercepted; failed at ESCAPE 0; CAUGHT, arrested, partner escapes fined | not run |
-| 6 Keypad 7, a theft, a second offence, a noise | warning 25 s shown; the offence calls; the noise does not | not run |
-| 7 Draw calls after two grenades and a ram; console | at most +3k, 60 fps; 0 errors | not run |
-| 7 Tutorial_01 after a flee on Map01 | plays, nothing inherited | not run |
-| Online: loopback test on two protocol 2 builds | host and client all PASS | not run |
-| Online: client drives at 90, rides as passenger, is arrested, 100 km/h chase | no pose fight, frozen on both screens, no pops | not run |
-| Online: NetStats peak during the grenades and the 90 km/h ram | under 80 KB/s (else the 15 m / 10 Hz fallback) | not run |
-| Online: NetIds and tracked-body counts, debris pool on and off | identical | not run |
+| 1 Walls: grenade on the floor 0.25 m from a plain exterior wall (garage south wall) | at least 50 %, rubble | 9 of 20 chunks out (45 %: 7 detached, 2 fell); slightly under |
+| 1 Grenade 0.8 m out, 0.6 m high, same wall type | 25 to 45 % at 1.0 m | 20 of 20 (14 detached, 6 fell): the whole module went; too strong at this height |
+| 1 Five thrown grenades; mid-room; 1.0 and 1.5 m | spec rows | not run |
+| 1 `LastFrameBlastMs`, `MaxFrameMsAfterBlast` | at most 16 ms | editor only: blast frame 23 ms warm (62 ms for the session's first blast), worst of the 5 frames after 118 to 140 ms over the median; two grenades in the living room 36 ms and 64 ms. Over budget in the editor; to measure in a build |
+| 2 Throws at a plaster wall (standing throw 6 m/s) | cup 0; standing sofa no mark; sprint sofa cracks; piano a hole | cup 0.3 kg: 0 HP; sofa 80 kg: 31 HP of 1400, no chunk; sofa at 12 m/s (above the 8 to 9.6 calibration): 761 HP, 6 of 20 chunks out; piano 180 kg: 443 HP, 4 of 20 chunks out |
+| 3 Drive on Road_East, empty | 0 to 50 at most 4 s, 90 km/h, stop from 90 at most 45 m | 0 to 50 in 3.34 s, top 88.9 km/h, 36.9 m to stop from 88 km/h |
+| 4 Ram: garden fence at 30 km/h | keeps at least 90 % | 33.1 to 28.8 km/h across the fence (87 %, about 91 % net of the coasting loss); 3 fence panels and 3 hedges broken; then 28 to 15 km/h over 8 m of garden grass. `ram.LastSweepMs` 0.03 to 0.06 ms. A tree behind the fence stops the truck (solid by design). Walls at 10 to 90 km/h not run |
+| 5 Keypad 8 (`DebugCallPolice`) during the intro | starts the contract and the flee | yes, "POLICE IN" 75 s, clock 1200 s |
+| 5 Lead car at the end of the countdown | at the house | before the fix 84 m short; after it 2 to 3 m from the arrival at 75.0 s |
+| 5 Drive to the exit (left 15 s before the police) | YOU GOT AWAY | Completed, escaped: "You got away: the contract is void", "Sold from the truck: 3" +248, "Fine: 1 arrested" -500 (P2 left behind, decision 5) |
+| 5 Truck leaves as the police arrive | BLOCKED then intercepted | the lead car overtook at 100 km/h and stopped the truck: BLOCKED (4 s), then "The police stopped the truck: the contract is void" |
+| 5 Surrounded at ESCAPE 0; arrests on foot | spec rows | not run |
+| 6 Grandmother ladder | every stimulus moves the bar; warning 25 s; a noise does not end it; an offence of 2 or more after 3 s calls | breakage in her sight -6.5, a blast 13 m away outside -4.5, witnessed thefts -15 each; 35.5, 20.5, 5.5, 0: LAST WARNING 25 s; a world blast 1 s in did not end it; a theft 4 s in called the police at once. A carried theft only counts after 2 s in her sight (my scripted carry never was) |
+| 7 Debris during two grenades | at most 90 spawned per frame, 450 dynamic | 90 spawned in the blast frame, peak 102 pieces; 15 dynamic and 87 frozen after 300 frames |
+| 7 Console | 0 errors | 0 errors in the final Play session (errors seen once only after a script recompile during Play) |
+| 7 Draw calls; Tutorial_01 after a flee | spec rows | not run |
+| Online: loopback on two protocol 2 builds (direct IP) | host and client all PASS | host 12 of 12 PASS; client 19 of 20: `3-pane-broken` failed (the known flaky check, 2 passes in 5 on 2026-09-27: no run-up for the chair). Same ids (546), digest and tracked bodies (128) on both; peak down 14.4 / 17.0 KB/s; 0 console errors; no exception in either player log |
+| Online: client drives, rides as passenger, is arrested, 100 km/h chase; NetStats peak with grenades and a 90 km/h ram; pool on and off | spec rows | not run (need two people) |
 
 **The starting items, reworked 2026-09-20 (ADR-007).** A cigarette and a beer lie on the ground by the truck when the job starts. You pick them up with the grab that already exists, carry them, drop them, throw them. Holding one, the right button is modal: a tap throws it away, holding it smokes the cigarette; the beer keeps F. Throw either and a fresh one turns up at the van, and the bottle breaks where it lands. Each puff blinds anyone standing in it for exactly 7 s, the smoker included (ADR-005); four seconds of drinking empties the bottle and takes your aim, heading and grip for about 25 s, never your speed and never the controls (ADR-006). Both were first built on 2026-09-17 as viewmodels welded to the camera, and the first hands-on QA changed that: the smoke was judged right, the delivery was not. The gain nobody designed is that the puff now leaves the cigarette, so the smoke can be aimed. Whether any of it is funny is still the unanswered question, like everything else here.
 
@@ -84,7 +87,7 @@ Also added 2026-09-17, **an equip system and the first clothes to put in it**. A
 
 **NEXT DECISION:** the verb divergence, settled by playing Tutorial_01.
 
-**BLOCKERS:** none for playing main. DEV 2's Unity stage waits for the merged branch and Pierre's go to switch the editor's checkout (spec 15.3). Unity in batchmode stops at package resolution on Jonathan's machine until the project is opened once from the signed-in Unity Hub: Pierre's LumaFlow package comes from the Asset Store (2026-09-27).
+**BLOCKERS:** none. DEV 2 is on `dev2/destruction-gameplay`, pushed, not merged into main: it waits for Pierre and Jonathan's playtest. Unity in batchmode stops at package resolution on Jonathan's machine until the project is opened once from the signed-in Unity Hub: Pierre's LumaFlow package comes from the Asset Store (2026-09-27).
 
 **SCOPE:** Tutorial_01 as specified in `02_GAME_DESIGN/GREYBOX_SPEC.md`. The grandmother's house is the vertical slice of ADR-009 (the spec's larger scope, now current for that map), on top of ADR-008.
 **TECH:** Unity 6.6.1f1 + Built-in RP + MCP (Unity and Blender both driven over MCP since 2026-09-17). Networking free only, Steam P2P or Unity Netcode, host is a player, no backend, 4 players. Photon excluded (ADR-004). Networking came forward for the slice only (ADR-012, 2026-09-27): NGO over Unity Relay's free tier or direct IP, host-authoritative, 2 players online. Steam networking at launch is unchanged.

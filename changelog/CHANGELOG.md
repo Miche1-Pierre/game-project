@@ -4,7 +4,7 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 
 ## 2026-09-28
 
-### DEV 2: destruction, world and gameplay (ADR-013), in progress
+### DEV 2: destruction, world and gameplay (ADR-013), wired and checked by script
 
 - **DESIGN, Pierre's list** after QA ("fractures judged unrealistic, damage insufficient"), on branch `dev2/destruction-gameplay`. Spec: `03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md`. Defaults Pierre did not choose are listed in its section 16 for his confirmation, the main one: the police call no longer ends the run, it starts a flee (75 s to the police's arrival, looting allowed, then 90 s to drive the truck to an exit checkpoint; intercepted or all arrested fails; the escape pays about half a clean delivery).
 - **TECH, built in 8 parallel tracks** from one frozen contracts commit (c4db70c): impact damage from mass and relative speed (`ImpactDamage.Evaluate`), wall chunks, blasts, debris, truck, grandmother, mission, HUD. Then an integration merge and the Unity stage (section 15). `NetSession.Protocol` 2: both online builds must match.
@@ -14,7 +14,10 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
   - New `TruckTuning.asset` (90 km/h, 5200 Nm, 260 kW, 7.5 m/s^2 brakes), referenced by the Map01 truck.
   - Fixed GUIDs for the new scripts (`Mission/`, `TruckTuning`, `TruckRam`, `ImpactFeedback`, `DebrisPool`).
 - **DOCS:** SLICE_ARCHITECTURE (the Mission folder, the flee in the session, the last warning), NETCODE_SLICE section 18 (Protocol 2 and the wire changes), GREYBOX_SPEC (the flee in scope for Map01 only), ADR-009 pointers to ADR-013.
-- **Not done yet:** the scene markers of the flee (police spawn, route, exit, two police cars), the passenger seat, the two driveway posts, the Play pass, the builds and every online check. They need the merged branch and the editor, which needs Pierre's go (section 15.3). Nothing of DEV 2 is measured or played.
+- **CONTENT, Map01 wired in the editor:** a `Mission` root with the street route, the police route (Road_West 580 to 0, the street, Road_East 0 to 360), the police spawn and two parked police cars at Road_West s 580, the exit checkpoint at Road_East s 320; `EscapeMission` on `_Systems`; the passenger seat on the truck cab; the two driveway posts under the Garden. The truck's `TruckTuning` reference, lost when the asset imported before its script, is restored.
+- **TECH, fix:** the lead police car arrived 84 m (about 4 s) late, slowed by the bends of Road_West. It now drives at the pace the remaining distance needs, capped at chase speed: at the house at 75.0 s.
+- **TECH, measured by script in the editor (details in PROJECT_STATE):** truck 0 to 50 km/h in 3.34 s, top 88.9 km/h, 36.9 m to stop from 88; a fence at 33 km/h costs 13 % of the speed; grenade on the floor 0.25 m from a plain wall: 45 % of the chunks; cup 0 HP, standing sofa 31 HP (no chunk), piano 4 chunks, sofa at 12 m/s 6 chunks; flee: escape pays "Sold from the truck" at half value, BLOCKED then intercepted when the police catch the truck, the grandmother's last warning 25 s then the call on the next offence. Frame cost of a blast is over the 16 ms budget in the editor (23 to 62 ms blast frame, 64 to 140 ms after): to measure in a build.
+- **TECH, online:** loopback bots on two protocol 2 builds: host 12 of 12, client 19 of 20 (the known flaky `3-pane-broken`), peak 17 KB/s, 0 errors. The two-person online checks (passenger, arrest, chase, bandwidth during a ram) are not run.
 
 ## 2026-09-27
 
