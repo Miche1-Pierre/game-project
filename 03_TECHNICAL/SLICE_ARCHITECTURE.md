@@ -184,7 +184,7 @@ Debug keys: overlay, grenade, explosion, damage and reset.
 | 60 | GrandmaMover (NavMesh build) |
 | 1000 | CameraShake |
 
-## 11. Debug keys (F-keys only, registered through DebugCommands)
+## 11. Debug keys (F-keys and the numeric keypad, registered through DebugCommands)
 
 | Key | Command | Owner |
 |---|---|---|
@@ -200,6 +200,8 @@ Debug keys: overlay, grenade, explosion, damage and reset.
 | F10 / Shift+F10 | apply the selected damage at the crosshair / cycle it 10, 25, 50, 100 | DESTRUCTION |
 | F11 | reset destruction only | DESTRUCTION |
 | F12 | list of debug keys | SliceDebug |
+| Keypad 7 | grandmother's patience to 5 | GRANDMA |
+| Keypad 8 | the grandmother calls the police | GRANDMA |
 
 ## 12. HUD regions (per viewport, `ViewportGUI.Region`)
 

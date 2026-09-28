@@ -6,7 +6,7 @@ namespace Movers
 {
     // Debug keys, registered by the system that owns them and dispatched by SliceDebug, so no
     // system reads F-keys itself and two systems cannot silently fight over one key.
-    // F-keys only: every letter and digit is gameplay. The map of who owns which key is in
+    // F-keys and the numeric keypad only: every letter and top-row digit is gameplay. The map of who owns which key is in
     // 03_TECHNICAL/SLICE_ARCHITECTURE.md ("Debug keys"); F12 shows the live list in game.
     public static class DebugCommands
     {
