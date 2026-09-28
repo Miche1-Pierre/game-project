@@ -41,8 +41,9 @@ namespace Movers
         public static float LastFrameBlastMs { get; private set; }
         public static int LastBlastFrame { get; private set; } = -1;
         public static int BlastCount { get; private set; }
-        // Worst frame over the 5 frames after the last blast, minus the median of the 30 frames
-        // before it (ms): the deferred detaches, rubble and client bursts a blast leaves behind.
+        // Worst frame of the last blast's own frame and the 5 after it, minus the median of the 30
+        // frames before it (ms): the deferred detaches, rubble and client bursts a blast leaves
+        // behind, and on the client the burst of detach records that arrives with it.
         // On both machines (a client blast is its PlayCosmetic). See FrameClock.
         public static float MaxFrameMsAfterBlast => FrameClock.WorstAfterBlastMs;
 
