@@ -1,6 +1,6 @@
 # PROJECT STATE
 
-_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-27, after online co-op (ADR-012)._
+_Living dashboard. The agent reads it at start and updates it at end of session. Last update: 2026-09-28, DEV 2 in progress (ADR-013)._
 
 **PHASE:** Vertical slice built (ADR-009) and dressed (ADR-010: wooden UI with key hints, title menu, loader, target indicators, smoking and drinking, synthesised audio). Waiting to be played by two people, now possible from two PCs (ADR-011).
 
@@ -49,6 +49,33 @@ Every automated Play test block passes in the shared editor, 0 console errors. T
 - **Known limits:** the client's own grab, throw, open and drive land one round trip late (about 80 to 170 ms over Relay). Debris, smoke and splats differ between the screens. Pause does not stop the world. No join mid-run, no reconnect, no host migration: the host leaving ends the run. The test bot's pane throw is flaky (a bot fault, not the netcode).
 - **Pierre's calls:** the defaults are kept. Either player skips the intro and replays for both, the client's Menu leaves alone, the host's ends it for both, and a dropped player stays as an idle body.
 
+**DEV 2, destruction, world and gameplay, 2026-09-28 (ADR-013, `03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md`). In progress, nothing played.**
+- **What:** Pierre's list after QA ("fractures judged unrealistic, damage insufficient"): damage from mass and relative speed, bigger and finer grenade breaches, debris that stays and cleans up out of sight, the truck as a ram at up to 90 km/h, breakable garden pieces, a reliable grandmother ladder with one readable last warning, the police flee (call, countdown, cars on the road, exit checkpoint, interception, arrests) as a reusable marker-driven mission, a 20 minute timer.
+- **How:** frozen contracts (c4db70c), 8 parallel tracks, an integration merge on `dev2/destruction-gameplay`, then the Unity stage (spec section 15). `NetSession.Protocol` 2.
+- **Unity stage, prepared outside the editor (branch `dev2/t-unity`):** the data assets (`DestructionMaterials`, `GameLoopTuning`, new `TruckTuning`), the 20 minute timer on Map01, the truck's tuning reference, fixed GUIDs for the new scripts, the docs.
+- **Waiting for Pierre's go:** the one checkout switch of `C:/GameProject` to the merged branch (editor out of Play, no dirty scene), then in the editor: the flee's scene markers (police spawn on Road_West s 580, route, `Route_Street`, arrival, exit on Road_East s 320, two police cars), the passenger seat, the two driveway posts under the Garden, the land colliders to 1400 m if he agrees (decision 12).
+- **Decisions for Pierre:** the 18 defaults of spec section 16 (flee rules, escape at half pay, exit and spawn places, passenger seat, re-fractured walls, garden breakables, truck feel, arrested pose).
+
+**DEV 2 checks (spec section 12). None run yet: each line gets its measured value or its failure here.**
+
+| Check | Target | Result |
+|---|---|---|
+| 1 Walls: grenade at 0.25 / 1.0 / 1.5 m from a plain exterior wall | at least 50 % / 25 to 45 % / at most 15 %, rubble at 0.25, no chunk vanishes | not run |
+| 1 Five thrown grenades at a wall from 5 m | 20 % of chunks per grenade, a 1.5 m breach | not run |
+| 1 Grenade mid-room, and 0.25 m from one wall | at most 15 % per wall; opposite wall at most 2 chunks | not run |
+| 1 `LastFrameBlastMs`, `MaxFrameMsAfterBlast` | at most 16 ms, host and client | not run |
+| 2 Sofa standing and sprint, piano, vs plaster and fence | 2.2 outcomes | not run |
+| 3 Drive: 0 to 50, top speed, stop from 90 | at most 4 s empty, 90 km/h, at most 45 m | not run |
+| 4 Ram: fence at 30 km/h; wall at 10 / 25 / 40 / 90; chair at 90 | section 1 row 5; the driver blamed (F7) | not run |
+| 5 Keypad 8, loot, drive to the exit; parked in the street; off the route; on foot in the street | YOU GOT AWAY at about half pay; BLOCKED then intercepted; failed at ESCAPE 0; CAUGHT, arrested, partner escapes fined | not run |
+| 6 Keypad 7, a theft, a second offence, a noise | warning 25 s shown; the offence calls; the noise does not | not run |
+| 7 Draw calls after two grenades and a ram; console | at most +3k, 60 fps; 0 errors | not run |
+| 7 Tutorial_01 after a flee on Map01 | plays, nothing inherited | not run |
+| Online: loopback test on two protocol 2 builds | host and client all PASS | not run |
+| Online: client drives at 90, rides as passenger, is arrested, 100 km/h chase | no pose fight, frozen on both screens, no pops | not run |
+| Online: NetStats peak during the grenades and the 90 km/h ram | under 80 KB/s (else the 15 m / 10 Hz fallback) | not run |
+| Online: NetIds and tracked-body counts, debris pool on and off | identical | not run |
+
 **The starting items, reworked 2026-09-20 (ADR-007).** A cigarette and a beer lie on the ground by the truck when the job starts. You pick them up with the grab that already exists, carry them, drop them, throw them. Holding one, the right button is modal: a tap throws it away, holding it smokes the cigarette; the beer keeps F. Throw either and a fresh one turns up at the van, and the bottle breaks where it lands. Each puff blinds anyone standing in it for exactly 7 s, the smoker included (ADR-005); four seconds of drinking empties the bottle and takes your aim, heading and grip for about 25 s, never your speed and never the controls (ADR-006). Both were first built on 2026-09-17 as viewmodels welded to the camera, and the first hands-on QA changed that: the smoke was judged right, the delivery was not. The gain nobody designed is that the puff now leaves the cigarette, so the smoke can be aimed. Whether any of it is funny is still the unanswered question, like everything else here.
 
 Also added 2026-09-17, **an equip system and the first clothes to put in it**. A wearable is an ordinary `MovableObject`: you find it in the house, you grab it with the grab that already exists, and **F** puts it on, or takes off the last piece when your hands are empty. No inventory, no UI. Five slots resolve through the Humanoid avatar rather than by bone name, which matters because this rig is Rigify and its head bone is called `spine.005`. The player now has a body under the camera, and the grandmother's wall mirror upstairs is a real planar reflection, which in a first person game with no second player is the only way to see what you are wearing. Three pieces, all of them hers and all of them stealable: her glasses (the character pack's own, fitted against the baked skinned mesh), her slippers (modelled to swallow the work boot, containment checked vertex by vertex), and her bathrobe (skinned, mid-calf, shawl collar, knotted belt, patch pockets, folded cuffs, 1144 triangles). The robe closes, so its collar, belt and cuffs carry the player colour on a second material slot: an amendment to the identity rule, recorded in `05_ART/CHARACTERS.md`, not a slip. Its skirt is weighted to the pelvis rather than by proximity, so it swings as one cone instead of scissoring with the legs. The lot pays in social information rather than in stats: what you are wearing says which room you went through. No ledger, no score, no detection, so nothing on the out-of-scope list is touched. Brief and rules in `05_ART/CHARACTERS.md`.
@@ -57,7 +84,7 @@ Also added 2026-09-17, **an equip system and the first clothes to put in it**. A
 
 **NEXT DECISION:** the verb divergence, settled by playing Tutorial_01.
 
-**BLOCKERS:** none for playing. Unity in batchmode stops at package resolution on Jonathan's machine until the project is opened once from the signed-in Unity Hub: Pierre's LumaFlow package comes from the Asset Store (2026-09-27).
+**BLOCKERS:** none for playing main. DEV 2's Unity stage waits for the merged branch and Pierre's go to switch the editor's checkout (spec 15.3). Unity in batchmode stops at package resolution on Jonathan's machine until the project is opened once from the signed-in Unity Hub: Pierre's LumaFlow package comes from the Asset Store (2026-09-27).
 
 **SCOPE:** Tutorial_01 as specified in `02_GAME_DESIGN/GREYBOX_SPEC.md`. The grandmother's house is the vertical slice of ADR-009 (the spec's larger scope, now current for that map), on top of ADR-008.
 **TECH:** Unity 6.6.1f1 + Built-in RP + MCP (Unity and Blender both driven over MCP since 2026-09-17). Networking free only, Steam P2P or Unity Netcode, host is a player, no backend, 4 players. Photon excluded (ADR-004). Networking came forward for the slice only (ADR-012, 2026-09-27): NGO over Unity Relay's free tier or direct IP, host-authoritative, 2 players online. Steam networking at launch is unchanged.

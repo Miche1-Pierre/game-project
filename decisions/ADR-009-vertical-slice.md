@@ -29,10 +29,10 @@ The concept meeting of 2026-09-16, with both developers present, had already rec
    - **Movement:** Unity's built-in NavMesh, built at Play from the physics colliders, with no package. NavMesh path search is A* over polygons, which is the spec's "A* pathfinding".
    - **Behaviour:** a small state machine: intro and keys, routine, activities, observe, react, confront.
    - **Senses:** a vision cone and hearing driven by world events.
-   - **Patience:** a meter from 100 to 0, moved by events through a data table. At 0 she calls the police and the run fails.
+   - **Patience:** a meter from 100 to 0, moved by events through a data table. At 0 she calls the police and the run fails. _Amended by [ADR-013](ADR-013-dev2-destruction-police.md): on a map with an escape mission the call starts a police flee instead._
 5. **Theft.** Anything of hers that is not on the contract and leaves in the truck, or in a pocket, is stolen and pays its value. If she saw it happen, it is confiscated and fined instead. The numbers are first guesses in data.
 6. **Structural destruction.**
-   - **Pre-fractured walls:** walls are cut into chunks in Blender, 8 to 15 per module, and swapped in the first time a wall is hurt.
+   - **Pre-fractured walls:** walls are cut into chunks in Blender, 8 to 15 per module (up to 24 masonry chunks since ADR-013), and swapped in the first time a wall is hurt.
    - **Local damage:** damage lands per chunk, by distance, cover and material.
    - **Support graph:** unsupported chunks fall, so a second grenade can bring down what the first one weakened.
    - **What never breaks:** the foundation (cellar walls, plinths, ground slab) stops at Damaged. Floors and stairs never break.

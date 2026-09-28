@@ -2,6 +2,20 @@
 
 _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSINESS, MARKETING._
 
+## 2026-09-28
+
+### DEV 2: destruction, world and gameplay (ADR-013), in progress
+
+- **DESIGN, Pierre's list** after QA ("fractures judged unrealistic, damage insufficient"), on branch `dev2/destruction-gameplay`. Spec: `03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md`. Defaults Pierre did not choose are listed in its section 16 for his confirmation, the main one: the police call no longer ends the run, it starts a flee (75 s to the police's arrival, looting allowed, then 90 s to drive the truck to an exit checkpoint; intercepted or all arrested fails; the escape pays about half a clean delivery).
+- **TECH, built in 8 parallel tracks** from one frozen contracts commit (c4db70c): impact damage from mass and relative speed (`ImpactDamage.Evaluate`), wall chunks, blasts, debris, truck, grandmother, mission, HUD. Then an integration merge and the Unity stage (section 15). `NetSession.Protocol` 2: both online builds must match.
+- **DATA (Unity stage, prepared outside the editor):**
+  - `DestructionMaterials.asset`: debris lifetimes 25 / 18 / 8 s to 60 / 40 / 20 s (the old serialized values would have overridden the new defaults), the Plant row, the blast falloff curve and every new field at its DEV 2 default.
+  - `GameLoopTuning.asset` and Map01's `ContractManager`: the timer 15 to 20 minutes (1200 s); `policeCountdown` 8 to 75 s.
+  - New `TruckTuning.asset` (90 km/h, 5200 Nm, 260 kW, 7.5 m/s^2 brakes), referenced by the Map01 truck.
+  - Fixed GUIDs for the new scripts (`Mission/`, `TruckTuning`, `TruckRam`, `ImpactFeedback`, `DebrisPool`).
+- **DOCS:** SLICE_ARCHITECTURE (the Mission folder, the flee in the session, the last warning), NETCODE_SLICE section 18 (Protocol 2 and the wire changes), GREYBOX_SPEC (the flee in scope for Map01 only), ADR-009 pointers to ADR-013.
+- **Not done yet:** the scene markers of the flee (police spawn, route, exit, two police cars), the passenger seat, the two driveway posts, the Play pass, the builds and every online check. They need the merged branch and the editor, which needs Pierre's go (section 15.3). Nothing of DEV 2 is measured or played.
+
 ## 2026-09-27
 
 ### Hot-fix: the body, its animations and its shadow move as one

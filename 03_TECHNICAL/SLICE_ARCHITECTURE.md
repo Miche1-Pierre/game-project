@@ -21,7 +21,8 @@ _How the systems of the vertical slice (ADR-009) fit together in `Map01_PierreKi
 | Destruction | `Destruction/`, `Items/GrenadeItem.cs`, `Items/GrenadeCrate.cs`, `Effects/CameraShake.cs` | damage events, material table, props, glass, pre-fractured walls, support graph, collapse, explosions, debris, impact audio, destruction debug | IDamageable, WorldEvents |
 | Game loop | `Gameplay/`, `Contracts/`, `UI/` (except ViewportGUI), `Debug/` (except SliceDebug) | session states, contract objectives, delivery, settlement, theft ledger, HUD, end screen, event log | Session, WorldEvents |
 | Grandmother | `NPC/` | navigation, brain, senses, patience, activities, intro and keys, reactions, voice, speech bubbles, patience HUD | WorldEvents, CrewRoster, HingedPanel.SetOpen |
-| Truck | `Vehicles/` | driving, seat, cargo zone, capacity and weight | CrewInput, WorldEvents |
+| Truck | `Vehicles/` | driving, seats (driver and passenger since DEV 2), cargo zone, capacity and weight, ram sweep, `TruckTuning` | CrewInput, WorldEvents |
+| Mission | `Mission/` (DEV 2, ADR-013) | the police flee: `EscapeMission` (dispatch, pursuit, arrests, interception, flee timer, checkpoint test), `EscapeCheckpoint`, `PoliceSpawn`, `MissionRoute`, `RoadAnchor`, `PoliceCar` | Session (Phase, arrest masks), WorldEvents; scene markers found by type, never by name |
 | Kit (Blender) | `tools/blender/export_pierrekit.py` | normals fix, window sashes, kit FBX | files |
 | Fracture (Blender) | `tools/blender/fracture_modules.py` | chunk sets and their sidecar JSON | files |
 | Animation (Blender) | `tools/blender/author_clips.py`, `model_grandma.py` | clips for the crew and the grandmother | files |
@@ -38,6 +39,9 @@ _How the systems of the vertical slice (ADR-009) fit together in `Map01_PierreKi
 | GAMELOOP | new `Gameplay/*`, `Contracts/*`, `UI/GameHUD.cs` and new `UI/*` except ViewportGUI, `Debug/MoversDebugTools.cs`, new `Debug/*` except SliceDebug |
 | GRANDMA | new `NPC/*` |
 | TRUCK | `Vehicles/*` |
+| MISSION (DEV 2) | new `Mission/*` |
+
+**DEV 2 (ADR-013):** the per-file ownership of that pass, including who owns `Mission/*` and the data assets, is in `03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md` section 14.
 
 **Online co-op (ADR-012):** the `Net/` layer (`Scripts/Net/`, `Net/Sync/`, `Net/Test/`), the online gates added to the files above, and the track ownership used to build them are specified in `07_MULTIPLAYER/NETCODE_SLICE.md` (contracts in section 12, file ownership in section 13).
 
@@ -114,7 +118,8 @@ The instigator is always filled when known. For breakage caused by a thrown or c
   - unseen theft paid at its value;
   - witnessed theft confiscated and fined at its value;
   - break-in costs.
-- **Failed.** The time is up, or the grandmother called the police.
+- **Failed.** The time is up, or the grandmother called the police in a scene without an `EscapeMission` (Tutorial_01, older maps: today's rule, the run fails `policeCountdown` after the call).
+- **The police flee (DEV 2, ADR-013).** In a scene with an `EscapeMission` the call no longer ends the run. `Session.Phase` goes to PoliceIncoming: sirens, a countdown to the lead car's arrival (75 s on Map01), the mission clock stops, delivery is refused, the crew may keep looting. At arrival, PoliceHere: 90 s to drive the truck into the `EscapeCheckpoint` with at least one free crew member aboard (Completed, `Session.Escaped`, the truck's goods at half price minus a fine per arrest). Failure: a police car holds the slow truck for 4 s (Intercepted), the flee time runs out (Intercepted, surrounded) or everyone is arrested (CrewArrested). No new SessionState: the run stays InProgress. Detail in DEV2_DESTRUCTION_GAMEPLAY section 8.
 - **The end screen** shows the settlement. F5, or E after 3 s, reloads the scene.
 - **A scene without a grandmother** (Tutorial_01) starts directly in InProgress.
 
@@ -131,6 +136,7 @@ The instigator is always filled when known. For breakage caused by a thrown or c
 ## 8. The grandmother
 - **Components:** `GrandmaBrain` (the state machine), `GrandmaMover` (NavMesh built at Play, CharacterController movement, door opening), `GrandmaSenses` (vision cone and hearing), `GrandmaMood` (patience), `GrandmaActivities` with `ActivitySpot` markers in the scene, `GrandmaSpeech` (bubbles and voice), `GrandmaHUD` (the patience bar top right in each viewport) and `GrandmaTalk` (Interactable).
 - **States:** Intro, GiveKeys, Routine (walk to an activity), PerformActivity, Observe (she noticed something and turns to look), Investigate (she walks to a noise), React (speech and anger clip), Confront (at low patience she follows the offender and scolds) and CallPolice (at 0).
+- **The last warning (DEV 2):** at 0 she warns once per run (25 s, shown on the HUD); only a player's own offence costing 2 or more, 3 s after it began, ends it with the call. With the warning used, 0 calls at once. Detail in DEV2_DESTRUCTION_GAMEPLAY section 7.
 - **Patience:** 100 to 0. The costs per event are data, and the thresholds are 70, 40 and 20. She recovers slowly when nothing happens.
 - **Vision:** 110 degrees, 14 m, a line of sight from her head to the player's eyes or chest. Intact glass does not block it.
 - **Hearing:** events within `HearingRadius(loudness)`, halved per wall or floor in between.
@@ -155,6 +161,8 @@ What stays solid:
 - **Roofs:** they fall as whole rigid sections when unsupported.
 
 Debug keys: overlay, grenade, explosion, damage and reset.
+
+**DEV 2 (ADR-013)** keeps this architecture and changes its numbers and reach: one impact energy function (`ImpactDamage.Evaluate`, mass and relative speed, `DestructionMaterials.asset`), a blast falloff curve for walls, spread hits, overkill propagation, launched chunks and rubble, wall chunk sets re-cut to about 20, debris lifetimes with a camera-aware cleanup, budgets and a shell pool, the truck as a ram, and breakable garden pieces (`GardenDamaged`, never a wall). Detail in `03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md` sections 2 to 6.
 
 ## 10. Layers and execution order
 **Layers** (the integrator adds them to TagManager): 8 Structure, 9 Props, 10 Glass, 11 Debris, 12 Crew, 13 NPC. Code looks them up by name, and falls back to Default when a layer is missing.

@@ -93,18 +93,162 @@ MonoBehaviour:
     impactFactor: 1
     cover: 0.25
     sound: 3
+  - material: 10
+    durability: 60
+    minImpactSpeed: 1.5
+    density: 300
+    blastFactor: 1
+    impactFactor: 1
+    cover: 0.8
+    sound: 2
   blastDamage: 1600
   paneBlastFactor: 0.3125
   solidCover: 0.35
   damagedCoverOpening: 0.15
   fracturedCoverOpening: 0.4
   structureFocus: 0.5
+  structureFalloff:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.5
+      value: 0.95
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.7
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1.5
+      value: 0.35
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 2
+      value: 0.15
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 3
+      value: 0.03
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 4
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  focusScalesWithPower: 1
+  blastExponent: 1.3
+  blastDamageImpulse: 40
+  pushImpulse: 900
+  pushUplift: 0.8
+  maxLaunchSpeed: 28
+  lightDebrisLaunchFalloff: 0.5
+  maxSpin: 7
+  playerReach: 1.2
+  knockHorizontal: 10
+  knockUp: 4.5
+  knockedDownSpeed: 2
+  concussion: 0.45
+  shakeReach: 3
+  shakeMaxStrength: 2
+  grenadeRadius: 6.5
+  grenadePower: 1
+  blastChunkEjectSpeed: 10
+  breachRadius: 0.8
   impactDamageScale: 9
   crushMinMass: 30
+  energyDamageScale: 27
+  structureReferenceMass: 35
+  minMassRatio: 0.1
+  maxMassRatio: 12
+  vehicleMaxMassRatio: 200
+  impactPushFactor: 0.5
+  impactSpreadPerCubeRootKJ: 0.3
+  impactMaxSpread: 2.5
+  heldSpeedAllowance: 1.5
+  heldMaxMassRatio: 1
+  cargoSpeedAllowance: 3
+  cargoMaxMassRatio: 1
+  glassMinMassRatio: 0.5
+  glassDebrisMinMass: 2
+  impactMultiplier: 1
+  thrownMultiplier: 1
+  fallMultiplier: 1
+  crushMultiplier: 0.5
+  toolMultiplier: 1
+  vehicleMultiplier: 0.01
+  structureChunkStrikeFactor: 0.1
+  debrisStrikesPerFrame: 20
   chunkDamagedAt: 0.6
   chunkFracturedAt: 0.25
   collapseBelowShare: 0.3
   fractureAtShare: 0.4
-  structureDebrisLifetime: 25
-  propDebrisLifetime: 18
-  glassShardLifetime: 8
+  chunkHealthClamp: {x: 0.7, y: 1.3}
+  fractureOnAccumulated: 1
+  overflowShare: 0.35
+  rubbleOverkill: 1.5
+  rubblePieces: {x: 3, y: 6}
+  impactChunkLaunchShare: 0.7
+  chunkLaunchReferenceMass: 150
+  chunkLaunchMassFactor: {x: 0.4, y: 1.5}
+  chunkUpBias: 0.25
+  chunkSpin: {x: 2, y: 5}
+  debrisPhysicsMassCap: 150
+  structureLaunchGrace: 0.3
+  structureDebrisLifetime: 60
+  propDebrisLifetime: 40
+  glassShardLifetime: 20
+  maxDynamicPieces: 450
+  maxFrozenPieces: 300
+  maxSpawnPerFrame: 90
+  structureReservePerFrame: 30
+  destroyPerFrame: 30
+  lifetimeJitter: 0.25
+  cleanupMinDistance: 12
+  hardLifetimeFactor: 2
+  cleanupShrinkTime: 1.5
+  overflowShrinkTime: 0.6
+  freezeAfterSleep: 3
+  explosionWakeSpeed: 8
+  smallPieceNoShadow: 0.3
+  frozenNoShadowBelow: 0.5

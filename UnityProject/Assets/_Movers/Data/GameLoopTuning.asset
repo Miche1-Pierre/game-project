@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: GameLoopTuning
   m_EditorClassIdentifier: Assembly-CSharp::Movers.GameLoopTuning
   numbers:
-    defaultTimeLimit: 600
-    policeCountdown: 8
+    defaultTimeLimit: 1200
+    policeCountdown: 75
     introCardSeconds: 6
     introCardSkipAfter: 1
     restartDelay: 3

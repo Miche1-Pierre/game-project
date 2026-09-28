@@ -33,6 +33,8 @@ Theft / extra-value scoring, NPCs / owner, cameras / alarms, fire / consequences
 
 **Exception, 2026-09-25, Pierre's decision (`../decisions/ADR-008-everything-breaks.md`):** destruction and fragmentation are built in the grandmother's house, together with cellar grenades, four pockets and an action key for doors and windows. Tutorial_01 is untouched and still asks only the carry question.
 
+**Exception, 2026-09-28, Pierre's DEV 2 request (`../decisions/ADR-013-dev2-destruction-police.md`):** in the grandmother's house only, and on top of the slice (ADR-009): destruction driven by impact energy (mass and speed), bigger grenade breaches, the truck as a ram at up to 90 km/h, breakable garden pieces, a 20 minute timer, and the police flee. When she calls the police the run no longer ends: police cars come along the road from a spawn marker, the crew may keep looting until they arrive, then drives the truck to an exit checkpoint (success, about half the pay of a clean delivery) or is intercepted or arrested (failure). A passenger seat lets both players flee. Checkpoint, spawn and route are scene markers, so a later map reuses the system. Tutorial_01 is untouched and keeps today's police rule. Detail and the defaults awaiting Pierre's confirmation: `../03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md` sections 8 and 16.
+
 ## Success criteria (go / no-go)
 After ~30-60 minutes: does moving the furniture already create little stories and problem-solving ("how do we get the sofa out"), and is there an urge to do it faster or better? If yes, add co-op next. If the carry / load feel is bad, fix the grab before anything else.
 

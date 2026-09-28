@@ -838,7 +838,7 @@ public enum NetError : byte
 public sealed class NetSession : MonoBehaviour     // on the _Net root, DontDestroyOnLoad, [DefaultExecutionOrder(NetOrder.Tick)]
 {
     public const ushort DefaultPort = 7777;
-    public const ushort Protocol = 1;
+    public const ushort Protocol = 1;              // 2 since DEV 2 (section 18)
     public static NetStatus Status { get; }        // getters never create a session
     public static NetError Error { get; }
     public static string ErrorDetail { get; }      // exception text, log only
@@ -1080,6 +1080,29 @@ Each one was made by the owning track or by INTEGRATION, and is recorded here so
   - 3-pane-broken passed 2 runs of 5: the bot stops 2.6 m from the pane, so the carried chair has no run-up. Likely fix: `NetTestTargets.PaneStandOff` to about 3.4 m.
   - The straight-line walk gets stuck at the front door, the doorway and the chair on every run, then teleports.
 - **Leftovers:** `PlayerSync.TryGetChaseYaw` is unused. DoorSync, TruckSync and NetTestBot add obsolete-API warnings (`FindObjectsSortMode`), like the existing code.
+
+## 18. DEV 2: destruction, truck ram, police flee (ADR-013, 2026-09-28)
+
+The same host-authoritative model: every new behaviour is host code that also runs offline (`Net.HasAuthority`), every send is `Net.IsHost` gated, and no new sync class exists. Spec: `03_TECHNICAL/DEV2_DESTRUCTION_GAMEPLAY.md` section 10 (replication table) and 13 (frozen wire formats).
+
+**`NetSession.Protocol` 1 to 2.** Both builds must come from the same commit, as before; the digest and the protocol refuse a mismatch.
+
+| Record | Change |
+|---|---|
+| Structure op 2 `ChunkDetached` | flags values: 1 fell, 2 vanished, 4 shattered, `(count & 15) << 4` rubble pieces. The client shatters locally within its own budget, whole slab on refusal, and defers like the host (3 frames at most). |
+| Structure op 6 `ModuleSnapshot` | `attached` and `looks` widen to `ulong` (32 chunks, 2 bits of look each) for the re-fractured sets. |
+| Props op 6 `ImpactFx` (new, unreliable) | position, strength unit8, size unit8 (0 = shake only). Only for wall hits that remove nothing, and shakes over 50 kJ: a removal already reaches the client as `ChunkDetached`, so no doubled puff. |
+| Truck ops 2, 3, 4 (SeatEnter, SeatExit, SeatNotice) | + seat index u8 (the passenger seat). `OnPeerLeft` frees every seat the client holds. |
+| Session op 1 `State` | + phase u8, arrested mask u8, pending mask u8, intercept tenths u8 (255 none), flee seconds f32 (-1 none); flags value 8 = escaped; `policeRemaining` = seconds to the police's arrival. Sent on every edge (phase, arrest, pending mask, interception warning, escape), applied before `ApplyReplica`'s early return. |
+| Session op 5 `SettlementEnd` | the completed byte becomes flags: 1 completed, 2 escaped. |
+| World events | `GrandmaLastWarning`, `PoliceArrived`, `CrewArrested`, `TruckIntercepted`, `EscapeReached`, `GardenDamaged`, forwarded by `WorldEventRelay` as every other type. |
+
+- **Police cars** are scene-placed, active, non-kinematic bodies: `NetIds` registers them as Bodies at load and the transform stream carries them. Their lights and siren are derived locally on both machines (no net record).
+- **Arrest on the client:** `ApplyReplica` mutes the arrested member's input locally; the host ignores P2's InputPose positions once P2 is arrested; `GameSession.Holds` keeps the mute through the pause menus.
+- **`TeleportJump`** becomes speed-aware on the host (`3 m + |v| * 0.15 s`), so a police car at 100 km/h that misses one send does not pop.
+- **Debris pool shells** carry `HideFlags.DontSaveInEditor` and warm up after the NetIds sweep: they never become ids or tracked bodies.
+- **Bandwidth.** Reliable records stay small (a grenade about 300 B, a 90 km/h ram through a wall about 400 B); the transform stream is the real load (4.4). Limit: peak under 80 KB/s during two grenades at a furnished wall and a 90 km/h ram through the fence, the yard and a wall. If it fails, the pre-authorised fallback is the 4.4 rule in `NetTransforms.cs`: bodies farther than 15 m from the client's camera at 10 Hz.
+- **Status 2026-09-28:** specified and being built by the DEV 2 tracks. **Nothing of this section is measured yet:** the loopback test on two protocol 2 builds, the manual host plus client run (client driving at 90 km/h, riding as passenger, arrested, a 100 km/h chase) and the bandwidth peak are pending the Unity stage (DEV2 section 12). Results go to `00_PROJECT/PROJECT_STATE.md` and here.
 
 ## Appendix A. Review log (2026-09-27)
 Three reviews (desync, offline and code, API and feasibility) were checked against the sources. Accepted issues are fixed in the sections cited. Rejected or narrowed items, one line each:
