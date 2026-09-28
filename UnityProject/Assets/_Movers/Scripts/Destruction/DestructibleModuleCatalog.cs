@@ -13,7 +13,10 @@ namespace Movers
     // - walls break chunk by chunk; without a chunk set they break whole, as before;
     // - the foundation (cellar walls, plinths, the ground slab) stops at Damaged;
     // - floors and stairs never break and never fall;
-    // - roofs never break, they fall as whole sections when nothing holds them up.
+    // - roofs never break, they fall as whole sections when nothing holds them up;
+    // - yard pieces (hedges, bushes, the mailbox, small garden props) break whole, stand on their
+    //   own, and count as garden damage, not as walls (DEV 2, 6.5). They are looked for only in
+    //   the garden groups HouseDestruction is given, never in the house.
     //
     // The code defaults hold today's health numbers and no chunk sets (code cannot reference an
     // imported FBX). The integrator creates the asset and fills the chunk sets.
@@ -57,6 +60,9 @@ namespace Movers
             public bool anchor;
             [Tooltip("Breakable even though the kit files it under Roofs, Stairs or Floors (the gables).")]
             public bool inSolidGroup;
+            [Tooltip("A garden piece (hedge, bush, mailbox...): wired only under HouseDestruction.extraRoots, breaks whole, " +
+                     "and its destruction is garden damage, never a wall (Breakable.isYard).")]
+            public bool yard;
             public ChunkVariant[] variants = new ChunkVariant[0];
 
             public bool IsDamageable => kind == Kind.Wall || kind == Kind.Element || kind == Kind.Foundation;
@@ -206,7 +212,24 @@ namespace Movers
                 new Entry("PK_Stairs_Stone", Kind.Stairs, Stone, 0f),
                 new Entry("PKX_Plinth_Stone", Kind.Footing, Stone, 0f),
                 new Entry("PKX_Step_Stone", Kind.Footing, Stone, 0f),
+                // The garden (DEV 2, 6.5): the truck and the grenades break these now. Trees,
+                // rocks, the well and the fountain stay solid (no row).
+                Yard("Hedge", BreakMaterial.Plant, 90f),
+                Yard("Bush", BreakMaterial.Plant, 60f),
+                Yard("Bush_01", BreakMaterial.Plant, 60f),
+                Yard("Mailbox", BreakMaterial.Metal, 80f),
+                Yard("Birdhouse", Wood, 40f),
+                Yard("Trellis", Wood, 60f),
+                Yard("Scarecrow", Wood, 60f),
+                Yard("Planter_Box", Wood, 120f),      // the vegetable beds
+                Yard("Garden_Bench", Wood, 150f),
             };
+        }
+
+        // A yard piece: breaks whole, stands on its own, garden damage when it goes.
+        static Entry Yard(string module, BreakMaterial material, float health)
+        {
+            return new Entry(module, Kind.Element, material, health) { anchor = true, yard = true };
         }
     }
 }

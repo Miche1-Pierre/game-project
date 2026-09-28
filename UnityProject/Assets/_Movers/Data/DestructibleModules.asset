@@ -21,6 +21,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: 4293e7c1f533be0d56999a0816aaa17e, type: 3}
       graph: {fileID: 4900000, guid: 524e1b0268131894781ccec8b3790688, type: 3}
@@ -34,6 +35,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: d531c8baffa0cf6d7965704ac429f8d3, type: 3}
       graph: {fileID: 4900000, guid: 09109b78c786c6a488ab725e874375e6, type: 3}
@@ -47,6 +49,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: ef698c20c385e3a71137ba3f6d7c29c8, type: 3}
       graph: {fileID: 4900000, guid: 39d1803c0eb030e4b8d7b3d75819bbd8, type: 3}
@@ -60,6 +63,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: cf79bb7d036496eaab10f65b6d6d0ef7, type: 3}
       graph: {fileID: 4900000, guid: 56514d50fdf7c0b47b7cdc0dc0650d47, type: 3}
@@ -73,6 +77,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: 0b5f409188d3ee5762172c502deffd6c, type: 3}
       graph: {fileID: 4900000, guid: a3bb5b032416de34a8a89b5980986ef9, type: 3}
@@ -86,6 +91,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: 1bfbccea7a1c2fee7dcb9bb2abf4be4e, type: 3}
       graph: {fileID: 4900000, guid: cf1b923c5b242b64f9d7fb167d5445bd, type: 3}
@@ -99,6 +105,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: 8c9d097305b8f0010ba11a1f1e63491d, type: 3}
       graph: {fileID: 4900000, guid: 598c7d37d0af9904da290458c58e57f5, type: 3}
@@ -112,6 +119,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: b76e3c9cfc026b331276179fd6e75e57, type: 3}
       graph: {fileID: 4900000, guid: e384765696bafa5438356f5ba16ab2d8, type: 3}
@@ -125,6 +133,7 @@ MonoBehaviour:
     stateCap: 1
     anchor: 1
     inSolidGroup: 0
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: 22913dd6b315577e4d8cc26c41c73577, type: 3}
       graph: {fileID: 4900000, guid: 684ad6d65c71e2c49b5f4642265b4545, type: 3}
@@ -138,6 +147,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 1
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: 1544f06ef9f65486d46413a14f729dea, type: 3}
       graph: {fileID: 4900000, guid: 8f12b269672d9fc4ba94f7f4989fd391, type: 3}
@@ -151,6 +161,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 1
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: 7eda24478fe22b849b91de1020afce2d, type: 3}
       graph: {fileID: 4900000, guid: 21c4908eb1d7158468947df07068eabf, type: 3}
@@ -164,6 +175,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: 7b2f95606a8560fb898c3fdf9916d1c7, type: 3}
       graph: {fileID: 4900000, guid: 7c40b88f5bc465d43a43c697110cfd40, type: 3}
@@ -177,6 +189,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Chimney_Stack
     kind: 0
@@ -186,6 +199,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants:
     - prefab: {fileID: 919132149155446097, guid: e38a8c91408c68a5acf5a1b4a2b645c0, type: 3}
       graph: {fileID: 4900000, guid: da04b921d0ab80e4093706ab842bac3e, type: 3}
@@ -199,6 +213,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Fireplace
     kind: 1
@@ -208,6 +223,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Fence_2m
     kind: 1
@@ -217,6 +233,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Fence_Post
     kind: 1
@@ -226,6 +243,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Fence_Gate
     kind: 1
@@ -235,6 +253,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Railing_2m
     kind: 1
@@ -244,6 +263,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Railing_Post
     kind: 1
@@ -253,6 +273,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PK_Post_T
     kind: 1
@@ -262,6 +283,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PK_Pillar_Brick
     kind: 1
@@ -271,6 +293,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PK_Veranda_Panel_Wide
     kind: 1
@@ -280,6 +303,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PK_Veranda_Panel_Narrow
     kind: 1
@@ -289,6 +313,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PK_Veranda_Glass_Wall
     kind: 1
@@ -298,6 +323,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Veranda_Cheek
     kind: 1
@@ -307,6 +333,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Veranda_Lintel
     kind: 1
@@ -316,6 +343,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PK_Door_Leaf
     kind: 1
@@ -325,6 +353,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Door_Leaf_Int
     kind: 1
@@ -334,6 +363,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Veranda_Door_Leaf
     kind: 1
@@ -343,6 +373,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Garage_Door_Leaf
     kind: 1
@@ -352,6 +383,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PK_Roof_8
     kind: 3
@@ -361,6 +393,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 1
+    yard: 0
     variants: []
   - module: PK_Roof_11
     kind: 3
@@ -370,6 +403,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 1
+    yard: 0
     variants: []
   - module: PK_Roof_12
     kind: 3
@@ -379,6 +413,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 1
+    yard: 0
     variants: []
   - module: PK_Veranda_Roof
     kind: 3
@@ -388,6 +423,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 1
+    yard: 0
     variants: []
   - module: PK_Veranda_Glass_Flat
     kind: 3
@@ -397,6 +433,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 1
+    yard: 0
     variants: []
   - module: PK_Floor_Upper_B
     kind: 4
@@ -406,6 +443,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 1
+    yard: 0
     variants: []
   - module: PK_Floor_Stone
     kind: 4
@@ -415,6 +453,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 0
     inSolidGroup: 1
+    yard: 0
     variants: []
   - module: PK_Stairs_Wood
     kind: 5
@@ -424,6 +463,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 1
     inSolidGroup: 1
+    yard: 0
     variants: []
   - module: PK_Stairs_Stone
     kind: 5
@@ -433,6 +473,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 1
     inSolidGroup: 1
+    yard: 0
     variants: []
   - module: PKX_Plinth_Stone
     kind: 6
@@ -442,6 +483,7 @@ MonoBehaviour:
     stateCap: 3
     anchor: 1
     inSolidGroup: 0
+    yard: 0
     variants: []
   - module: PKX_Step_Stone
     kind: 6
@@ -451,4 +493,95 @@ MonoBehaviour:
     stateCap: 3
     anchor: 1
     inSolidGroup: 0
+    yard: 0
+    variants: []
+  - module: Hedge
+    kind: 1
+    material: 10
+    health: 90
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 0
+    yard: 1
+    variants: []
+  - module: Bush
+    kind: 1
+    material: 10
+    health: 60
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 0
+    yard: 1
+    variants: []
+  - module: Bush_01
+    kind: 1
+    material: 10
+    health: 60
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 0
+    yard: 1
+    variants: []
+  - module: Mailbox
+    kind: 1
+    material: 5
+    health: 80
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 0
+    yard: 1
+    variants: []
+  - module: Birdhouse
+    kind: 1
+    material: 3
+    health: 40
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 0
+    yard: 1
+    variants: []
+  - module: Trellis
+    kind: 1
+    material: 3
+    health: 60
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 0
+    yard: 1
+    variants: []
+  - module: Scarecrow
+    kind: 1
+    material: 3
+    health: 60
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 0
+    yard: 1
+    variants: []
+  - module: Planter_Box
+    kind: 1
+    material: 3
+    health: 120
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 0
+    yard: 1
+    variants: []
+  - module: Garden_Bench
+    kind: 1
+    material: 3
+    health: 150
+    chunkHealth: 0
+    stateCap: 3
+    anchor: 1
+    inSolidGroup: 0
+    yard: 1
     variants: []

@@ -22,6 +22,9 @@ namespace Movers
     //    - floors, stairs, plinths and steps are only remembered, as what holds the rest up.
     //    Plinths are taken out of the ground-floor walls first: they are foundation, and used
     //    to shatter with the wall above them.
+    //    The garden groups (extraRoots) are read against the catalog's yard rows only: a hedge,
+    //    a bush, the mailbox get a whole-piece Breakable flagged isYard (garden damage, not a
+    //    wall), standing on its own, outside the graph.
     // c) Furniture. Every MovableObject gets a Breakable with a material guessed from its
     //    name, except the cigarette and the beer, which already handle their own ends.
     // d) The structure graph: what rests on what, built once from the pieces' boxes.
@@ -39,6 +42,9 @@ namespace Movers
     {
         [Tooltip("Left empty, the object named GrandmaHouse_PierreKit is used.")]
         public Transform houseRoot;
+        [Tooltip("Garden groups whose pieces the catalog's yard rows make breakable (hedges, bushes, the mailbox...). " +
+                 "Left empty, HouseContents/Garden/Dressing is used when the scene has it.")]
+        public Transform[] extraRoots = new Transform[0];
         public bool splitGlass = true;
         public bool breakableStructure = true;
         public bool breakableMovables = true;
@@ -72,6 +78,7 @@ namespace Movers
         public bool debugTools = true;
 
         const string DefaultRootName = "GrandmaHouse_PierreKit";
+        const string DefaultYardPath = "HouseContents/Garden/Dressing";
         const float WeldDistance = 1e-4f;   // corners closer than this belong to the same pane
 
         public static HouseDestruction Instance { get; private set; }
@@ -82,6 +89,7 @@ namespace Movers
         public int WholePieceCount { get; private set; }
         public int RoofSectionCount { get; private set; }
         public int FixedPieceCount { get; private set; }
+        public int YardPieceCount { get; private set; }
         public float SetupMs { get; private set; }
         public int PrecookedMeshCount { get; private set; }
         public bool PrecookDone => precookNext >= precookQueue.Count;
@@ -184,6 +192,7 @@ namespace Movers
             }
             else Debug.LogWarning("[HouseDestruction] no house root and no object named " + DefaultRootName +
                                   ": windows and walls stay unbreakable.");
+            if (breakableStructure) WireYard();
 
             if (breakableMovables) movables = WireMovables();
             RecordStartPoses();
@@ -203,7 +212,7 @@ namespace Movers
             SetupMs = (float)((Time.realtimeSinceStartupAsDouble - t0) * 1000.0);
             Debug.Log("[HouseDestruction] glass: " + panes + " panes on " + modules + " modules (" + distinct +
                       " distinct meshes)  |  structure: " + ChunkedWallCount + " chunked walls, " + WholePieceCount +
-                      " whole pieces, " + RoofSectionCount + " roof sections, " + FixedPieceCount + " supports  |  movables: " +
+                      " whole pieces, " + RoofSectionCount + " roof sections, " + FixedPieceCount + " supports, " + YardPieceCount + " yard pieces  |  movables: " +
                       movables + " breakable  |  graph: " + graph.NodeCount + " nodes, " + graph.EdgeCount / 2 + " edges, " +
                       selfSupported.Count + " standing as built  |  pre-cook: " + precookQueue.Count + " chunk meshes  |  " +
                       SetupMs.ToString("0") + " ms");
@@ -620,6 +629,7 @@ namespace Movers
                 // along. A second, structural health model would fight it.
                 if (go.TryGetComponent(out GlassPane _)) continue;
                 if (!catalog.TryGet(f.sharedMesh.name, out var entry)) continue;
+                if (entry.yard) continue;   // garden pieces are only looked for in the garden (WireYard)
                 if (f.GetComponentInParent<MovableObject>(true) != null) continue;
                 bool inSolidGroup = UnderSolidGroup(f.transform, houseRoot);
                 Bounds b = PieceBounds(go);
@@ -686,6 +696,50 @@ namespace Movers
                     }
                 }
             }
+        }
+
+        // The garden: every piece under extraRoots whose mesh is a yard row of the catalog becomes
+        // a whole-piece Breakable flagged isYard, on the object that carries its collider (what a
+        // truck or a thrown sofa hits). Anchored: it stands on its own and holds nothing up, so it
+        // stays out of the graph. Its layer is left alone. Online the client wires the same pieces
+        // (NetIds registers the Breakables on both machines), and only the host breaks them.
+        void WireYard()
+        {
+            Transform[] roots = extraRoots;
+            if (roots == null || roots.Length == 0)
+            {
+                GameObject found = GameObject.Find(DefaultYardPath);
+                roots = found != null ? new[] { found.transform } : Array.Empty<Transform>();
+            }
+            for (int r = 0; r < roots.Length; r++)
+            {
+                Transform root = roots[r];
+                if (root == null) continue;
+                MeshFilter[] filters = root.GetComponentsInChildren<MeshFilter>(true);
+                for (int i = 0; i < filters.Length; i++)
+                {
+                    MeshFilter f = filters[i];
+                    if (f == null || f.sharedMesh == null) continue;
+                    if (!catalog.TryGet(f.sharedMesh.name, out var entry) || !entry.yard) continue;
+                    if (f.GetComponentInParent<MovableObject>(true) != null) continue;
+                    GameObject piece = YardPieceOf(f.transform, root);
+                    if (piece == null || piece.GetComponentInParent<Breakable>(true) != null) continue;
+                    var br = piece.AddComponent<Breakable>();
+                    br.Configure(entry.material, entry.health, true);
+                    br.stateCap = entry.stateCap;
+                    br.isYard = true;
+                    YardPieceCount++;
+                }
+            }
+        }
+
+        // The object that carries the piece's collider: its own, or the nearest parent under the
+        // group that has one. Null when nothing can be hit.
+        static GameObject YardPieceOf(Transform t, Transform root)
+        {
+            for (Transform p = t; p != null && p != root; p = p.parent)
+                if (p.TryGetComponent(out Collider c) && !c.isTrigger) return p.gameObject;
+            return null;
         }
 
         // Every plinth that is the child of a wall module moves out from under it, to a
