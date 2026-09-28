@@ -15,10 +15,12 @@ namespace Movers
     //                ground speed a clip was authored at, its cycle plays faster instead of the
     //                feet sliding (the walk is 4.5 m/s, the sprint 7.2, Crew_Run was made at 3.7)
     //   Crouch       bool
-    //   Grounded     bool, false once the capsule has been off the ground for airDelay (a jump,
-    //                a fall), not for the hundredths a stair step takes: the base layer's Air
-    //                state, Crew_CrouchIdle with the body lifted by its hip drop, so the knees
-    //                come up instead of the head going down; landing blends back through it
+    //   Grounded     bool, false at once for a jump, and for a fall once the capsule has been off
+    //                the ground for airDelay with no floor within groundProbe under the feet (a
+    //                stair run down at a sprint floats the capsule; that is not a fall): the base
+    //                layer's Air state, Crew_CrouchIdle with the body lifted by its hip drop as the
+    //                pose comes in, so the knees come up instead of the head going down; landing
+    //                drops the lift at once and blends the pose out, so the knees give
     //   layer "Carry", whose weight follows whether the hands are full (and are not busy holding
     //                something to the mouth, which the Actions layer shows instead)
     //   Smoking, Drinking            bool, while the held cigarette or bottle is being used
@@ -83,9 +85,10 @@ namespace Movers
         [Header("Jump")]
         [Tooltip("Seconds off the ground before the body tucks: a step down a stair is not a jump.")]
         public float airDelay = 0.12f;
+        [Tooltip("Metres of floor under the feet within which a fall is not one: the house stair run down at a sprint leaves the capsule floating up to 0.49 m over its ramp (measured). A drop of a metre or more still tucks.")]
+        public float groundProbe = 0.7f;
         [Tooltip("Metres the body rises in the Air state: Crew_CrouchIdle's hip drop, so the feet come up.")]
         public float airLift = 0.22f;
-        public float airBlendSeconds = 0.12f;
         public float landSeconds = 0.05f;     // the lift goes at once on landing, the pose blends out: the knees give
 
         [Header("Crouch")]
@@ -113,6 +116,7 @@ namespace Movers
         static readonly int WaveId = Animator.StringToHash("Wave");
         static readonly int KnockedDownId = Animator.StringToHash("KnockedDown");
         static readonly int EmptyState = Animator.StringToHash("Empty");
+        static readonly int AirState = Animator.StringToHash("Air");
         static readonly int DownTag = Animator.StringToHash("Down");
 
         // Which parameters the bound controller has, one bit each.
@@ -120,6 +124,7 @@ namespace Movers
                   PWear = 64, PWave = 128, PKnocked = 256, PMoveScale = 512, PGrounded = 1024;
 
         PlayerController controller;
+        CharacterController capsule;
         PlayerGrab grab;
         CrewMember member;
         HeldPose pose;
@@ -130,6 +135,7 @@ namespace Movers
         int carryLayer = -1, actionsLayer = -1;
         float carryWeight, actionsWeight;
         float airWeight;
+        readonly RaycastHit[] probeHits = new RaycastHit[8];
         float smokedUntil = -1f, drankUntil = -1f;
         HeldPose.Use lastWanted;
         int wornCount = -1;
@@ -163,6 +169,7 @@ namespace Movers
         void Awake()
         {
             controller = GetComponent<PlayerController>();
+            capsule = GetComponent<CharacterController>();
             grab = GetComponent<PlayerGrab>();
             member = GetComponent<CrewMember>();
             pose = GetComponent<HeldPose>();
@@ -268,12 +275,14 @@ namespace Movers
             var baseNow = animator.GetCurrentAnimatorStateInfo(0);
             IsDown = baseNow.tagHash == DownTag || (animator.IsInTransition(0) && animator.GetNextAnimatorStateInfo(0).tagHash == DownTag);
 
-            // Off the ground: a jump at once (it leaves the ground climbing), a fall after airDelay.
-            bool airborne = walking && !IsDown && (has & PGrounded) != 0
-                            && (controller.AirTime > airDelay || (controller.AirTime > 0f && controller.Velocity.y > 1f));
+            // Off the ground: a jump at once and until it lands, a fall after airDelay and only while
+            // there is no floor just under the feet (a stair run down at a sprint floats the capsule).
+            bool airborne = walking && !IsDown && (has & PGrounded) != 0 && controller.AirTime > 0f
+                            && (controller.Jumped || (controller.AirTime > airDelay && !FloorUnderFeet(dt)));
             if ((has & PGrounded) != 0) animator.SetBool(GroundedId, !airborne);
-            float airSeconds = airborne ? airBlendSeconds : landSeconds;
-            airWeight = Mathf.MoveTowards(airWeight, airborne ? 1f : 0f, airSeconds > 0.001f ? dt / airSeconds : 1f);
+            // The lift follows the Air pose in, so the body never rises on straight legs; on landing
+            // it goes at once while the pose blends out.
+            airWeight = airborne ? AirPose() : Mathf.MoveTowards(airWeight, 0f, landSeconds > 0.001f ? dt / landSeconds : 1f);
 
             DriveHands(dt, driving);
             FireTriggers(driving);
@@ -306,6 +315,42 @@ namespace Movers
         }
 
         static bool Busy(AnimatorStateInfo s) => s.shortNameHash != EmptyState;
+
+        // How far the base layer is into its Air state, 0..1, transitions included.
+        float AirPose()
+        {
+            var now = animator.GetCurrentAnimatorStateInfo(0);
+            if (!animator.IsInTransition(0)) return now.shortNameHash == AirState ? 1f : 0f;
+            float k = animator.GetAnimatorTransitionInfo(0).normalizedTime;
+            if (animator.GetNextAnimatorStateInfo(0).shortNameHash == AirState) return k;
+            return now.shortNameHash == AirState ? 1f - k : 0f;
+        }
+
+        // Floor within groundProbe under the capsule: this player's own colliders and what it
+        // carries do not count. A long frame carries the capsule further out over a slope, so the
+        // reach grows with the ground covered in it (tan 35 degrees, the house stair's pitch).
+        bool FloorUnderFeet(float dt)
+        {
+            if (capsule == null) return false;
+            float r = capsule.radius * 0.9f;
+            Vector3 v = controller.Velocity;
+            v.y = 0f;
+            float reach = groundProbe + v.magnitude * dt * 0.7f;
+            Vector3 from = transform.position + transform.up * (controller.FeetHeight + r + 0.05f);
+            int n = Physics.SphereCastNonAlloc(from, r, -transform.up, probeHits, reach + 0.05f,
+                                               Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            Transform held = grab != null && grab.Held != null ? grab.Held.transform : null;
+            for (int i = 0; i < n; i++)
+            {
+                // Already touching at the start counts: on a slope the probe starts against it. The
+                // probe is narrower than the capsule, so a wall beside cannot be touching it.
+                var c = probeHits[i].collider;
+                if (c == null || c.transform.IsChildOf(transform)) continue;
+                if (held != null && c.transform.IsChildOf(held)) continue;
+                return true;
+            }
+            return false;
+        }
 
         // ---- after the Animator: the tuck and the crouch ----
 

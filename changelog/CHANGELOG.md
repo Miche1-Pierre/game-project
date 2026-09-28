@@ -32,11 +32,18 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 
 - **TECH, one skeleton:** the first-person arms were their own rig under the camera while the shadow came from the animated body, so the two never agreed. Now the body's Animator drives everything: what the hands hold, carry or reach for is put on the body's arms (`LimbIK`), and the first-person forearms, hands and upper arms are drawn on the body's bones for the owner's camera only. The shadow, the other player's view and your own arms are the same arms. At rest your hands hang out of view, as the shadow's do; they come into view when they hold or reach. Throw and pocket are the Actions layer's clips on the body, not a second gesture. The tutorial's bodiless capsule keeps its arms in the view's corners.
 - **TECH, walk and sprint:** the walk (4.5 m/s) and the sprint (7.2) both played Crew_Run at x1, with the feet sliding. A `MoveScale` parameter now speeds the cycle up to the real ground speed: x1.22 walking, x1.8 sprinting (capped), x1.44 crouch-walking.
-- **TECH, jump:** the body stayed in its walk cycle in the air. A new `Air` state (`Grounded` false for 0.12 s, or at once on a jump) plays Crew_CrouchIdle with the body lifted 0.22 m: the feet tuck up, and landing blends back through the bent knees.
+- **TECH, jump:** the body stayed in its walk cycle in the air. A new `Air` state plays Crew_CrouchIdle with the body lifted 0.22 m: the feet tuck up, and landing blends back through the bent knees. It is entered at once on a jump (`PlayerController.Jumped`), and on a fall only after 0.12 s with no floor within 0.7 m under the feet, a reach that grows with a long frame: a sprint down the house stair floats the capsule up to 0.49 m over its ramp, and that is not a fall. The lift follows the Air pose in, so the body never rises on straight legs.
 - **TECH, crouch:** the eyes go to 0.80 m but the body's head stayed at 1.31. The body now crouches as low as the eyes: hips down 0.36 m and back 0.22, the spine folded until the head is at the eyes (about 57 degrees), the legs refolded on the feet. Measured: head bone 0.76 m under eyes at 0.82.
 - **TECH:** a cigarette or bottle held in the hand is now in the body's hand for the other player too, not only at the mouth, and the other arm hangs instead of carrying a box. Crew bodies always animate (`AlwaysAnimate`).
 - **TECH, online (ADR-012):** a puppet's air time comes from the grounded flag sent with its pose (its capsule never moves), and a body whose view is off on this machine, the other player online, still gets its hands posed. Compiled, not tested online.
-- **Not verified by a person:** the feel in hand, and throw, pocket and wear seen from inside your own head.
+- **Measured in Play, 2026-09-28, scripted:**
+  - the throw and the wear clips seen from inside the head: the hand never nearer the eye than 0.28 m and 0.15 m, first-person and body hands within 2 cm;
+  - the stair ramp: five sprints and a walk down, two sprints up, no false jump (before the fix, a sprint down tucked the body);
+  - two jumps: tucked, the head never above the eyes (before, it rose 15 cm above them on straight legs at take-off);
+  - falls: a full tuck from 2.5 m, a brief one from 1.5 m, none from 1 m, the price of not tucking on stairs;
+  - the crouch-walk: knee 0.11 m over the floor at its lowest, feet never under it.
+  No console error from these scripts.
+- **Not verified by a person:** the feel in hand.
 
 ### Online co-op (ADR-012)
 

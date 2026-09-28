@@ -155,6 +155,12 @@ namespace Movers
         // A puppet goes by the grounded flag that came with its pose: its capsule never moves.
         public float AirTime => cc != null && cc.enabled && !Grounded ? Time.time - lastGroundedTime : 0f;
 
+        // Off the ground by the jump button (not a blast, not a stair), until the capsule stands
+        // again: the animation driver tucks the body at once for a jump and waits to be sure of a
+        // fall. A puppet has no button here: rising off the ground is taken as its jump.
+        public bool Jumped => IsNetPuppet ? !netGrounded && netVelocity.y > 1f
+                                          : cc != null && cc.enabled && !cc.isGrounded && lastGroundedTime < -900f;
+
         // 0 standing, 1 fully down, following the capsule as it shrinks and grows (stanceSpeed),
         // so the body can crouch exactly as far as the eyes have gone.
         public float CrouchAmount => cc != null && standHeight - crouchHeight > 0.01f
