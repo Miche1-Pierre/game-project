@@ -37,7 +37,10 @@ namespace Movers
         void Awake()
         {
             if (Box != null) Box.enabled = false;
+            gameObject.layer = IgnoreRaycastLayer;
         }
+
+        const int IgnoreRaycastLayer = 2;
 
         void OnEnable()
         {
@@ -57,6 +60,18 @@ namespace Movers
             Vector3 local = transform.InverseTransformPoint(worldPoint) - b.center;
             Vector3 half = b.size * 0.5f;
             return Mathf.Abs(local.x) <= half.x && Mathf.Abs(local.y) <= half.y && Mathf.Abs(local.z) <= half.z;
+        }
+
+        // The volume, drawn even with the collider off (the only way to see it in the editor).
+        void OnDrawGizmos()
+        {
+            var b = GetComponent<BoxCollider>();
+            if (b == null) return;
+            Gizmos.matrix = transform.localToWorldMatrix;
+            Gizmos.color = new Color(0.1f, 0.9f, 0.3f, 0.15f);
+            Gizmos.DrawCube(b.center, b.size);
+            Gizmos.color = new Color(0.1f, 0.9f, 0.3f, 0.9f);
+            Gizmos.DrawWireCube(b.center, b.size);
         }
     }
 }
