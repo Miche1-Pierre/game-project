@@ -42,22 +42,29 @@ namespace Movers
 
         // Everything the leaf passes through between shut and open, as one world box: a side
         // door sweeps about its own width into the room, a garage door hinged at the top sweeps
-        // its whole height (2.6 m) into the garage. Six steps of 15 degrees or so: the arc
-        // between two of them bulges out by a couple of centimetres at most.
+        // its whole height (2.6 m) into the garage. A door that swings both ways (away from
+        // whoever opens it) sweeps both sides. Six steps of 15 degrees or so: the arc between two
+        // of them bulges out by a couple of centimetres at most.
         static Bounds SweepOf(HingedPanel p, Bounds shut)
         {
-            const int Steps = 6;
             Bounds sweep = shut;
+            AddSweep(ref sweep, p, p.FullOpenAngle);
+            if (p.SwingsBothWays) AddSweep(ref sweep, p, -p.FullOpenAngle);
+            return sweep;
+        }
+
+        static void AddSweep(ref Bounds sweep, HingedPanel p, float full)
+        {
+            const int Steps = 6;
             for (int k = 1; k <= Steps; k++)
             {
-                if (!p.TryGetSwingBox(p.FullOpenAngle * k / Steps, out Vector3 c, out Vector3 half, out Quaternion rot)) break;
+                if (!p.TryGetSwingBox(full * k / Steps, out Vector3 c, out Vector3 half, out Quaternion rot)) break;
                 for (int corner = 0; corner < 8; corner++)
                 {
                     var o = new Vector3((corner & 1) == 0 ? -half.x : half.x, (corner & 2) == 0 ? -half.y : half.y, (corner & 4) == 0 ? -half.z : half.z);
                     sweep.Encapsulate(c + rot * o);
                 }
             }
-            return sweep;
         }
 
         // The first door along the polyline from `from` through corners[first..count) that is
@@ -79,7 +86,8 @@ namespace Movers
                 {
                     HingedPanel d = doors[i];
                     if (d == null || !d.CanSwing) continue;          // gone or wrecked: the doorway is open
-                    if (d.IsOpen && !d.IsMoving) continue;
+                    // Open, or opening and waiting against a player: nothing more to do at it.
+                    if (d.IsOpen && (!d.IsMoving || d.BlockedByPerson)) continue;
                     if (Crosses(i, ray, reach, out float hit))
                     {
                         distance = walked + Mathf.Max(0f, hit);

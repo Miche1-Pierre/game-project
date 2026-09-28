@@ -4,6 +4,13 @@ _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSI
 
 ## 2026-09-28
 
+### Hot-fix: doors open away from you and never shove
+
+- **DESIGN:** every door (side-hinged, not a window) now swings away from whoever opens it, player or grandmother; standing in the doorway, the way you face decides. Settles the ADR-008 open call "exterior doors open outward". Windows and the garage door keep one way.
+- **TECH, the cause:** the side was fixed once at startup, so half the doors came at you; and a kinematic leaf moved into a CharacterController sinks into it until overlap recovery throws the player out: the push QA kept meeting.
+- **TECH:** `HingedPanel.SwingAwayFrom` picks the side while the door is shut. A side the fixed house stops between 85 and 95 degrees stops there (EXT_DOOR_6_0_N at 92.5); stopped shorter, it keeps its full swing as before (the veranda deck base, a dining plinth). Before each step the leaf looks at the slab its leading face sweeps: a player, the grandmother or a held object there makes it wait, and it goes on once they move. The grandmother treats a leaf waiting on a player as open. `DoorSync` sends the side and the cap (two bytes per leaf).
+- **Measured in Play, scripted, 180 of 180 checks:** the 14 doors from both sides through the player's E: open fully, away every time, the player moved 0.000 m opening and shutting, the passage clear of the leaf. A leaf opened or shut onto the player waits and does not move them; E again while held reopens it the way it was. A walk straight through takes 0.70 s, never held. With a box in the hands, E opens the door fully. Console: 0 errors.
+- **Not verified:** played by a person, online (two builds), the grandmother through a door in a live run.
 ### Hot-fix: your own legs and feet, seen when you look down
 
 - **TECH, the cause:** your own camera drew nothing of your body (`FirstPersonBody` made all of it shadows-only), so looking down showed the floor, and neither the slippers nor the gown were ever seen on you.

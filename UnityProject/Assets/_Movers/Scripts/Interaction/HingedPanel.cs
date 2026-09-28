@@ -14,9 +14,23 @@ namespace Movers
     // thick hinged at the middle of its thickness digs its outer corner into the frame.
     //
     // The hinge object carries a kinematic Rigidbody moved with MoveRotation, so a door swung
-    // into a chair shoves the chair and a garage door opening under a crate tips it over. It
-    // does not shove the player: a CharacterController only moves when its own Move is called,
-    // so a door closed on you passes through you, and you step out of it.
+    // into a chair shoves the chair and a garage door opening under a crate tips it over.
+    //
+    // It never shoves a person. A CharacterController is not a body: a leaf turned into one sinks
+    // into the capsule, and the controller's overlap recovery then throws the player out of it,
+    // which is the push QA kept meeting. So before each step the leaf looks where it is going,
+    // and if a player, the grandmother or something a player carries is there, it waits against
+    // them and goes on once they have moved.
+    //
+    // A door swings away from whoever opens it (swingBothWays; side-hinged leaves that are not
+    // windows): opened from the hall it goes into the room, from the room into the hall, so it
+    // never comes at you and ends up on the side you are walking to. Each side opens only as far
+    // as the fixed house lets it (a step, a plinth, a built-in), measured the first time that
+    // side is used; a side stopped too short to walk through freely (MinUsefulOpening: the
+    // veranda's deck base, a dining-room plinth) keeps its full swing as it always had, rather
+    // than lean into the way or turn the door on its opener.
+    // The hint still sets the way it swings until someone opens it, and for code that opens it
+    // without saying who stands where. Windows and the garage door keep one way.
     //
     // The feel is decoupled from the damage (03_TECHNICAL/SLICE_ARCHITECTURE.md, A3 option B):
     //   - Snappy: the leaf cruises at `speed` and slows over the last `settleAngle` degrees down
@@ -63,6 +77,8 @@ namespace Movers
         // Read once at startup, in the closed pose, so the panel itself is a valid hint too.
         public Transform outwardHint;
         public bool swingAwayFromHint = false;
+        [Tooltip("A door (side hinge, not a window) opens away from whoever opens it, instead of always the hint's way.")]
+        public bool swingBothWays = true;
         public bool startOpen = false;
         // A window leaf: raises WindowOpened / WindowClosed instead of the door events.
         public bool isWindow = false;
@@ -97,6 +113,17 @@ namespace Movers
         const float RattleSeconds = 0.3f;
         const float RattleShakes = 3f;
         const float RattleVolume = 0.5f;
+        // Two-way doors. Each side is tried against the fixed house in steps of ProbeStep degrees,
+        // and stopped where the house is only if that still leaves MinUsefulOpening. Short of
+        // that a leaf leans into the way through (at 72 degrees it catches a walker's shoulder
+        // 0.9 m past the frame), so it keeps its full swing, through the plinth as it always did.
+        const float ProbeStep = 2.5f;
+        const float MinUsefulOpening = 85f;
+        // Metres either side of the shut leaf where the opener counts as standing in the doorway:
+        // the way they face says where they are going then, not the side they stand on.
+        const float DoorwayBand = 0.15f;
+        // How far past its leading face (m) the leaf looks for a person, on top of the step.
+        const float PersonLead = 0.03f;
 
         Transform pivot;
         Rigidbody pivotRb;
@@ -107,8 +134,11 @@ namespace Movers
         Vector3 boxOffset;          // centre of that box from the hinge, in the hinge's unscaled frame
         Vector3 boxHalf;            // half size of that box, in metres
         GlassPane[] glassOnly;      // the panes, when the panel is nothing but glass (a casement)
-        float openSign = 1f;        // resolved from outwardHint when there is one
-        bool hintResolved;          // openSign came from the hint: kept even if the hint is destroyed later
+        float openSign = 1f;        // resolved from outwardHint when there is one, or from the opener
+        bool hintResolved;          // openSign came from the hint or the opener: kept even if the hint is destroyed later
+        float sideSize = float.PositiveInfinity;   // degrees the chosen side opens at most (two-way doors)
+        float clearPlus = float.NaN;               // how far each side opens before the fixed house, NaN until tried
+        float clearMinus = float.NaN;
         float reach;                // metres from the hinge line to the farthest corner of the panel
         float angle;                // current opening in degrees, 0 = shut
         float lastSwingTime = float.NegativeInfinity;   // Time.fixedTime of the last step that turned it
@@ -146,6 +176,13 @@ namespace Movers
 
         // Seconds the last completed swing took (physics time), for tuning and tests.
         public float LastSwingSeconds { get; private set; }
+        // The last physics step found a person where the leaf was going, and it waited.
+        public bool BlockedByPerson { get; private set; }
+
+        // Opens away from whoever opens it (SwingAwayFrom): a side-hinged door, not a window.
+        public bool SwingsBothWays => swingBothWays && !isWindow && hinge != Hinge.Top;
+        // Its side was picked for an opener, rather than left to the hint. DoorSync sends it.
+        internal bool SideChosen { get; private set; }
         // The current or last swing met something movable and slowed to pushEdgeSpeed.
         public bool Braking => braking;
         // Where the leaf was (degrees, signed like Angle) when that swing started braking. NaN
@@ -166,7 +203,8 @@ namespace Movers
 
         // Turning now, or turned during the last physics step. The step after a swing ends can
         // still report a contact the swing made, so it counts too. Read by HingeCollisionRelay.
-        internal bool SwungRecently => IsMoving || rattleEnd > 0f || Time.fixedTime - lastSwingTime <= Time.fixedDeltaTime * 1.5f;
+        // A leaf waiting against a person is not turning: what hits it then is a real hit.
+        internal bool SwungRecently => (IsMoving && !BlockedByPerson) || rattleEnd > 0f || Time.fixedTime - lastSwingTime <= Time.fixedDeltaTime * 1.5f;
 
         // The group this panel is worked through, or null. Set by HingedGroup itself.
         public HingedGroup Group { get; internal set; }
@@ -215,9 +253,56 @@ namespace Movers
                 case DoorVerb.Unlock: Lock.Unlock(actor); break;
                 case DoorVerb.Locked: Rattle(actor); break;
                 case DoorVerb.Close: SetOpen(false, actor); break;
-                default: SetOpen(true, actor); break;
+                default:
+                    if (by != null) SwingAwayFrom(by.transform.position, by.transform.forward);
+                    SetOpen(true, actor);
+                    break;
             }
         }
+
+        // A door that swings both ways turns away from someone about to open it: call it right
+        // before SetOpen(true). Standing in the doorway itself, the way they face decides. Only
+        // while it is shut: a leaf still on its way shut reopens on the side it is on, away from
+        // the frame and from whoever stands between the two, instead of being driven into them.
+        public void SwingAwayFrom(Vector3 position, Vector3 facing)
+        {
+            if (!SwingsBothWays || pivot == null || isOpen || angle != 0f || !CanSwing) return;
+            float size = Mathf.Abs(openAngle);
+            if (size < 0.01f) return;
+
+            // The leaf's thin axis, across the doorway (the box's local z, by the hinge's axes).
+            Quaternion shut = ParentRotation() * restLocal;
+            Vector3 across = shut * Vector3.forward;
+            // The hinge line lies in the shut leaf's plane, wherever the leaf is right now.
+            float stand = Vector3.Dot(position - pivot.position, across);
+            if (Mathf.Abs(stand) < DoorwayBand)
+            {
+                float heading = Vector3.Dot(facing, across);
+                if (Mathf.Abs(heading) > 0.1f) stand = -heading;   // walking to +across: coming from -across
+            }
+            if (Mathf.Abs(stand) < 1e-3f) return;
+
+            // The positive swing lands the free edge on one side of the doorway; away is the other
+            // side from the opener.
+            float plusSide = Vector3.Dot(shut * (Quaternion.AngleAxis(size, axis) * freeEdge), across);
+            float away = plusSide * stand < 0f ? 1f : -1f;
+            float room = Clearance(away);
+            ApplySide(away, room >= MinUsefulOpening ? room : 0f);
+        }
+
+        // Latches the side this door opens to (signed like FullOpenAngle) and the most it opens
+        // there, in degrees (0: its full openAngle). SwingAwayFrom picks both on the host; the
+        // online client is sent them (DoorSync), so both screens stop the leaf at the same place.
+        internal void ApplySide(float sign, float cap)
+        {
+            openSign = sign < 0f ? -1f : 1f;
+            hintResolved = true;
+            SideChosen = true;
+            sideSize = cap > 0f ? cap : float.PositiveInfinity;
+        }
+
+        // The cap ApplySide was given, 0 when there is none. DoorSync sends it.
+        internal float SideCap => float.IsPositiveInfinity(sideSize) ? 0f : sideSize;
 
         // What E does on this panel alone, for this player (null: nobody in particular, no keys).
         // Never Lock: a shut, unlocked door opens for everyone, the key holder included, or the
@@ -268,11 +353,12 @@ namespace Movers
             }
         }
 
-        // The signed opening, live: the size follows the inspector while playing, the direction
-        // was settled once from the hint. Latched rather than re-testing the hint, so a hint that
-        // is destroyed later (the wall blown up, or the panel being its own hint) cannot flip the
-        // panel back to the raw sign and swing it the other way, through the wall.
-        float OpenAngleSigned => hintResolved ? openSign * Mathf.Abs(openAngle) : openAngle;
+        // The signed opening, live: the size follows the inspector while playing (capped by what
+        // the chosen side has room for), the direction was settled from the hint or the opener.
+        // Latched rather than re-testing the hint, so a hint that is destroyed later (the wall
+        // blown up, or the panel being its own hint) cannot flip the panel back to the raw sign
+        // and swing it the other way, through the wall.
+        float OpenAngleSigned => hintResolved ? openSign * Mathf.Min(Mathf.Abs(openAngle), sideSize) : openAngle;
 
         void Awake()
         {
@@ -368,6 +454,7 @@ namespace Movers
             rattleEnd = -1f;
             braking = false;
             brakeAngle = float.NaN;
+            BlockedByPerson = false;
             if (pivot == null) return;
             angle = isOpen ? OpenAngleSigned : 0f;
             swingGoal = angle;
@@ -428,7 +515,7 @@ namespace Movers
 
             float goal = isOpen ? OpenAngleSigned : 0f;
             bool rattling = rattleEnd > 0f;
-            if (angle == goal && !rattling) return;   // at rest: nothing to do, which is almost always
+            if (angle == goal && !rattling) { BlockedByPerson = false; return; }   // at rest: nothing to do, which is almost always
 
             float dt = Time.fixedDeltaTime;
             bool arrivedShut = false;
@@ -442,15 +529,22 @@ namespace Movers
                     brakeAngle = float.NaN;
                     swingSteps = 0;
                 }
-                angle = Mathf.MoveTowards(angle, goal, StepSpeed(goal) * dt);
-                swingSteps++;
-                lastSwingTime = Time.fixedTime;
-                if (angle == goal)
+                float next = Mathf.MoveTowards(angle, goal, StepSpeed(goal) * dt);
+                // Someone where the leaf is going: it waits against them rather than sink in.
+                BlockedByPerson = PersonIn(next);
+                if (!BlockedByPerson)
                 {
-                    LastSwingSeconds = swingSteps * dt;
-                    arrivedShut = !isOpen;
+                    angle = next;
+                    swingSteps++;
+                    lastSwingTime = Time.fixedTime;
+                    if (angle == goal)
+                    {
+                        LastSwingSeconds = swingSteps * dt;
+                        arrivedShut = !isOpen;
+                    }
                 }
             }
+            else BlockedByPerson = false;
 
             float offset = 0f;
             if (rattling)
@@ -526,6 +620,90 @@ namespace Movers
                 Rigidbody body = overlapBuffer[i].attachedRigidbody;
                 overlapBuffer[i] = null;
                 if (!found && body != null && !body.isKinematic && body != pivotRb) found = true;
+            }
+            return found;
+        }
+
+        // A player, the grandmother or something a player carries, where the leaf is going. The
+        // look is only the slab its leading face sweeps this step (as far as the far edge moves)
+        // plus PersonLead: never the leaf's own thickness or what is behind it, so the one who
+        // just opened it, leaning on it or holding a box against it, is not in its way. The box
+        // is the render box, handles included, so the leaf stops a few centimetres early.
+        bool PersonIn(float opening)
+        {
+            if (!TryGetSwingBox(opening, out Vector3 c, out Vector3 half, out Quaternion rot)) return false;
+            if (!TryGetSwingBox(angle, out Vector3 now, out _, out _)) return false;
+            Vector3 face = rot * Vector3.forward;
+            float ahead = Vector3.Dot(c - now, face);
+            if (Mathf.Abs(ahead) < 1e-5f) return false;
+            if (ahead < 0f) face = -face;
+            float sweep = Mathf.Clamp(reach * Mathf.Abs(opening - angle) * Mathf.Deg2Rad, 0.005f, 2f * half.z);
+            float thick = sweep + PersonLead;
+            c += face * (half.z + PersonLead - thick * 0.5f);
+            half.z = thick * 0.5f;
+
+            int n = Physics.OverlapBoxNonAlloc(c, half, overlapBuffer, rot, Physics.AllLayers, QueryTriggerInteraction.Ignore);
+            bool found = false;
+            for (int i = 0; i < n; i++)
+            {
+                if (!found && IsPerson(overlapBuffer[i])) found = true;
+                overlapBuffer[i] = null;
+            }
+            return found;
+        }
+
+        // The crew and the grandmother are CharacterControllers; what a player carries goes with
+        // them, and a leaf that shoves it shoves them (the carry stops the walk when it jams).
+        static bool IsPerson(Collider col)
+        {
+            if (col == null) return false;
+            if (col is CharacterController) return true;
+            Rigidbody body = col.attachedRigidbody;
+            if (body == null || !body.TryGetComponent(out MovableObject mo)) return false;
+            PlayerGrab holder = mo.holder;
+            return holder != null && holder.Held == mo;
+        }
+
+        // How far the leaf opens on this side (+1 or -1, signed like FullOpenAngle) before its box
+        // meets something fixed that is not its own wall: a step, a plinth, a built-in. Degrees,
+        // up to |openAngle|. What moves does not count (the brake shoves it), nor people. Tried
+        // once per side, the first time the side is wanted, when the house has long settled.
+        float Clearance(float sign)
+        {
+            float known = sign > 0f ? clearPlus : clearMinus;
+            if (!float.IsNaN(known)) return known;
+            float size = Mathf.Abs(openAngle);
+            float clear = 0f;
+            for (float a = ProbeStep; clear < size; a += ProbeStep)
+            {
+                float at = Mathf.Min(a, size);
+                if (FixedIn(sign * at)) break;
+                clear = at;
+            }
+            if (sign > 0f) clearPlus = clear;
+            else clearMinus = clear;
+            return clear;
+        }
+
+        // Something static in the leaf's box at this opening, other than the wall it hangs in and
+        // other than people (the grandmother's seated capsule has no body). A hair inside the
+        // box: the floor under the leaf and the jamb beside it are not in the way.
+        bool FixedIn(float opening)
+        {
+            if (!TryGetSwingBox(opening, out Vector3 c, out Vector3 half, out Quaternion rot)) return false;
+            half = new Vector3(Mathf.Max(0.001f, half.x - 0.01f), Mathf.Max(0.001f, half.y - 0.01f), Mathf.Max(0.001f, half.z - 0.002f));
+            Transform wall = pivot.parent;
+            int n = Physics.OverlapBoxNonAlloc(c, half, overlapBuffer, rot, Physics.AllLayers, QueryTriggerInteraction.Ignore);
+            bool found = false;
+            for (int i = 0; i < n; i++)
+            {
+                Collider col = overlapBuffer[i];
+                overlapBuffer[i] = null;
+                if (found || col == null || col.attachedRigidbody != null || col is CharacterController) continue;
+                Transform t = col.transform;
+                if (t.IsChildOf(pivot) || (wall != null && t.IsChildOf(wall))) continue;
+                if (t.GetComponentInParent<GrandmaMover>() != null || t.GetComponentInParent<CrewMember>() != null) continue;
+                found = true;
             }
             return found;
         }
@@ -657,6 +835,10 @@ namespace Movers
         {
             openSign = openAngle < 0f ? -1f : 1f;
             hintResolved = false;
+            SideChosen = false;
+            sideSize = float.PositiveInfinity;
+            clearPlus = float.NaN;
+            clearMinus = float.NaN;
             if (outwardHint == null) return;
             float size = Mathf.Abs(openAngle);
             if (size < 0.01f) return;

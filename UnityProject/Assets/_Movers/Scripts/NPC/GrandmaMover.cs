@@ -575,7 +575,9 @@ namespace Movers
 
             if (waitingDoor != null)
             {
-                bool through = !waitingDoor.CanSwing || (waitingDoor.IsOpen && !waitingDoor.IsMoving);
+                // A leaf waiting against a player is as open as it will get: go, and if it is in
+                // her way her stuck handling asks the player to move.
+                bool through = !waitingDoor.CanSwing || (waitingDoor.IsOpen && (!waitingDoor.IsMoving || waitingDoor.BlockedByPerson));
                 if (!through && Time.time < doorWaitUntil) return Vector3.zero;
                 waitingDoor = null;
             }
@@ -603,6 +605,7 @@ namespace Movers
             doorWaitUntil = Time.time + doorWaitMax;
             DoorWaitCount++;
             if (door.IsOpen) return;   // swinging open already: just wait for it
+            door.SwingAwayFrom(transform.position, Forward);   // away from her, the way she walks
             door.SetOpen(true);
             DoorOpenCount++;
             NoteDoor(door);

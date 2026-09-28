@@ -66,7 +66,7 @@ Each of these crosses a written line. The spec keeps destruction out of scope, A
 - **Damage behind cover:** a blast behind a floor or wall still does 35 %. A grenade on the ground floor broke the cellar crate underneath without lighting its grenades. Should floors block more than walls?
 - **Gables break, the roof above stays in the air.**
 - **Doors swing too slowly to break anything** (1.8 m/s at the edge). Should a slammed door smash a vase?
-- Exterior doors open outward, and the garage door is up-and-over.
+- ~~Exterior doors open outward~~ Settled 2026-09-28 by Jonathan's hot-fix ticket: every door swings away from whoever opens it (a side the house blocks is left for the other one), and a door waits against a person instead of shoving them. See `changelog/CHANGELOG.md`. The garage door stays up-and-over and the windows open outward.
 
 ## Revisit if
 - **At the two-player session,** people only blow things up and nobody carries anything.

@@ -11,6 +11,12 @@ namespace Movers
     // locally from the new goal), HingedPanel.Snap during the snapshot (no swing), and
     // DoorLock.locked written directly (no latch, no event). The rattle of a locked door has
     // no record of its own: the replayed DoorLockedRattle jiggles the leaf here.
+    //
+    // A leaf's record also says which side it opens to once someone has opened it (a door
+    // swings away from whoever opens it: HingedPanel.SwingAwayFrom) and how far the house lets
+    // it go there, so both screens swing it the same way and stop it at the same place. Two
+    // bytes: the state (bit 0 open, bit 1 the negative side, bit 2 a side was picked), then the
+    // cap in half degrees (0: none). A lock is one byte, 1 or 0.
     public sealed class DoorSync : NetSync
     {
         const byte OpPanel = 1;
@@ -21,7 +27,7 @@ namespace Movers
         // Registered panels and locks, in sweep order, with the state last sent (host).
         readonly List<HingedPanel> panels = new List<HingedPanel>();
         readonly List<uint> panelIds = new List<uint>();
-        readonly List<bool> panelSent = new List<bool>();
+        readonly List<int> panelSent = new List<int>();
         readonly List<DoorLock> locks = new List<DoorLock>();
         readonly List<uint> lockIds = new List<uint>();
         readonly List<bool> lockSent = new List<bool>();
@@ -41,7 +47,7 @@ namespace Movers
                 panelById.Add(id, found[i]);
                 panels.Add(found[i]);
                 panelIds.Add(id);
-                panelSent.Add(found[i].IsOpen);
+                panelSent.Add(RecordOf(found[i]));
             }
             IReadOnlyList<DoorLock> all = DoorLock.All;
             for (int i = 0; i < all.Count; i++)
@@ -68,15 +74,17 @@ namespace Movers
             for (int i = 0; i < panels.Count; i++)
             {
                 HingedPanel p = panels[i];
-                if (p == null || p.IsOpen == panelSent[i]) continue;
-                if (!Write(OpPanel, panelIds[i], p.IsOpen)) return;
-                panelSent[i] = p.IsOpen;
+                if (p == null) continue;
+                int record = RecordOf(p);
+                if (record == panelSent[i]) continue;
+                if (!WritePanel(panelIds[i], record)) return;
+                panelSent[i] = record;
             }
             for (int i = 0; i < locks.Count; i++)
             {
                 DoorLock l = locks[i];
                 if (l == null || l.locked == lockSent[i]) continue;
-                if (!Write(OpLock, lockIds[i], l.locked)) return;
+                if (!WriteLock(lockIds[i], l.locked)) return;
                 lockSent[i] = l.locked;
             }
         }
@@ -87,24 +95,45 @@ namespace Movers
             {
                 HingedPanel p = panels[i];
                 if (p == null) continue;
-                panelSent[i] = p.IsOpen;
-                Write(OpPanel, panelIds[i], p.IsOpen);
+                panelSent[i] = RecordOf(p);
+                WritePanel(panelIds[i], panelSent[i]);
             }
             for (int i = 0; i < locks.Count; i++)
             {
                 DoorLock l = locks[i];
                 if (l == null) continue;
                 lockSent[i] = l.locked;
-                Write(OpLock, lockIds[i], l.locked);
+                WriteLock(lockIds[i], l.locked);
             }
         }
 
-        static bool Write(byte op, uint id, bool on)
+        // The state in the low byte, the cap in half degrees in the next one.
+        static int RecordOf(HingedPanel p)
         {
-            NetWriter w = NetOut.Reliable(NetSyncId.Doors, op);
+            int state = p.IsOpen ? 1 : 0;
+            if (p.FullOpenAngle < 0f) state |= 2;
+            if (p.SideChosen) state |= 4;
+            int cap = Mathf.Clamp(Mathf.RoundToInt(p.SideCap * 2f), 0, 255);
+            return state | (cap << 8);
+        }
+
+        static bool WritePanel(uint id, int record)
+        {
+            NetWriter w = NetOut.Reliable(NetSyncId.Doors, OpPanel);
             if (w == null) return false;
             w.WriteUInt(id);
-            w.WriteBool(on);
+            w.WriteByte((byte)(record & 0xFF));
+            w.WriteByte((byte)(record >> 8));
+            NetOut.End(w);
+            return true;
+        }
+
+        static bool WriteLock(uint id, bool locked)
+        {
+            NetWriter w = NetOut.Reliable(NetSyncId.Doors, OpLock);
+            if (w == null) return false;
+            w.WriteUInt(id);
+            w.WriteBool(locked);
             NetOut.End(w);
             return true;
         }
@@ -113,11 +142,15 @@ namespace Movers
         {
             if (!Net.IsClient) return;
             uint id = r.ReadUInt();
-            bool on = r.ReadBool();
+            byte state = r.ReadByte();
+            bool on = (state & 1) != 0;
             switch (op)
             {
                 case OpPanel:
+                    byte cap = r.ReadByte();
                     if (!panelById.TryGetValue(id, out HingedPanel p) || p == null) return;
+                    // The side first: the swing (or the snap) goes to the side the host picked.
+                    if ((state & 4) != 0) p.ApplySide((state & 2) != 0 ? -1f : 1f, cap * 0.5f);
                     // Before PeerReady the records are the snapshot: straight there, no swing.
                     if (Net.PeerReady) p.Command(on);
                     else p.Snap(on);

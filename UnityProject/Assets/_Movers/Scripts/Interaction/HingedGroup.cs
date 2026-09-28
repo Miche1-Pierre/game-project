@@ -166,10 +166,21 @@ namespace Movers
             switch (VerbFor(who))
             {
                 case DoorVerb.Close: SetOpen(false, actor); break;
-                case DoorVerb.Open: SetOpen(true, actor); break;
+                case DoorVerb.Open:
+                    if (by != null) SwingAwayFrom(by.transform.position, by.transform.forward);
+                    SetOpen(true, actor);
+                    break;
                 case DoorVerb.Unlock: UnlockFor(who, actor); break;
                 default: Rattle(actor); break;
             }
+        }
+
+        // Every leaf that swings both ways turns away from someone about to open the group
+        // (HingedPanel.SwingAwayFrom): a double door opens as one, away from you.
+        public void SwingAwayFrom(Vector3 position, Vector3 facing)
+        {
+            for (int i = 0; i < panels.Count; i++)
+                if (panels[i] != null) panels[i].SwingAwayFrom(position, facing);
         }
 
         // The key in this player's hands, turned in the whole door (KeyItem, on the Alt button):
