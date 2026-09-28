@@ -19,7 +19,11 @@ namespace Movers
     // up in one frame (see MaxSourceTriangles) takes the same way out.
     //
     // Each piece is a DebrisPool shell (rented, its mesh refilled, given back when it leaves),
-    // so a burst of breaks allocates almost nothing.
+    // so a burst of breaks allocates almost nothing. Three kinds of break (DEV 2):
+    // - Shatter: a prop, a pane, a fixture bursting apart around its centre;
+    // - ShatterChunk: a wall chunk torn out by a big hit, cut into rubble that keeps the
+    //   chunk's launch (section 3.7);
+    // - Chips: a few flakes knocked off a surface by a hit that removes nothing (section 3.9).
     public static class MeshShatter
     {
         const float MinBoxSize = 0.04f;           // collider floor on each axis, so a flat shard still has a body
@@ -74,6 +78,7 @@ namespace Movers
         static readonly List<Material> readMaterials = new List<Material>(8);
         // What Shatter returns: reused by every call (no caller keeps it; copy it to keep it).
         static readonly List<GameObject> spawnedScratch = new List<GameObject>(32);
+        static MaterialPropertyBlock propertyBlock;
 
         // One generator for every shatter, so two identical vases never break the same way and
         // no call allocates its own. Local cosmetics only: it never touches the gameplay's Random.
@@ -131,30 +136,111 @@ namespace Movers
             if (!manager.TryReserve(Mathf.Max(1, pieces), out int granted)) return spawnedScratch;
 
             int built = Build(sources, granted, totalMass, inheritVelocity, impulse, lifetime, instigator,
-                              Burst, manager, spawnedScratch);
+                              Burst, manager, spawnedScratch, Vector3.zero, 0f);
             if (built < granted) manager.Refund(granted - built, false);
             return spawnedScratch;
         }
 
-        // One wall chunk cut into rubble, every piece moving at velocity (a chunk launched by a big
-        // hit). The chunk itself is left for the caller to remove. The list returned is the caller's.
+        // One wall chunk torn out by a big hit, cut into 'pieces' pieces of rubble (DEV 2 section
+        // 3.7). Every piece keeps the chunk's launch: velocity, plus a little burst apart and the
+        // table's chunkSpin, its Rigidbody mass capped at debrisPhysicsMassCap. The pieces are
+        // marked like the chunk they came from (structureChunk, structureSource = its
+        // DestructibleModule, launchedAt = now, its material), so the blast that launched them
+        // does not push them again and they never hurt their own wall.
+        // Asks the structure budget (TryReserveStructure). Returns an empty list when fewer than
+        // two pieces fit, or when the chunk cannot be read: the caller then detaches the whole
+        // slab, never nothing. The chunk must still be active and shown, and is left for the
+        // caller to remove. The list returned is the caller's.
         public static List<GameObject> ShatterChunk(Renderer chunk, int pieces, float totalMass, Vector3 velocity,
                                                     Vector3 point, float lifetime, int instigator)
         {
+            var result = new List<GameObject>(Mathf.Max(2, pieces));
+            if (chunk == null || pieces < 2 || !chunk.enabled || !chunk.gameObject.activeInHierarchy) return result;
+            DebrisManager manager = DebrisManager.Instance;
+            if (manager == null) return result;
+            if (!manager.TryReserveStructure(pieces, out int granted)) return result;
+            if (granted < 2)
+            {
+                manager.Refund(granted, true);
+                return result;
+            }
+
+            var t = DestructionMaterialTable.Current;
+            var style = new LaunchStyle
+            {
+                outwardMin = 0.3f, outwardMax = 1.2f, kickMin = 0f, kickMax = 0f,
+                spinMin = Mathf.Max(0f, t.chunkSpin.x), spinMax = Mathf.Max(t.chunkSpin.x, t.chunkSpin.y),
+                maxMass = t.debrisPhysicsMassCap > 0f ? t.debrisPhysicsMassCap : float.PositiveInfinity,
+            };
             single.Clear();
             single.Add(chunk);
-            var result = new List<GameObject>(Shatter(single, pieces, totalMass, velocity, point, Vector3.zero, lifetime, instigator));
+            // Rubble only from a real mesh: boxes tiling a wall slab would read worse than the slab.
+            int built = Build(single, granted, totalMass, velocity, Vector3.zero, lifetime, instigator, style, manager,
+                              result, Vector3.zero, 0f, true);
             single.Clear();
+            if (built < granted) manager.Refund(granted - built, true);
+            if (built == 0) return result;
+
+            var module = chunk.GetComponentInParent<DestructibleModule>(true);
+            if (propertyBlock == null) propertyBlock = new MaterialPropertyBlock();
+            chunk.GetPropertyBlock(propertyBlock);
+            bool tinted = !propertyBlock.isEmpty;
+            float now = Time.time;
+            for (int i = 0; i < result.Count; i++)
+            {
+                if (!result[i].TryGetComponent(out DebrisPiece piece)) continue;
+                piece.structureChunk = true;
+                piece.structureSource = module;
+                piece.launchedAt = now;
+                if (module != null) piece.material = module.Material;
+                // The damage tint of the chunk stays on its rubble.
+                if (tinted && piece.rend != null) piece.rend.SetPropertyBlock(propertyBlock);
+            }
             return result;
         }
 
-        // Reads the sources, cuts them, launches the pieces into 'into' and returns how many it built.
+        // A few flakes knocked off 'source' around 'point' by a hit that removes nothing (DEV 2
+        // section 3.9): only its triangles within 'radius' of the point are cut, so a chip is a
+        // small patch of the surface, not a copy of the whole chunk. Each flies at velocity plus
+        // a little spray and lives 'lifetime' seconds. Asks the ordinary budget (TryReserve),
+        // never the wall-chunk reserve: chips are the first thing to go in a busy frame. Nothing
+        // comes of an unreadable mesh (the dust says it). The list returned is reused by the
+        // next call, like Shatter's.
+        public static List<GameObject> Chips(Renderer source, Vector3 point, float radius, int count, float totalMass,
+                                             Vector3 velocity, float lifetime, int instigator)
+        {
+            spawnedScratch.Clear();
+            if (source == null || count <= 0 || radius <= 0f) return spawnedScratch;
+            DebrisManager manager = DebrisManager.Instance;
+            if (manager == null) return spawnedScratch;
+            if (!manager.TryReserve(count, out int granted)) return spawnedScratch;
+
+            var style = new LaunchStyle
+            {
+                outwardMin = 0.5f, outwardMax = 2f, kickMin = 0f, kickMax = 0f,
+                spinMin = 4f, spinMax = 12f, maxMass = float.PositiveInfinity,
+            };
+            single.Clear();
+            single.Add(source);
+            int built = Build(single, granted, totalMass, velocity, Vector3.zero, lifetime, instigator, style, manager,
+                              spawnedScratch, point, radius);
+            single.Clear();
+            if (built < granted) manager.Refund(granted - built, false);
+            return spawnedScratch;
+        }
+
+        // The shared body of the three: reads the sources, cuts them, launches the pieces into
+        // 'into' and returns how many it built. With nearRadius > 0 only the triangles around
+        // 'near' are kept (chips). With meshOnly (or for chips) unreadable sources give nothing
+        // instead of boxes.
         static int Build(IList<Renderer> sources, int pieces, float totalMass, Vector3 inheritVelocity, Vector3 impulse,
                          float lifetime, int instigator, in LaunchStyle style, DebrisManager manager,
-                         List<GameObject> into)
+                         List<GameObject> into, Vector3 near, float nearRadius, bool meshOnly = false)
         {
             int before = into.Count;
             totalMass = Mathf.Max(MinPieceMass, totalMass);
+            bool chips = nearRadius > 0f;
+            meshOnly |= chips;
 
             ClearSoup();
             boxSources.Clear();
@@ -183,11 +269,16 @@ namespace Movers
 
                 float volume = Mathf.Max(1e-4f, b.size.x * b.size.y * b.size.z);
                 if (AddTriangles(r)) meshVolume += volume;
-                else { boxSources.Add(r); boxVolume += volume; }
+                else if (!meshOnly) { boxSources.Add(r); boxVolume += volume; }
             }
             if (!any) return 0;
+            if (chips && !KeepNear(near, nearRadius))
+            {
+                ClearSoup();
+                return 0;
+            }
 
-            Vector3 centre = whole.center;
+            Vector3 centre = chips ? near : whole.center;
             Vector3 kick = Vector3.ClampMagnitude(impulse / Mathf.Max(totalMass, 1f), MaxKickSpeed);
             bool hasTriangles = pa.Count > 0;
             float meshShare = boxSources.Count == 0 ? 1f : (hasTriangles ? meshVolume / (meshVolume + boxVolume) : 0f);
@@ -476,6 +567,50 @@ namespace Movers
             ta.Add(umid); tb.Add(ub); tc.Add(uc);
             triMaterial.Add(triMaterial[i]);
             return true;
+        }
+
+        // Chips: keeps only the surface within 'radius' of 'point'. The big faces there are split
+        // first (a plastered face is two triangles, whose centroids may both be far from the
+        // hit), then every triangle whose centroid is out of reach is dropped. False when
+        // nothing is left.
+        static bool KeepNear(Vector3 point, float radius)
+        {
+            float maxEdge = Mathf.Max(0.03f, radius * 0.5f);
+            float maxSq = maxEdge * maxEdge;
+            int budget = Mathf.Min(MaxWorkingTriangles, pa.Count + 400);
+            for (int pass = 0; pass < 12 && pa.Count < budget; pass++)
+            {
+                bool split = false;
+                int n = pa.Count;
+                for (int i = 0; i < n && pa.Count < budget; i++)
+                {
+                    Vector3 a = pa[i], b = pb[i], c = pc[i];
+                    float reach = radius + Mathf.Sqrt(Mathf.Max((b - a).sqrMagnitude,
+                                                     Mathf.Max((c - b).sqrMagnitude, (a - c).sqrMagnitude)));
+                    if (((a + b + c) / 3f - point).sqrMagnitude > reach * reach) continue;
+                    if (SplitLongestEdge(i, maxSq)) split = true;
+                }
+                if (!split) break;
+            }
+
+            float r2 = radius * radius;
+            int write = 0;
+            for (int t = 0; t < pa.Count; t++)
+            {
+                if (((pa[t] + pb[t] + pc[t]) / 3f - point).sqrMagnitude > r2) continue;
+                pa[write] = pa[t]; pb[write] = pb[t]; pc[write] = pc[t];
+                ta[write] = ta[t]; tb[write] = tb[t]; tc[write] = tc[t];
+                triMaterial[write] = triMaterial[t];
+                write++;
+            }
+            int drop = pa.Count - write;
+            if (drop > 0)
+            {
+                pa.RemoveRange(write, drop); pb.RemoveRange(write, drop); pc.RemoveRange(write, drop);
+                ta.RemoveRange(write, drop); tb.RemoveRange(write, drop); tc.RemoveRange(write, drop);
+                triMaterial.RemoveRange(write, drop);
+            }
+            return write > 0;
         }
 
         // Area-weighted random centroids, each the best of a few candidates (the one farthest
