@@ -27,6 +27,9 @@ namespace Movers
 
         public readonly List<Chunk> chunks = new List<Chunk>();
         public readonly List<Vector2Int> neighbours = new List<Vector2Int>();   // index pairs, a < b
+        // Unity m2 of cut face each pair shares, parallel to neighbours. 0 for a pair that only
+        // touches (a wood frame against the plaster); 1 when the file does not say.
+        public readonly List<float> neighbourArea = new List<float>();
         readonly Dictionary<string, int> byName = new Dictionary<string, int>();
 
         public int IndexOf(string chunkName)
@@ -96,7 +99,7 @@ namespace Movers
             {
                 for (int i = 0; i < adj.Count; i++)
                     if (adj[i] is Dictionary<string, object> p)
-                        AddPair(data, (int)Num(p, "a", -1f), (int)Num(p, "b", -1f));
+                        AddPair(data, (int)Num(p, "a", -1f), (int)Num(p, "b", -1f), Num(p, "shared_cut_area_unity", 1f));
             }
             else if (chunksObj is List<object> chunkList)
             {
@@ -105,7 +108,8 @@ namespace Movers
                     if (!(chunkList[i] is Dictionary<string, object> o)) continue;
                     if (!o.TryGetValue("neighbors", out object nObj) || !(nObj is List<object> n)) continue;
                     for (int k = 0; k < n.Count; k++)
-                        if (n[k] is Dictionary<string, object> nb) AddPair(data, i, (int)Num(nb, "chunk", -1f));
+                        if (n[k] is Dictionary<string, object> nb)
+                            AddPair(data, i, (int)Num(nb, "chunk", -1f), Num(nb, "shared_cut_area_unity", 1f));
                 }
             }
             return data;
@@ -146,11 +150,13 @@ namespace Movers
             }
         }
 
-        static void AddPair(ChunkSetData data, int a, int b)
+        static void AddPair(ChunkSetData data, int a, int b, float area)
         {
             if (a < 0 || b < 0 || a == b) return;
             var p = a < b ? new Vector2Int(a, b) : new Vector2Int(b, a);
-            if (!data.neighbours.Contains(p)) data.neighbours.Add(p);
+            if (data.neighbours.Contains(p)) return;
+            data.neighbours.Add(p);
+            data.neighbourArea.Add(Mathf.Max(0f, area));
         }
 
         static string Str(Dictionary<string, object> o, string key)

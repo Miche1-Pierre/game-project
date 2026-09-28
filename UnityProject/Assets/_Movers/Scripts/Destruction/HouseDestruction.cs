@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -21,9 +22,14 @@ namespace Movers
     //    - floors, stairs, plinths and steps are only remembered, as what holds the rest up.
     //    Plinths are taken out of the ground-floor walls first: they are foundation, and used
     //    to shatter with the wall above them.
+    //    The garden groups (extraRoots) are read against the catalog's yard rows only: a hedge,
+    //    a bush, the mailbox get a whole-piece Breakable flagged isYard (garden damage, not a
+    //    wall), standing on its own, outside the graph.
     // c) Furniture. Every MovableObject gets a Breakable with a material guessed from its
     //    name, except the cigarette and the beer, which already handle their own ends.
     // d) The structure graph: what rests on what, built once from the pieces' boxes.
+    // e) The chunk colliders of every chunk set a wall here uses, cooked ahead over the first
+    //    frames (both machines), so breaking a wall up or letting a chunk fall never cooks one.
     //
     // It then owns the graph for the session: it ticks the collapse queue every physics step,
     // and it is what the destruction reset (F11) rebuilds.
@@ -36,6 +42,9 @@ namespace Movers
     {
         [Tooltip("Left empty, the object named GrandmaHouse_PierreKit is used.")]
         public Transform houseRoot;
+        [Tooltip("Garden groups whose pieces the catalog's yard rows make breakable (hedges, bushes, the mailbox...). " +
+                 "Left empty, HouseContents/Garden/Dressing is used when the scene has it.")]
+        public Transform[] extraRoots = new Transform[0];
         public bool splitGlass = true;
         public bool breakableStructure = true;
         public bool breakableMovables = true;
@@ -61,11 +70,15 @@ namespace Movers
         [Tooltip("Random delay (s) before each unsupported piece falls, so a wall crumbles instead of dropping as one.")]
         public float collapseStagger = 0.3f;
 
+        [Tooltip("ms per frame spent cooking the chunk colliders ahead, over the first frames.")]
+        public float precookMsPerFrame = 4f;
+
         [Header("Debug")]
         [Tooltip("Adds the destruction debug keys (F3, F9, F10, F11) in the editor and development builds.")]
         public bool debugTools = true;
 
         const string DefaultRootName = "GrandmaHouse_PierreKit";
+        const string DefaultYardPath = "HouseContents/Garden/Dressing";
         const float WeldDistance = 1e-4f;   // corners closer than this belong to the same pane
 
         public static HouseDestruction Instance { get; private set; }
@@ -76,7 +89,10 @@ namespace Movers
         public int WholePieceCount { get; private set; }
         public int RoofSectionCount { get; private set; }
         public int FixedPieceCount { get; private set; }
+        public int YardPieceCount { get; private set; }
         public float SetupMs { get; private set; }
+        public int PrecookedMeshCount { get; private set; }
+        public bool PrecookDone => precookNext >= precookQueue.Count;
         public StructureGraph Graph => graph;
 
         // Meshes built here die with this component, so nothing leaks across play sessions.
@@ -85,6 +101,8 @@ namespace Movers
         StructureGraph graph;
         int collapseFrame = -1;      // the frame the collapse budget below belongs to
         int releasedThisFrame;
+        readonly List<Mesh> precookQueue = new List<Mesh>(256);
+        int precookNext;
 
         // Everything that is a node of the graph, with what the graph needs to rebuild it after
         // a reset. Bounds are taken once: the house stands still until it breaks.
@@ -174,10 +192,13 @@ namespace Movers
             }
             else Debug.LogWarning("[HouseDestruction] no house root and no object named " + DefaultRootName +
                                   ": windows and walls stay unbreakable.");
+            if (breakableStructure) WireYard();
 
             if (breakableMovables) movables = WireMovables();
             RecordStartPoses();
             PaneCount = panes;
+
+            QueuePrecook();
 
             var selfSupported = new List<int>();
             BuildGraph(selfSupported);
@@ -191,9 +212,10 @@ namespace Movers
             SetupMs = (float)((Time.realtimeSinceStartupAsDouble - t0) * 1000.0);
             Debug.Log("[HouseDestruction] glass: " + panes + " panes on " + modules + " modules (" + distinct +
                       " distinct meshes)  |  structure: " + ChunkedWallCount + " chunked walls, " + WholePieceCount +
-                      " whole pieces, " + RoofSectionCount + " roof sections, " + FixedPieceCount + " supports  |  movables: " +
+                      " whole pieces, " + RoofSectionCount + " roof sections, " + FixedPieceCount + " supports, " + YardPieceCount + " yard pieces  |  movables: " +
                       movables + " breakable  |  graph: " + graph.NodeCount + " nodes, " + graph.EdgeCount / 2 + " edges, " +
-                      selfSupported.Count + " standing as built  |  " + SetupMs.ToString("0") + " ms");
+                      selfSupported.Count + " standing as built  |  pre-cook: " + precookQueue.Count + " chunk meshes  |  " +
+                      SetupMs.ToString("0") + " ms");
             if (selfSupported.Count > 0) Debug.Log("[HouseDestruction] held up as built (no support found in the kit boxes): " + Names(selfSupported, 12));
             if (unreadable.Count > 0)
                 Debug.LogWarning("[HouseDestruction] " + unreadable.Count + " kit mesh(es) with glass are not readable, " +
@@ -607,6 +629,7 @@ namespace Movers
                 // along. A second, structural health model would fight it.
                 if (go.TryGetComponent(out GlassPane _)) continue;
                 if (!catalog.TryGet(f.sharedMesh.name, out var entry)) continue;
+                if (entry.yard) continue;   // garden pieces are only looked for in the garden (WireYard)
                 if (f.GetComponentInParent<MovableObject>(true) != null) continue;
                 bool inSolidGroup = UnderSolidGroup(f.transform, houseRoot);
                 Bounds b = PieceBounds(go);
@@ -673,6 +696,50 @@ namespace Movers
                     }
                 }
             }
+        }
+
+        // The garden: every piece under extraRoots whose mesh is a yard row of the catalog becomes
+        // a whole-piece Breakable flagged isYard, on the object that carries its collider (what a
+        // truck or a thrown sofa hits). Anchored: it stands on its own and holds nothing up, so it
+        // stays out of the graph. Its layer is left alone. Online the client wires the same pieces
+        // (NetIds registers the Breakables on both machines), and only the host breaks them.
+        void WireYard()
+        {
+            Transform[] roots = extraRoots;
+            if (roots == null || roots.Length == 0)
+            {
+                GameObject found = GameObject.Find(DefaultYardPath);
+                roots = found != null ? new[] { found.transform } : Array.Empty<Transform>();
+            }
+            for (int r = 0; r < roots.Length; r++)
+            {
+                Transform root = roots[r];
+                if (root == null) continue;
+                MeshFilter[] filters = root.GetComponentsInChildren<MeshFilter>(true);
+                for (int i = 0; i < filters.Length; i++)
+                {
+                    MeshFilter f = filters[i];
+                    if (f == null || f.sharedMesh == null) continue;
+                    if (!catalog.TryGet(f.sharedMesh.name, out var entry) || !entry.yard) continue;
+                    if (f.GetComponentInParent<MovableObject>(true) != null) continue;
+                    GameObject piece = YardPieceOf(f.transform, root);
+                    if (piece == null || piece.GetComponentInParent<Breakable>(true) != null) continue;
+                    var br = piece.AddComponent<Breakable>();
+                    br.Configure(entry.material, entry.health, true);
+                    br.stateCap = entry.stateCap;
+                    br.isYard = true;
+                    YardPieceCount++;
+                }
+            }
+        }
+
+        // The object that carries the piece's collider: its own, or the nearest parent under the
+        // group that has one. Null when nothing can be hit.
+        static GameObject YardPieceOf(Transform t, Transform root)
+        {
+            for (Transform p = t; p != null && p != root; p = p.parent)
+                if (p.TryGetComponent(out Collider c) && !c.isTrigger) return p.gameObject;
+            return null;
         }
 
         // Every plinth that is the child of a wall module moves out from under it, to a
@@ -794,6 +861,55 @@ namespace Movers
             graph.BuildAdjacency();
             graph.AnchorUnsupportedAsBuilt(selfSupported);
             StructureGraph.Install(graph);
+        }
+
+        // ---- e) chunk colliders, cooked ahead (DEV 2, 3.11) ----
+
+        // Every mesh of every chunk set a wall of this house breaks into. An attached chunk has
+        // its exact shape (a non-convex MeshCollider, see DestructibleModule.MakeCollider) and a
+        // falling one its hull: both are cooked here, so neither a wall breaking up nor a chunk
+        // falling cooks a collider in the middle of a blast. Unconditional, on both machines.
+        void QueuePrecook()
+        {
+            precookQueue.Clear();
+            precookNext = 0;
+            var prefabs = new HashSet<GameObject>();
+            var seen = new HashSet<Mesh>();
+            var filters = new List<MeshFilter>(32);
+            var modules = DestructibleModule.All;
+            for (int i = 0; i < modules.Count; i++)
+            {
+                var prefab = modules[i] != null ? modules[i].ChunkSetPrefab : null;
+                if (prefab == null || !prefabs.Add(prefab)) continue;
+                prefab.GetComponentsInChildren(true, filters);
+                for (int k = 0; k < filters.Count; k++)
+                {
+                    Mesh mesh = filters[k].sharedMesh;
+                    // Only a readable mesh becomes a MeshCollider (the rest get boxes).
+                    if (mesh != null && mesh.isReadable && seen.Add(mesh)) precookQueue.Add(mesh);
+                }
+            }
+            if (precookQueue.Count > 0) StartCoroutine(Precook());
+        }
+
+        // A few milliseconds a frame, at least one mesh a frame, until all are done.
+        IEnumerator Precook()
+        {
+            var watch = new System.Diagnostics.Stopwatch();
+            while (precookNext < precookQueue.Count)
+            {
+                watch.Restart();
+                do
+                {
+                    Mesh mesh = precookQueue[precookNext++];
+                    if (mesh == null) continue;
+                    Physics.BakeMesh(mesh.GetEntityId(), false);   // attached: the exact shape
+                    Physics.BakeMesh(mesh.GetEntityId(), true);    // debris: its hull
+                    PrecookedMeshCount++;
+                }
+                while (precookNext < precookQueue.Count && watch.Elapsed.TotalMilliseconds < precookMsPerFrame);
+                yield return null;
+            }
         }
 
         // ---- the destruction reset (F11) ----

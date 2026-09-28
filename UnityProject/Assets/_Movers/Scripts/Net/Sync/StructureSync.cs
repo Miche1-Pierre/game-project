@@ -12,7 +12,10 @@ namespace Movers
     {
         const byte OpModuleFractured = 1, OpChunkDetached = 2, OpChunkLook = 3, OpModuleState = 4,
                    OpRoofFell = 5, OpModuleSnapshot = 6;
-        const byte FlagFell = 1, FlagVanished = 2;
+        // ChunkDetached flags (values): fell, vanished, shattered into rubble; the rubble count in
+        // the high nibble (DEV 2, 3.7).
+        const byte FlagFell = 1, FlagVanished = 2, FlagShattered = 4;
+        const int RubbleShift = 4;
 
         public override NetSyncId Id => NetSyncId.Structure;
 
@@ -29,7 +32,10 @@ namespace Movers
             NetOut.End(w);
         }
 
-        public static void ChunkDetached(DestructibleModule m, int chunk, bool fell, bool vanished, Vector3 v, Vector3 angular)
+        // rubble: the pieces the host cut the chunk into, 0 for a whole slab. The client cuts its
+        // own (its budget permitting), from its own copy of the chunk.
+        public static void ChunkDetached(DestructibleModule m, int chunk, bool fell, bool vanished, Vector3 v, Vector3 angular,
+                                         int rubble)
         {
             uint id = IdOf(m);
             if (id == 0 || chunk < 0 || chunk > 255) return;
@@ -37,7 +43,10 @@ namespace Movers
             if (w == null) return;
             w.WriteUInt(id);
             w.WriteByte((byte)chunk);
-            w.WriteByte((byte)((fell ? FlagFell : 0) | (vanished ? FlagVanished : 0)));
+            rubble = Mathf.Clamp(rubble, 0, 15);
+            int flags = (fell ? FlagFell : 0) | (vanished ? FlagVanished : 0)
+                        | (rubble > 0 ? FlagShattered | (rubble << RubbleShift) : 0);
+            w.WriteByte((byte)flags);
             w.WriteVector3Half(v);
             w.WriteVector3Half(angular);
             NetOut.End(w);
@@ -95,14 +104,14 @@ namespace Movers
                 if (id == 0) continue;
                 if (m.IsFractured)
                 {
-                    m.NetSnapshot(out float left, out ushort attachedMask, out uint looks, out byte fixturesMask);
+                    m.NetSnapshot(out float left, out ulong attachedMask, out ulong looks, out byte fixturesMask);
                     var w = NetOut.Reliable(NetSyncId.Structure, OpModuleSnapshot);
                     if (w == null) return;
                     w.WriteUInt(id);
                     w.WriteUnit(left);
                     w.WriteByte((byte)m.State);
-                    w.WriteUShort(attachedMask);
-                    w.WriteUInt(looks);
+                    w.WriteULong(attachedMask);   // 32 chunks (Protocol 2)
+                    w.WriteULong(looks);          // 2 bits per chunk
                     w.WriteByte(fixturesMask);
                     NetOut.End(w);
                 }
@@ -140,7 +149,8 @@ namespace Movers
                     byte flags = r.ReadByte();
                     Vector3 v = r.ReadVector3Half();
                     Vector3 angular = r.ReadVector3Half();
-                    Module(id)?.NetDetach(chunk, (flags & FlagFell) != 0, (flags & FlagVanished) != 0, v, angular, silent);
+                    int rubble = (flags & FlagShattered) != 0 ? (flags >> RubbleShift) & 15 : 0;
+                    Module(id)?.NetDetach(chunk, (flags & FlagFell) != 0, (flags & FlagVanished) != 0, v, angular, silent, rubble);
                     break;
                 }
                 case OpChunkLook:
@@ -165,8 +175,8 @@ namespace Movers
                 {
                     float left = r.ReadUnit();
                     var s = (DestructionState)r.ReadByte();
-                    ushort attachedMask = r.ReadUShort();
-                    uint looks = r.ReadUInt();
+                    ulong attachedMask = r.ReadULong();
+                    ulong looks = r.ReadULong();
                     byte fixturesMask = r.ReadByte();
                     Module(id)?.NetApplySnapshot(left, s, attachedMask, looks, fixturesMask);
                     break;

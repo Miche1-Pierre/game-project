@@ -13,7 +13,10 @@ namespace Movers
     // - walls break chunk by chunk; without a chunk set they break whole, as before;
     // - the foundation (cellar walls, plinths, the ground slab) stops at Damaged;
     // - floors and stairs never break and never fall;
-    // - roofs never break, they fall as whole sections when nothing holds them up.
+    // - roofs never break, they fall as whole sections when nothing holds them up;
+    // - yard pieces (hedges, bushes, the mailbox, small garden props) break whole, stand on their
+    //   own, and count as garden damage, not as walls (DEV 2, 6.5). They are looked for only in
+    //   the garden groups HouseDestruction is given, never in the house.
     //
     // The code defaults hold today's health numbers and no chunk sets (code cannot reference an
     // imported FBX). The integrator creates the asset and fills the chunk sets.
@@ -57,6 +60,9 @@ namespace Movers
             public bool anchor;
             [Tooltip("Breakable even though the kit files it under Roofs, Stairs or Floors (the gables).")]
             public bool inSolidGroup;
+            [Tooltip("A garden piece (hedge, bush, mailbox...): wired only under HouseDestruction.extraRoots, breaks whole, " +
+                     "and its destruction is garden damage, never a wall (Breakable.isYard).")]
+            public bool yard;
             public ChunkVariant[] variants = new ChunkVariant[0];
 
             public bool IsDamageable => kind == Kind.Wall || kind == Kind.Element || kind == Kind.Foundation;
@@ -144,12 +150,12 @@ namespace Movers
             return c;
         }
 
-        // Health numbers are HouseDestruction's old table, unchanged. chunkHealth is new, set
-        // against the wall focus of the material table (0.5 m): a grenade on the floor next to
-        // a wall takes out the chunks within about 0.7 m (exterior, 500) or 0.8 m (interior, 350),
-        // cracks the ring around them, and a second grenade at the same spot reaches about 1 m.
-        // Checked offline on the A7 prototype chunk sets (a Python port of these rules, chunk boxes
-        // for hulls); first guesses, to tune in play.
+        // Health numbers are HouseDestruction's old table, unchanged. chunkHealth is set against
+        // the structure falloff curve of the material table (DestructionMaterialTable.Focus) for
+        // the re-fractured house walls (about 20 chunks, DEV 2 3.9): 300 exterior and garage, 210
+        // interior, so a wall keeps the toughness it had as 12 chunks of 500 and 350, and breaks
+        // up at 120 and 84 (fractureAtShare 0.4), which ImpactDamage's calibration assumes.
+        // First guesses, to tune in play.
         public static Entry[] Defaults()
         {
             const Kind W = Kind.Wall, E = Kind.Element;
@@ -159,15 +165,15 @@ namespace Movers
             return new[]
             {
                 // Exterior walls.
-                new Entry("PK_Wall_Plain", W, Plaster, 1400f, 500f),
-                new Entry("PK_Wall_Window_Small", W, Plaster, 1400f, 500f),
-                new Entry("PK_Wall_Window_Big", W, Plaster, 1400f, 500f),
-                new Entry("PK_Wall_Door", W, Plaster, 1400f, 500f),
-                new Entry("PKX_Wall_Garage", W, Plaster, 1400f, 500f),
+                new Entry("PK_Wall_Plain", W, Plaster, 1400f, 300f),
+                new Entry("PK_Wall_Window_Small", W, Plaster, 1400f, 300f),
+                new Entry("PK_Wall_Window_Big", W, Plaster, 1400f, 300f),
+                new Entry("PK_Wall_Door", W, Plaster, 1400f, 300f),
+                new Entry("PKX_Wall_Garage", W, Plaster, 1400f, 300f),
                 // Interior walls.
-                new Entry("PK_Wall_Interior", W, Plaster, 650f, 350f),
-                new Entry("PKX_Wall_Int_Door", W, Plaster, 650f, 350f),
-                new Entry("PKX_Wall_Int_Arch", W, Plaster, 650f, 350f),
+                new Entry("PK_Wall_Interior", W, Plaster, 650f, 210f),
+                new Entry("PKX_Wall_Int_Door", W, Plaster, 650f, 210f),
+                new Entry("PKX_Wall_Int_Arch", W, Plaster, 650f, 210f),
                 // The foundation: Damaged at most, and it holds the house up.
                 new Entry("PKX_Wall_Cellar", Kind.Foundation, Stone, 2600f),
                 // Gables sit under Roofs in the kit, next to the roof pieces they hold up.
@@ -206,7 +212,24 @@ namespace Movers
                 new Entry("PK_Stairs_Stone", Kind.Stairs, Stone, 0f),
                 new Entry("PKX_Plinth_Stone", Kind.Footing, Stone, 0f),
                 new Entry("PKX_Step_Stone", Kind.Footing, Stone, 0f),
+                // The garden (DEV 2, 6.5): the truck and the grenades break these now. Trees,
+                // rocks, the well and the fountain stay solid (no row).
+                Yard("Hedge", BreakMaterial.Plant, 90f),
+                Yard("Bush", BreakMaterial.Plant, 60f),
+                Yard("Bush_01", BreakMaterial.Plant, 60f),
+                Yard("Mailbox", BreakMaterial.Metal, 80f),
+                Yard("Birdhouse", Wood, 40f),
+                Yard("Trellis", Wood, 60f),
+                Yard("Scarecrow", Wood, 60f),
+                Yard("Planter_Box", Wood, 120f),      // the vegetable beds
+                Yard("Garden_Bench", Wood, 150f),
             };
+        }
+
+        // A yard piece: breaks whole, stands on its own, garden damage when it goes.
+        static Entry Yard(string module, BreakMaterial material, float health)
+        {
+            return new Entry(module, Kind.Element, material, health) { anchor = true, yard = true };
         }
     }
 }

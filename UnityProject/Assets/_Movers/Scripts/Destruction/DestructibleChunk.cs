@@ -28,6 +28,11 @@ namespace Movers
         internal bool bottom, top, sideNeg, sidePos;
         internal bool Border => bottom || top || sideNeg || sidePos;
 
+        // The chunks it shares a cut face with (indices in its wall), and how much face each:
+        // what a chunk broken off with damage to spare passes on to (DEV 2, 3.4).
+        internal int[] neighbours = System.Array.Empty<int>();
+        internal float[] neighbourArea = System.Array.Empty<float>();
+
         internal DestructibleChunk(DestructibleModule owner, int index, Transform t, Collider c, Renderer r,
                                    float mass, float maxHealth)
         {
