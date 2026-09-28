@@ -19,11 +19,21 @@ namespace Movers
     //
     // Anything else that moves him out of the seat (the debug "bring the other player here"
     // teleports him) is accepted: he gets his body back where he now stands, and the seat is free.
+    //
+    // The same component is the passenger's door (DEV 2, 6.3): drives off, "[E] Ride". The
+    // passenger sits, looks round through the same chase camera and gets out the same way, but
+    // never touches the controls: only a driving seat calls TruckVehicle.SetDriver. Both seats
+    // set CrewMember.IsDriving, which means "seated in the truck" (the host then stops posing a
+    // seated client and the seat alone places him); "at the wheel" is TruckVehicle.IsAtWheel.
     [DisallowMultipleComponent]
     public sealed class VehicleSeat : Interactable
     {
         public TruckVehicle vehicle;            // found in the parents when empty
-        public Transform seatPoint;             // the driver's root goes here; this transform when empty
+        public Transform seatPoint;             // the occupant's root goes here; this transform when empty
+        [Tooltip("0 the driver, 1 the passenger. Online, the seat records name the seat by it (TruckSync).")]
+        public int seatIndex = 0;
+        [Tooltip("On: the driver's seat (controls, ramp, engine). Off: a passenger, look and exit only.")]
+        public bool drives = true;
         public float maxExitSpeed = 1f;         // m/s
         public float exitClearance = 0.3f;      // gap between the truck and the capsule of whoever gets out
         public ChaseCamera chase = new ChaseCamera();
@@ -31,11 +41,28 @@ namespace Movers
         [Header("HUD")]
         public int fontSize = 18;               // at 1080 lines, scaled per viewport
 
+        // Every enabled seat of the scene, for the lookups below and TruckSync.
+        public static readonly List<VehicleSeat> All = new List<VehicleSeat>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() { All.Clear(); }
+
+        // The seat this member sits in, or null.
+        public static VehicleSeat Of(CrewMember m)
+        {
+            if (m == null) return null;
+            for (int i = 0; i < All.Count; i++)
+                if (All[i] != null && All[i].occupied && All[i].driver == m) return All[i];
+            return null;
+        }
+
+        // Whoever sits here: the driver on a driving seat, the passenger otherwise.
+        public CrewMember Occupant => driver;
         public CrewMember Driver => driver;
-        // Where the chase camera looks: the driver faces this way getting out. Online, the
+        // Where the chase camera looks: the occupant faces this way getting out. Online, the
         // client sends its own with its input (TruckSync.LocalChaseYaw).
         public float ChaseYaw => chase.Yaw;
-        public override string Prompt => occupied ? "Get out" : "Drive";
+        public override string Prompt => occupied ? "Get out" : drives ? "Drive" : "Ride";
         public override bool CanInteract => !occupied && vehicle != null && vehicle.isActiveAndEnabled;
 
         // Where the driver's eyes are while he sits in the cab. CrewMember.EyePosition reads his
@@ -91,11 +118,16 @@ namespace Movers
             truckRoot = vehicle != null ? vehicle.transform : transform.root;
         }
 
-        void OnEnable() { CrewRoster.Left += OnCrewLeft; }
+        void OnEnable()
+        {
+            CrewRoster.Left += OnCrewLeft;
+            if (!All.Contains(this)) All.Add(this);
+        }
 
         void OnDisable()
         {
             CrewRoster.Left -= OnCrewLeft;
+            All.Remove(this);
             // Most likely the scene is unloading, so nothing here moves or re-enables anything:
             // the flags are cleared and that is all.
             if (occupied) Forget();
@@ -123,7 +155,7 @@ namespace Movers
             if (m.Grab != null && m.Grab.IsCarrying) m.Grab.Release(false);
 
             Seat(m);
-            if (Net.IsHost) TruckSync.SeatEnter(m.index);
+            if (Net.IsHost) TruckSync.SeatEnter(m.index, seatIndex);
             return true;
         }
 
@@ -177,7 +209,7 @@ namespace Movers
             m.transform.localRotation = Quaternion.identity;
             m.IsDriving = true;
 
-            vehicle.SetDriver(m);
+            if (drives) vehicle.SetDriver(m);
             // The chase view only on the machine whose screen shows that driver.
             if (Net.IsLocal(m)) chase.Begin(truckRoot);
         }
@@ -189,7 +221,7 @@ namespace Movers
             if (!FindExitSpot(out Vector3 feet))
             {
                 Notice(NoRoomText);
-                if (Net.IsHost && !Net.IsLocal(driver)) TruckSync.SeatNotice(driver.index, TruckSync.NoticeNoRoom);
+                if (Net.IsHost && !Net.IsLocal(driver)) TruckSync.SeatNotice(driver.index, TruckSync.NoticeNoRoom, seatIndex);
                 return false;
             }
             Release(feet);
@@ -273,14 +305,14 @@ namespace Movers
             Restore(driverEquip, equipWasOn);
             driverEquip = null;
             m.IsDriving = false;
-            if (Net.IsHost) TruckSync.SeatExit(m.index, rootPosition, yaw);
+            if (Net.IsHost) TruckSync.SeatExit(m.index, rootPosition, yaw, seatIndex);
         }
 
         // The driver is gone (destroyed, or the scene is unloading): nothing to give back, and
         // nothing is switched back on, colliders included.
         void Forget()
         {
-            if (Net.IsHost && !ReferenceEquals(driver, null)) TruckSync.SeatForgotten(driver.index, seatPoint);
+            if (Net.IsHost && !ReferenceEquals(driver, null)) TruckSync.SeatForgotten(driver.index, seatPoint, seatIndex);
             if (driver != null) driver.IsDriving = false;
             switchedOff.Clear();
             driverEquip = null;
@@ -292,7 +324,7 @@ namespace Movers
             occupied = false;
             driverLeft = false;
             driver = null;
-            if (vehicle != null) vehicle.SetDriver(null);
+            if (drives && vehicle != null) vehicle.SetDriver(null);
         }
 
         // ---- online (NETCODE_SLICE 9.6, 11.7) ----
@@ -315,7 +347,7 @@ namespace Movers
             GiveBack(rootPosition, yaw);
         }
 
-        // Host: the client left while at the wheel. He is put out at the door, so P1 can drive.
+        // Host: the client left while seated here. He is put out at the door, so P1 can take the seat.
         public void ForceRelease()
         {
             if (!Net.HasAuthority || !occupied) return;
@@ -469,7 +501,7 @@ namespace Movers
         {
             Hint hint;
             if (Time.time < noticeUntil) hint = Hint.Notice;
-            else if (!vehicle.CanDrive) hint = Hint.Ramp;
+            else if (drives && !vehicle.CanDrive) hint = Hint.Ramp;
             else if (vehicle.Body != null && vehicle.Velocity.magnitude > maxExitSpeed) hint = Hint.TooFast;
             else hint = Hint.GetOut;
 

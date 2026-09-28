@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Movers
@@ -292,11 +293,40 @@ namespace Movers
         }
 
         // On board for the police flee (EscapeMission): seated in one of its seats, or standing in
-        // the cargo box while the truck is nearly stopped.
-        public bool IsAboard(CrewMember m) => m != null && Driver == m;
+        // the cargo box while the truck is nearly stopped (under cargoAboardMaxSpeed). Nobody
+        // rides in the box at speed: there is no platform riding for players (decision 5).
+        public bool IsAboard(CrewMember m)
+        {
+            if (m == null) return false;
+            var seat = VehicleSeat.Of(m);
+            if (seat != null) return seat.vehicle == this;
+            if (m.IsDriving || cargo == null) return false;   // seated in another truck
+            float slow = Tuning.cargoAboardMaxSpeed;
+            if (Velocity.sqrMagnitude >= slow * slow) return false;
+            Vector3 centre = m.TryGetComponent(out CharacterController capsule)
+                ? capsule.transform.TransformPoint(capsule.center)
+                : m.transform.position + Vector3.up;
+            return cargo.ContainsPoint(centre);
+        }
 
-        // In the driving seat. CrewMember.IsDriving means "seated in the truck" (driver or passenger).
-        public static bool IsAtWheel(CrewMember m) => m != null && m.IsDriving;
+        // In the driving seat of any truck. CrewMember.IsDriving means "seated in the truck"
+        // (driver or passenger); only a driving seat makes a member a truck's Driver.
+        public static bool IsAtWheel(CrewMember m)
+        {
+            if (m == null || !m.IsDriving) return false;
+            for (int i = 0; i < Active.Count; i++)
+                if (Active[i] != null && Active[i].Driver == m) return true;
+            return false;
+        }
+
+        static readonly List<TruckVehicle> Active = new List<TruckVehicle>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() { Active.Clear(); }
+
+        void OnEnable() { if (!Active.Contains(this)) Active.Add(this); }
+
+        void OnDisable() { Active.Remove(this); }
 
         // VehicleSeat calls this when someone sits down (member) or gets out (null).
         public void SetDriver(CrewMember member)

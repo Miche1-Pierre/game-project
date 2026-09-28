@@ -206,6 +206,15 @@ namespace Movers
             else StopRiding(m, track);
         }
 
+        // Whether a world point is inside the box, tested in the box's own space (an oriented box,
+        // not a world AABB). TruckVehicle.IsAboard asks it for a crew member's capsule centre.
+        public bool ContainsPoint(Vector3 world)
+        {
+            if (box == null) return false;
+            Zone(out Vector3 centre, out Quaternion rotation, out Vector3 half);
+            return InBox(Quaternion.Inverse(rotation) * (world - centre), half, 0f);
+        }
+
         static bool InBox(Vector3 p, Vector3 half, float margin)
         {
             return Mathf.Abs(p.x) <= half.x + margin
