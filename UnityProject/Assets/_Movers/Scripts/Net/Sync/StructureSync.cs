@@ -104,14 +104,14 @@ namespace Movers
                 if (id == 0) continue;
                 if (m.IsFractured)
                 {
-                    m.NetSnapshot(out float left, out ushort attachedMask, out uint looks, out byte fixturesMask);
+                    m.NetSnapshot(out float left, out ulong attachedMask, out ulong looks, out byte fixturesMask);
                     var w = NetOut.Reliable(NetSyncId.Structure, OpModuleSnapshot);
                     if (w == null) return;
                     w.WriteUInt(id);
                     w.WriteUnit(left);
                     w.WriteByte((byte)m.State);
-                    w.WriteUShort(attachedMask);
-                    w.WriteUInt(looks);
+                    w.WriteULong(attachedMask);   // 32 chunks (Protocol 2)
+                    w.WriteULong(looks);          // 2 bits per chunk
                     w.WriteByte(fixturesMask);
                     NetOut.End(w);
                 }
@@ -175,8 +175,8 @@ namespace Movers
                 {
                     float left = r.ReadUnit();
                     var s = (DestructionState)r.ReadByte();
-                    ushort attachedMask = r.ReadUShort();
-                    uint looks = r.ReadUInt();
+                    ulong attachedMask = r.ReadULong();
+                    ulong looks = r.ReadULong();
                     byte fixturesMask = r.ReadByte();
                     Module(id)?.NetApplySnapshot(left, s, attachedMask, looks, fixturesMask);
                     break;

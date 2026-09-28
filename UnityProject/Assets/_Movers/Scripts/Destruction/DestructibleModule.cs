@@ -1265,16 +1265,17 @@ namespace Movers
         }
 
         // The join snapshot of a fractured wall: its chunks, their looks, which are gone (hidden,
-        // no debris) and which frames dropped. Chunks past the 16th are left as they are.
-        public void NetApplySnapshot(float healthLeft01, DestructionState state, ushort attachedMask, uint looks, byte fixturesMask)
+        // no debris) and which frames dropped. Chunks past the 32nd are left as they are (the
+        // re-fractured sets have at most 28).
+        public void NetApplySnapshot(float healthLeft01, DestructionState state, ulong attachedMask, ulong looks, byte fixturesMask)
         {
             NetFracture(healthLeft01);
             if (IsFractured)
             {
                 for (int i = 0; i < chunks.Count && i < SnapshotChunks; i++)
                 {
-                    NetChunkLook(i, (DestructionState)((looks >> (i * 2)) & 3u));
-                    if ((attachedMask & (1 << i)) == 0) NetDetach(i, false, true, Vector3.zero, Vector3.zero, true);
+                    NetChunkLook(i, (DestructionState)((looks >> (i * 2)) & 3ul));
+                    if ((attachedMask & (1ul << i)) == 0) NetDetach(i, false, true, Vector3.zero, Vector3.zero, true);
                 }
                 for (int k = 0; k < fixtures.Count && k < SnapshotFixtures; k++)
                 {
@@ -1287,18 +1288,18 @@ namespace Movers
             State = state;
         }
 
-        const int SnapshotChunks = 16, SnapshotFixtures = 8;
+        const int SnapshotChunks = 32, SnapshotFixtures = 8;
 
         // Host: what NetApplySnapshot needs, for a fractured wall.
-        internal void NetSnapshot(out float healthLeft01, out ushort attachedMask, out uint looks, out byte fixturesMask)
+        internal void NetSnapshot(out float healthLeft01, out ulong attachedMask, out ulong looks, out byte fixturesMask)
         {
             healthLeft01 = Mathf.Clamp01(health / MaxHealth);
-            attachedMask = 0;
-            looks = 0u;
+            attachedMask = 0ul;
+            looks = 0ul;
             for (int i = 0; i < chunks.Count && i < SnapshotChunks; i++)
             {
-                if (chunks[i].Attached) attachedMask |= (ushort)(1 << i);
-                looks |= ((uint)chunks[i].State & 3u) << (i * 2);
+                if (chunks[i].Attached) attachedMask |= 1ul << i;
+                looks |= ((ulong)chunks[i].State & 3ul) << (i * 2);
             }
             fixturesMask = 0;
             for (int k = 0; k < fixtures.Count && k < SnapshotFixtures; k++)
