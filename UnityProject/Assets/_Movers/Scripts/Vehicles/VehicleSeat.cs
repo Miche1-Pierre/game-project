@@ -211,7 +211,7 @@ namespace Movers
 
             if (drives) vehicle.SetDriver(m);
             // The chase view only on the machine whose screen shows that driver.
-            if (Net.IsLocal(m)) chase.Begin(truckRoot);
+            if (Net.IsLocal(m)) chase.Begin(truckRoot, m.View);
         }
 
         public bool TryExit()
@@ -262,7 +262,7 @@ namespace Movers
             if (!occupied || driver == null || driverCam == null || vehicle == null || vehicle.Body == null) return;
             if (!Net.IsLocal(driver)) return;   // online: a remote driver's camera is his machine's
             Vector2 look = driver.Input != null ? GameSettings.ApplyLook(driver.Input.LookDelta) : Vector2.zero;   // the player's sensitivity and invert Y
-            chase.Tick(driverCam, truckRoot, vehicle.Velocity, look, Time.deltaTime);
+            chase.Tick(driverCam, truckRoot, vehicle.Velocity, look, Time.deltaTime, vehicle.Tuning);
         }
 
         // Out through the door: standing on these feet, facing where the camera looked.
@@ -288,6 +288,7 @@ namespace Movers
             m.transform.SetParent(savedParent != null ? savedParent : null, true);
             // Upright whatever the truck was doing: he stands, the truck may be on its side.
             m.transform.SetPositionAndRotation(rootPosition, Quaternion.Euler(0f, yaw, 0f));
+            chase.End();
             if (driverCam != null)
             {
                 driverCam.localPosition = savedCamPosition;
@@ -316,6 +317,7 @@ namespace Movers
             if (driver != null) driver.IsDriving = false;
             switchedOff.Clear();
             driverEquip = null;
+            chase.End();
             ClearSeat();
         }
 

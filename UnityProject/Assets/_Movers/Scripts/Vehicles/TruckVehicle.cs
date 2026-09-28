@@ -570,8 +570,18 @@ namespace Movers
             if (TruckRam.Handled(c.collider)) return;
 
             nextNoiseTime = Time.time + 0.3f;
-            ImpactAudio.Play(speed > 6f ? ImpactAudio.Kind.Crunch : ImpactAudio.Kind.Thud,
-                             c.GetContact(0).point, Mathf.Clamp01(speed / 10f), DriverActor);
+            var t = Tuning;
+            var contact = c.GetContact(0);
+            var kind = speed > 6f ? ImpactAudio.Kind.Crunch : ImpactAudio.Kind.Thud;
+            // A real crash (the collision energy over crashShakeEnergy) shakes the cameras and
+            // raises dust, scaled by its energy, through the shared impact feedback.
+            float normalSpeed = Mathf.Abs(Vector3.Dot(c.relativeVelocity, contact.normal));
+            float mu = ImpactDamage.ReducedMass(rb.mass, other != null && !other.isKinematic ? other.mass : float.PositiveInfinity);
+            float energy = 0.5f * mu * normalSpeed * normalSpeed;
+            if (energy >= t.crashShakeEnergy)
+                ImpactFeedback.Hit(contact.point, energy, 1f, kind, DriverActor, false);
+            else
+                ImpactAudio.Play(kind, contact.point, Mathf.Clamp01(speed / Mathf.Max(1f, t.audioTopSpeed)), DriverActor);
         }
     }
 }
