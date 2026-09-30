@@ -66,6 +66,7 @@ Also added 2026-09-17, **an equip system and the first clothes to put in it**. A
 **BLOCKERS:** none for playing. Unity in batchmode stops at package resolution on Jonathan's machine until the project is opened once from the signed-in Unity Hub: Pierre's LumaFlow package comes from the Asset Store (2026-09-27).
 
 **SCOPE:** Tutorial_01 as specified in `02_GAME_DESIGN/GREYBOX_SPEC.md`. The grandmother's house is the vertical slice of ADR-009 (the spec's larger scope, now current for that map), on top of ADR-008.
+**MAP 2 (proposal, 2026-09-30):** a manor plan, `02_GAME_DESIGN/MAP02_MANOR.md`. Out of scope until both developers decide; it does not change the next actions.
 **TECH:** Unity 6.6.1f1 + Built-in RP + MCP (Unity and Blender both driven over MCP since 2026-09-17). Networking free only, Steam P2P or Unity Netcode, host is a player, no backend, 4 players. Photon excluded (ADR-004). Networking came forward for the slice only (ADR-012, 2026-09-27): NGO over Unity Relay's free tier or direct IP, host-authoritative, 2 players online. Steam networking at launch is unchanged.
 **ART:** free packs as the base, completed by AI 3D generation. Greybox uses primitives only. Generated assets will be declared on the Steam page.
 **BUSINESS:** price range $4.99 to $14.99, volume over margin, settled later by the final look and the wishlist curve. Team agreement deliberately not formalised.

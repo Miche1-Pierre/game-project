@@ -2,6 +2,14 @@
 
 _Not just code. Categories: DESIGN, TECH, RESEARCH, DOCS, CONTENT, BALANCE, BUSINESS, MARKETING._
 
+## 2026-09-30
+
+### Proposal: map 2, the manor (not decided, not built)
+
+- **DESIGN:** `02_GAME_DESIGN/MAP02_MANOR.md`, a PierreKit manor on the 3 m grid: H plan, 106 floor cells over three levels (the cottage has 44), a double stair and a servants' stair making one loop over both floors, and three hidden rooms, each behind a heavy movable against an ordinary door. A second map is out of scope in `GREYBOX_SPEC.md`: the file lists the open decisions for both developers.
+- **CONTENT:** `_ArtSource/manor_plan.txt`, in the `house_plan.txt` format, no new structure piece.
+- **TECH:** `tools/plan/plan_check.py` validates a plan (sides, stairs, voids, roof spans, reachability) and draws it to scale. Both plans pass with 0 errors. Nothing was assembled in Unity or Blender: no access to them from this session.
+
 ## 2026-09-28
 
 ### Hot-fix: doors open away from you and never shove

@@ -1,0 +1,318 @@
+C -1 8 2 cellar 0 cellar
+C -1 8 3 cellar 0 cellar
+C -1 9 2 cellar 0 cellar
+C -1 9 3 cellar 0 cellar
+C -1 10 2 cellar 0 cellar
+C -1 10 3 cellar 0 cellar
+C -1 11 2 cellar 0 cellar
+C -1 11 3 cellar 0 cellar
+C -1 9 0 wine_cellar 0 cellar
+C -1 9 1 wine_cellar 0 cellar
+C -1 10 1 wine_cellar 0 cellar
+C -1 11 1 wine_cellar 0 cellar
+C -1 10 0 hidden_vault 0 cellar
+C -1 11 0 hidden_vault 0 cellar
+C 0 5 -2 vestibule 0 entrance
+C 0 5 -1 vestibule 0 entrance
+C 0 6 -2 vestibule 0 entrance
+C 0 6 -1 vestibule 0 entrance
+C 0 3 0 hall 0 hallway
+C 0 3 1 hall 0 hallway
+C 0 4 0 hall 0 hallway
+C 0 4 1 hall 0 hallway
+C 0 5 0 hall 0 hallway
+C 0 5 1 hall 0 hallway
+C 0 6 0 hall 0 hallway
+C 0 6 1 hall 0 hallway
+C 0 7 0 hall 0 hallway
+C 0 7 1 hall 0 hallway
+C 0 8 0 hall 0 hallway
+C 0 8 1 hall 0 hallway
+C 0 5 2 garden_hall 0 hallway
+C 0 6 2 garden_hall 0 hallway
+C 0 0 0 salon 0 living_room
+C 0 0 1 salon 0 living_room
+C 0 1 0 salon 0 living_room
+C 0 1 1 salon 0 living_room
+C 0 2 0 salon 0 living_room
+C 0 2 1 salon 0 living_room
+C 0 0 -2 library 0 other
+C 0 0 -1 library 0 other
+C 0 1 -2 library 0 other
+C 0 1 -1 hidden_study 0 other
+C 0 0 2 music_room 0 other
+C 0 0 3 music_room 0 other
+C 0 1 2 music_room 0 other
+C 0 1 3 music_room 0 other
+C 0 -1 0 orangerie 0 veranda
+C 0 -1 1 orangerie 0 veranda
+C 0 -1 2 orangerie 0 veranda
+C 0 -1 3 orangerie 0 veranda
+C 0 9 0 dining 0 other
+C 0 9 1 dining 0 other
+C 0 10 0 dining 0 other
+C 0 10 1 dining 0 other
+C 0 11 0 dining 0 other
+C 0 11 1 dining 0 other
+C 0 10 -2 office 0 other
+C 0 10 -1 office 0 other
+C 0 11 -2 office 0 other
+C 0 11 -1 office 0 other
+C 0 8 2 kitchen 0 kitchen
+C 0 9 2 kitchen 0 kitchen
+C 0 10 2 pantry 0 kitchen
+C 0 10 3 service_hall 0 hallway
+C 0 8 3 service_hall 1 hallway
+C 0 9 3 service_hall 1 hallway
+C 0 11 2 servant_stair 0 hallway
+C 0 11 3 servant_stair 0 hallway
+C 1 3 0 gallery 0 hallway
+C 1 4 0 gallery 0 hallway
+C 1 5 0 gallery 0 hallway
+C 1 5 1 gallery 0 hallway
+C 1 6 0 gallery 0 hallway
+C 1 6 1 gallery 0 hallway
+C 1 7 0 gallery 0 hallway
+C 1 8 0 gallery 0 hallway
+C 1 3 1 gallery 1 hallway
+C 1 4 1 gallery 1 hallway
+C 1 7 1 gallery 1 hallway
+C 1 8 1 gallery 1 hallway
+C 1 5 -2 cabinet 0 other
+C 1 5 -1 cabinet 0 other
+C 1 6 -2 cabinet 0 other
+C 1 6 -1 cabinet 0 other
+C 1 5 2 bathroom 0 bathroom
+C 1 6 2 bathroom 0 bathroom
+C 1 2 0 anteroom 0 hallway
+C 1 2 1 anteroom 0 hallway
+C 1 0 0 master_bedroom 0 bedroom
+C 1 0 1 master_bedroom 0 bedroom
+C 1 1 0 master_bedroom 0 bedroom
+C 1 1 1 master_bedroom 0 bedroom
+C 1 0 -2 nursery 0 bedroom
+C 1 0 -1 nursery 0 bedroom
+C 1 1 -2 nursery 0 bedroom
+C 1 1 -1 nursery 0 bedroom
+C 1 0 2 dressing 0 other
+C 1 1 2 dressing 0 other
+C 1 0 3 master_bath 0 bathroom
+C 1 1 3 master_bath 0 bathroom
+C 1 9 0 corridor 0 hallway
+C 1 9 1 corridor 0 hallway
+C 1 10 1 corridor 0 hallway
+C 1 11 1 corridor 0 hallway
+C 1 11 2 corridor 1 hallway
+C 1 11 3 corridor 1 hallway
+C 1 10 -1 guest_room 0 bedroom
+C 1 10 0 guest_room 0 bedroom
+C 1 11 -1 guest_room 0 bedroom
+C 1 11 0 guest_room 0 bedroom
+C 1 10 -2 hidden_room 0 bedroom
+C 1 11 -2 hidden_room 0 bedroom
+C 1 10 2 maid_room 0 bedroom
+C 1 10 3 maid_room 0 bedroom
+E -1 8 2 S CELLAR_WALL
+E -1 8 2 W CELLAR_WALL
+E -1 8 3 N CELLAR_WALL
+E -1 8 3 W CELLAR_WALL
+E -1 9 0 E INT_PLAIN
+E -1 9 0 S CELLAR_WALL
+E -1 9 0 W CELLAR_WALL
+E -1 9 1 W CELLAR_WALL
+E -1 9 2 S INT_PLAIN
+E -1 9 3 N CELLAR_WALL
+E -1 10 0 S CELLAR_WALL
+E -1 10 1 S INT_PLAIN
+E -1 10 2 S INT_WIDE_OPENING
+E -1 10 3 N CELLAR_WALL
+E -1 11 0 E CELLAR_WALL
+E -1 11 0 S CELLAR_WALL
+E -1 11 1 E CELLAR_WALL
+E -1 11 1 S INT_DOOR
+E -1 11 2 E CELLAR_WALL
+E -1 11 2 S INT_PLAIN
+E -1 11 3 E CELLAR_WALL
+E -1 11 3 N CELLAR_WALL
+E 0 -1 0 S VERANDA_DOOR
+E 0 -1 0 W VERANDA_GLASS
+E 0 -1 1 W VERANDA_GLASS
+E 0 -1 2 W VERANDA_GLASS
+E 0 -1 3 N VERANDA_GLASS
+E 0 -1 3 W VERANDA_GLASS
+E 0 0 -2 S EXT_WINDOW_BIG
+E 0 0 -2 W EXT_WINDOW_BIG
+E 0 0 -1 E INT_PLAIN
+E 0 0 -1 W EXT_WINDOW_BIG
+E 0 0 0 S INT_DOOR
+E 0 0 0 W INT_PLAIN
+E 0 0 1 N INT_PLAIN
+E 0 0 1 W INT_WIDE_OPENING
+E 0 0 2 W INT_PLAIN
+E 0 0 3 N EXT_WINDOW_BIG
+E 0 0 3 W INT_DOOR
+E 0 1 -2 E EXT_WINDOW_SMALL
+E 0 1 -2 N INT_DOOR
+E 0 1 -2 S EXT_WINDOW_BIG
+E 0 1 -1 E EXT_WINDOW_SMALL
+E 0 1 0 S INT_PLAIN
+E 0 1 1 N INT_DOOR
+E 0 1 2 E EXT_WINDOW_SMALL
+E 0 1 3 E EXT_WINDOW_BIG
+E 0 1 3 N EXT_WINDOW_BIG
+E 0 2 0 S EXT_WINDOW_BIG
+E 0 2 1 N EXT_PLAIN
+E 0 3 0 S EXT_WINDOW_BIG
+E 0 3 0 W INT_WIDE_OPENING
+E 0 3 1 N EXT_WINDOW_SMALL
+E 0 3 1 W INT_PLAIN
+E 0 4 0 S EXT_WINDOW_BIG
+E 0 4 1 E INT_PLAIN
+E 0 4 1 N EXT_PLAIN
+E 0 4 1 S RAILING
+E 0 5 -2 S EXT_DOOR
+E 0 5 -2 W EXT_WINDOW_SMALL
+E 0 5 -1 N INT_WIDE_OPENING
+E 0 5 -1 W EXT_WINDOW_SMALL
+E 0 5 1 N INT_WIDE_OPENING
+E 0 5 2 N EXT_DOOR
+E 0 5 2 W EXT_WINDOW_SMALL
+E 0 6 -2 E EXT_WINDOW_SMALL
+E 0 6 -2 S EXT_DOOR
+E 0 6 -1 E EXT_WINDOW_SMALL
+E 0 6 -1 N INT_WIDE_OPENING
+E 0 6 1 E INT_PLAIN
+E 0 6 1 N INT_WIDE_OPENING
+E 0 6 2 E EXT_WINDOW_SMALL
+E 0 6 2 N EXT_DOOR
+E 0 7 0 S EXT_WINDOW_BIG
+E 0 7 1 N EXT_PLAIN
+E 0 7 1 S RAILING
+E 0 8 0 E INT_DOOR
+E 0 8 0 S EXT_WINDOW_BIG
+E 0 8 1 E INT_PLAIN
+E 0 8 1 N INT_PLAIN
+E 0 8 2 N INT_PLAIN
+E 0 8 2 W EXT_WINDOW_BIG
+E 0 8 3 N EXT_WINDOW_SMALL
+E 0 8 3 W EXT_PLAIN
+E 0 9 0 S EXT_WINDOW_BIG
+E 0 9 1 N INT_DOOR
+E 0 9 2 E INT_DOOR
+E 0 9 2 N INT_PLAIN
+E 0 9 3 N EXT_WINDOW_SMALL
+E 0 10 -2 S EXT_WINDOW_BIG
+E 0 10 -2 W EXT_WINDOW_SMALL
+E 0 10 -1 W EXT_WINDOW_SMALL
+E 0 10 0 S INT_DOOR
+E 0 10 1 N INT_DOOR
+E 0 10 2 E INT_PLAIN
+E 0 10 2 N INT_DOOR
+E 0 10 3 E NONE
+E 0 10 3 N EXT_DOOR
+E 0 11 -2 E EXT_WINDOW_SMALL
+E 0 11 -2 S EXT_WINDOW_BIG
+E 0 11 -1 E EXT_WINDOW_SMALL
+E 0 11 0 E EXT_WINDOW_BIG
+E 0 11 0 S INT_PLAIN
+E 0 11 1 E EXT_WINDOW_BIG
+E 0 11 1 N INT_PLAIN
+E 0 11 2 E EXT_WINDOW_SMALL
+E 0 11 3 E EXT_PLAIN
+E 0 11 3 N EXT_PLAIN
+E 1 0 -2 S EXT_WINDOW_SMALL
+E 1 0 -2 W EXT_WINDOW_SMALL
+E 1 0 -1 W EXT_WINDOW_SMALL
+E 1 0 0 S INT_PLAIN
+E 1 0 0 W EXT_PLAIN
+E 1 0 1 N INT_PLAIN
+E 1 0 1 W EXT_PLAIN
+E 1 0 2 N INT_PLAIN
+E 1 0 2 W EXT_PLAIN
+E 1 0 3 N EXT_WINDOW_SMALL
+E 1 0 3 W EXT_PLAIN
+E 1 1 -2 E EXT_WINDOW_SMALL
+E 1 1 -2 S EXT_WINDOW_SMALL
+E 1 1 -1 E EXT_WINDOW_SMALL
+E 1 1 0 S INT_DOOR
+E 1 1 1 N INT_DOOR
+E 1 1 2 E EXT_WINDOW_SMALL
+E 1 1 2 N INT_DOOR
+E 1 1 3 E EXT_PLAIN
+E 1 1 3 N EXT_WINDOW_SMALL
+E 1 2 0 S EXT_WINDOW_SMALL
+E 1 2 0 W INT_DOOR
+E 1 2 1 N EXT_PLAIN
+E 1 2 1 W INT_PLAIN
+E 1 3 0 N RAILING
+E 1 3 0 S EXT_WINDOW_SMALL
+E 1 3 0 W INT_DOOR
+E 1 3 1 N EXT_WINDOW_SMALL
+E 1 3 1 W INT_PLAIN
+E 1 4 0 N RAILING
+E 1 4 0 S EXT_WINDOW_SMALL
+E 1 4 1 N EXT_PLAIN
+E 1 5 -2 S EXT_WINDOW_BIG
+E 1 5 -2 W EXT_WINDOW_SMALL
+E 1 5 -1 W EXT_PLAIN
+E 1 5 0 S INT_DOOR
+E 1 5 1 N INT_DOOR
+E 1 5 2 N EXT_WINDOW_SMALL
+E 1 5 2 W EXT_PLAIN
+E 1 6 -2 E EXT_WINDOW_SMALL
+E 1 6 -2 S EXT_WINDOW_BIG
+E 1 6 -1 E EXT_PLAIN
+E 1 6 0 S INT_DOOR
+E 1 6 1 N INT_PLAIN
+E 1 6 2 E EXT_PLAIN
+E 1 6 2 N EXT_WINDOW_SMALL
+E 1 7 0 N RAILING
+E 1 7 0 S EXT_WINDOW_SMALL
+E 1 7 1 N EXT_PLAIN
+E 1 8 0 E INT_DOOR
+E 1 8 0 N RAILING
+E 1 8 0 S EXT_WINDOW_SMALL
+E 1 8 1 E INT_PLAIN
+E 1 8 1 N EXT_PLAIN
+E 1 9 0 E INT_PLAIN
+E 1 9 0 S EXT_WINDOW_SMALL
+E 1 9 1 N EXT_PLAIN
+E 1 10 -2 S EXT_WINDOW_SMALL
+E 1 10 -2 W EXT_WINDOW_SMALL
+E 1 10 -1 S INT_DOOR
+E 1 10 -1 W EXT_WINDOW_SMALL
+E 1 10 1 N INT_DOOR
+E 1 10 1 S INT_DOOR
+E 1 10 2 W EXT_WINDOW_SMALL
+E 1 10 3 N EXT_WINDOW_SMALL
+E 1 10 3 W EXT_PLAIN
+E 1 11 -2 E EXT_PLAIN
+E 1 11 -2 S EXT_WINDOW_SMALL
+E 1 11 -1 E EXT_WINDOW_SMALL
+E 1 11 -1 S INT_PLAIN
+E 1 11 0 E EXT_WINDOW_SMALL
+E 1 11 1 E EXT_WINDOW_SMALL
+E 1 11 1 S INT_PLAIN
+E 1 11 2 E EXT_WINDOW_SMALL
+E 1 11 2 W INT_PLAIN
+E 1 11 3 E EXT_PLAIN
+E 1 11 3 N EXT_PLAIN
+E 1 11 3 W INT_PLAIN
+S 0 1 3 1 4 1 E 5 1 WOOD
+S 0 1 8 1 7 1 W 6 1 WOOD
+S 0 1 11 3 11 2 S 11 1 WOOD
+S -1 0 8 3 9 3 E 10 3 STONE
+R GABLE 0 0 11 1 X - 2
+R GABLE 0 -2 1 3 Z - 2
+R GABLE 10 -2 11 3 Z - 2
+R GABLE 5 -2 6 2 Z - 2
+R GABLE 8 2 9 3 Z - 1
+R GLASS -1 0 -1 3 - E 1
+P 5 -3
+P 6 -3
+T 4 3
+T 5 3
+T 6 3
+T 7 3
+K 5 -7
+H 2 1 N

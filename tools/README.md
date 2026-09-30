@@ -234,3 +234,17 @@ Two things the agent cannot do for itself:
 2. **The first connection needs approval** in the Unity MCP Server settings page, and a
    session restart on the client side, because an MCP server added mid-conversation is not
    picked up until then.
+
+## Check and draw a house plan (Python, stdlib only)
+
+The PierreKit maps are data on the 3 m grid: `_ArtSource/house_plan.txt` (Map01, the
+cottage) and `_ArtSource/manor_plan.txt` (the manor proposal, `02_GAME_DESIGN/MAP02_MANOR.md`).
+
+    python3 tools/plan/plan_check.py _ArtSource/manor_plan.txt --html manor.html
+
+It fails (exit 1) on: a perimeter or room-to-room side not listed, a stair that does not
+line up, an upper cell over nothing or a void over no stair, a gable wider than the kit's
+two-cell span, and a cell that cannot be reached from outside. Then it prints the loops per
+level, and per room the widest route out and the metres to the nearest exit. `--html` and
+`--svg-dir` draw each level to scale; rooms named `hidden_*` and the doors into them are
+drawn in red. Both plans pass.
